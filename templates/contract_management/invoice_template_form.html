@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'invoice_template_list' %}" class="btn btn-secondary">Back to Templates</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Product *</label>
+                <select name="product" class="form-control" required>
+                    <option value="">-- Select Product --</option>
+                    {% for product in products %}
+                    <option value="{{ product.pk }}" {% if template and template.product_id == product.pk %}selected{% endif %}>{{ product.name }} ({{ product.sku }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <input type="text" name="description" class="form-control" value="{{ template.description|default:'' }}">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">Quantity</label>
+                <input type="number" step="0.01" name="quantity" class="form-control" value="{{ template.quantity|default:1 }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">Unit Price</label>
+                <input type="number" step="0.01" name="unit_price" class="form-control" value="{{ template.unit_price|default:0 }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">Discount %</label>
+                <input type="number" step="0.01" name="discount" class="form-control" value="{{ template.discount|default:0 }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">Unit of Measure</label>
+                <select name="uom" class="form-control">
+                    <option value="">-- Select UoM --</option>
+                    {% for uom in uoms %}
+                    <option value="{{ uom.pk }}" {% if template and template.uom_id == uom.pk %}selected{% endif %}>{{ uom.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4">Template Settings</h5>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Contract Type</label>
+                <select name="contract_type" class="form-control">
+                    <option value="">-- Select Type --</option>
+                    {% for value, label in contract_types %}
+                    <option value="{{ value }}" {% if template and template.contract_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Pricing Type</label>
+                <select name="pricing_type" class="form-control">
+                    <option value="FLAT" {% if template and template.pricing_type == 'FLAT' %}selected{% endif %}>Fixed Fee</option>
+                    <option value="PER_UNIT" {% if template and template.pricing_type == 'PER_UNIT' %}selected{% endif %}>Per Unit</option>
+                    <option value="TIERED" {% if template and template.pricing_type == 'TIERED' %}selected{% endif %}>Tiered Pricing</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="form-check">
+                    <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if template.is_active|default:true %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">Active</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h5 class="mt-4">Tier Pricing (kWh)</h5>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">From</label>
+                <input type="number" step="0.01" name="tier_from" class="form-control" value="{{ template.tier_from|default:0 }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group mb-3">
+                <label class="form-label">To</label>
+                <input type="number" step="0.01" name="tier_to" class="form-control" value="{{ template.tier_to|default:0 }}">
+            </div>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary mt-3">Save Template</button>
+</form>
+{% endblock %}

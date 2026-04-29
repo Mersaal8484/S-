@@ -1,0 +1,192 @@
+{% extends 'billing/base.html' %}
+{% block title %}Invoice Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h3>Invoice: {{ invoice.invoice_number }}</h3>
+    </div>
+    <div class="col-md-4 text-left">
+        <a href="{% url 'invoice_print' invoice.id %}" class="btn btn-success" target="_blank">
+            <i class="bi bi-printer"></i> Print
+        </a>
+        <a href="{% url 'invoice_regenerate' invoice.id %}" class="btn btn-warning">
+            <i class="bi bi-arrow-repeat"></i> Regenerate
+        </a>
+        <a href="{% url 'payment_create' %}?invoice={{ invoice.id }}" class="btn btn-primary">
+            Record Payment
+        </a>
+    </div>
+</div>
+
+{% if invoice.reading %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card" style="background-color: #e3f2fd;">
+            <div class="card-body py-2">
+                <h6 class="mb-2">Meter Reading Info</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <small class="text-muted">Previous</small><br>
+                        <strong>{{ invoice.reading.previous_reading }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Current</small><br>
+                        <strong>{{ invoice.reading.current_reading }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Consumption</small><br>
+                        <strong>{{ invoice.reading.consumption }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Date</small><br>
+                        <strong>{{ invoice.reading.reading_date }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Customer</h6>
+                <p>{{ invoice.contract.customer.full_name_ar }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Contract</h6>
+                <p>{{ invoice.contract.contract_number }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Issue Date</h6>
+                <p>{{ invoice.issue_date }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Due Date</h6>
+                <p>{{ invoice.due_date }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6>Total Amount</h6>
+                <h4>{{ invoice.total_amount|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6>Paid Amount</h6>
+                <h4>{{ invoice.paid_amount|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h6>Remaining</h6>
+                <h4>{{ invoice.remaining_amount|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Status</h6>
+                <span class="badge badge-{% if invoice.invoice_status == 'paid' %}success{% elif invoice.invoice_status == 'overdue' %}danger{% else %}warning{% endif %}">
+                    {{ invoice.get_invoice_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Invoice Lines</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for line in lines %}
+                        <tr>
+                            <td>{{ line.line_name_ar }}</td>
+                            <td>{{ line.quantity|floatformat:2 }}</td>
+                            <td>{{ line.rate|floatformat:2 }}</td>
+                            <td>{{ line.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">No lines</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                            <td><strong>{{ invoice.total_amount|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Payments</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_number }}</td>
+                            <td>{{ payment.amount|floatformat:2 }}</td>
+                            <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No payments</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

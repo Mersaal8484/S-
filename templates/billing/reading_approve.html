@@ -1,0 +1,34 @@
+{% extends 'billing/base.html' %}
+{% block title %}Reading Approval{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h5>Approve Reading</h5></div>
+    <div class="card-body">
+        <table class="table">
+            <tr><th>Meter</th><td>{{ reading.meter.meter_number }}</td></tr>
+            <tr><th>Customer</th><td>{{ reading.contract.customer.full_name_ar|default:'-' }}</td></tr>
+            <tr><th>Previous Reading</th><td>{{ reading.previous_reading }}</td></tr>
+            <tr><th>Submitted Reading</th><td>{{ reading.submitted_reading }}</td></tr>
+            <tr><th>Consumption</th><td>{{ reading.consumption|default:'-' }}</td></tr>
+        </table>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Action</label>
+                <select name="action" class="form-control" required>
+                    <option value="approve">Approve</option>
+                    <option value="reject">Reject</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reason (if rejecting)</label>
+                <textarea name="reason" class="form-control" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a href="{% url 'reading_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

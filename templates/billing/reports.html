@@ -1,0 +1,49 @@
+{% extends 'billing/base.html' %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h3>Reports</h3>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat bg-primary text-white">
+            <div class="card-body">
+                <h6>Customers</h6><h2>{{ customer_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-success text-white">
+            <div class="card-body">
+                <h6>Contracts</h6><h2>{{ contract_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-info text-white">
+            <div class="card-body">
+                <h6>Total Revenue</h6><h2>{{ total_revenue|floatformat:0 }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-warning text-white">
+            <div class="card-body">
+                <h6>Outstanding</h6><h2>{{ total_outstanding|floatformat:0 }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>This Month</h5></div>
+            <div class="card-body">
+                <p>Invoices: <strong>{{ invoices_this_month }}</strong></p>
+                <p>Payments: <strong>{{ payments_this_month|floatformat:2 }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

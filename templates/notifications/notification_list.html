@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Notifications</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <a href="{% url 'notification_create' %}" class="btn btn-primary">Send New</a>
+        <a href="{% url 'template_list' %}" class="btn btn-info">Templates</a>
+        <a href="{% url 'provider_list' %}" class="btn btn-warning">Providers</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Recipient</th>
+                <th>Channel</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in notifications %}
+            <tr>
+                <td>{{ n.title }}</td>
+                <td>{{ n.recipient }}</td>
+                <td><span class="badge badge-info">{{ n.get_channel_display }}</span></td>
+                <td><span class="badge badge-{% if n.status == 'SENT' %}success{% elif n.status == 'FAILED' %}danger{% else %}warning{% endif %}">{{ n.get_status_display }}</span></td>
+                <td>{{ n.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No notifications</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

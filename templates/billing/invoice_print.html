@@ -1,0 +1,114 @@
+{% extends 'billing/base.html' %}
+{% block title %}Print Invoice{% endblock %}
+
+{% block content %}
+<div class="no-print mb-3">
+    <div class="btn-group">
+        <button onclick="printInvoice('a4')" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Print A4
+        </button>
+        <button onclick="printInvoice('a5')" class="btn btn-secondary">
+            <i class="bi bi-printer"></i> Print A5
+        </button>
+    </div>
+    <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-secondary">Back</a>
+</div>
+
+<div id="printArea" class="invoice-print invoice-a4">
+    <div class="text-center mb-3">
+        <h2>{{ invoice.invoice_number }}</h2>
+        <p>Date: {{ invoice.issue_date|date:"Y-m-d" }}</p>
+        <p>Due: {{ invoice.due_date|date:"Y-m-d" }}</p>
+    </div>
+    
+    <div class="mb-2">
+        <p><strong>Customer:</strong> {{ invoice.contract.customer.full_name_ar }}</p>
+        <p><strong>Contract:</strong> {{ invoice.contract.contract_number }}</p>
+        <p><strong>Address:</strong> {{ invoice.contract.customer.address|default:"-" }}</p>
+    </div>
+    
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in invoice.invoice_lines.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ line.line_name_ar }}</td>
+                <td class="text-right">{{ line.amount|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="subtotal">
+                <td colspan="2">Subtotal</td>
+                <td class="text-right">{{ invoice.total_amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    {% if previous_balance > 0 %}
+    <table class="invoice-table">
+        <tr>
+            <td>Previous Balance</td>
+            <td class="text-right">{{ previous_balance|floatformat:2 }}</td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <div class="total-section">
+        <div class="total-row">
+            <span>Total Due:</span>
+            <span class="total-amount">{{ total_due|floatformat:2 }}</span>
+        </div>
+        {% if invoice.invoice_status != 'paid' %}
+        <div class="remaining">
+            <span>Remaining:</span>
+            <span>{{ invoice.remaining_amount|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="text-center mt-3">
+        <p>Thank you</p>
+    </div>
+</div>
+
+<script>
+function printInvoice(size) {
+    document.getElementById('printArea').className = 'invoice-print invoice-' + size;
+    window.print();
+}
+</script>
+
+<style>
+@media print {
+    .no-print { display: none !important; }
+    body { margin: 0; padding: 0; }
+    .invoice-print { padding: 5mm; }
+}
+
+.invoice-print { font-family: Arial, sans-serif; line-height: 1.3; }
+.invoice-a4 { max-width: 18cm; font-size: 12pt; }
+.invoice-a5 { max-width: 14cm; font-size: 10pt; }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mb-2, .mb-3 { margin-bottom: 10px; }
+
+.invoice-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.invoice-table th, .invoice-table td { padding: 4px; border-bottom: 1px solid #ddd; }
+.invoice-table .subtotal { border-top: 2px solid #333; font-weight: bold; }
+
+.total-section { margin-top: 15px; padding-top: 10px; border-top: 2px solid #333; }
+.total-row { display: flex; justify-content: space-between; font-size: 14pt; font-weight: bold; }
+.remaining { display: flex; justify-content: space-between; color: #d00; margin-top: 5px; }
+
+@media print {
+    @page { size: auto; margin: 5mm; }
+}
+</style>
+{% endblock %}

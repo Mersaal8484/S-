@@ -1,0 +1,49 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>{{ title }}</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'route_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Route Name (AR) *</label>
+                <input type="text" name="route_name_ar" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Route Name (EN)</label>
+                <input type="text" name="route_name_en" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Route Type *</label>
+                <select name="route_type" class="form-control">
+                    <option value="meter_reading">Meter Reading</option>
+                    <option value="collection">Collection</option>
+                    <option value="both">Both</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Region</label>
+                <input type="text" name="region" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Area Description</label>
+                <textarea name="area_description" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'route_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

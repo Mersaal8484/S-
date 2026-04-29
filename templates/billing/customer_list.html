@@ -1,0 +1,92 @@
+{% extends 'billing/base.html' %}
+{% block title %}المشتركين{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>المشتركين</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'customer_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> إضافة مشترك
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="form-inline mb-3">
+            <input type="text" name="q" class="form-control mr-2" placeholder="بحث..." value="{{ request.GET.q }}">
+            <select name="city" class="form-control mr-2">
+                <option value="">كل المدن</option>
+                {% for city in cities %}
+                <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-secondary">بحث</button>
+        </form>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>رقم المشترك</th>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>المدينة</th>
+                    <th>الرصيد</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.customer_number }}</td>
+                    <td>{{ customer.full_name_ar }}</td>
+                    <td>{{ customer.mobile_phone }}</td>
+                    <td>{{ customer.city|default:"-" }}</td>
+                    <td>
+                        <span class="text-{% if customer.current_balance > 0 %}danger{% elif customer.current_balance < 0 %}success{% endif %}">
+                            {{ customer.current_balance|floatformat:2 }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if customer.is_active %}
+                        <span class="badge badge-success">نشط</span>
+                        {% else %}
+                        <span class="badge badge-secondary">غير نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'customer_detail' customer.id %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">لا يوجد مشتركين</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if customers.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if customers.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ customers.previous_page_number }}">السابق</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ customers.number }} / {{ customers.paginator.num_pages }}</span></li>
+                {% if customers.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ customers.next_page_number }}">التالي</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

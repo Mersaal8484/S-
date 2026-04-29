@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Date Range Types - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Date Range Types</h1>
+        <a href="{% url 'contract_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Allow Overlap</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in types %}
+            <tr>
+                <td>{{ type.name }}</td>
+                <td>
+                    {% if type.allow_overlap %}
+                    <span class="badge bg-warning">Yes</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if type.active %}
+                    <span class="badge bg-success">Yes</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-muted">No date range types found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

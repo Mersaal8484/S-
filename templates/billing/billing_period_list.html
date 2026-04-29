@@ -1,0 +1,49 @@
+{% extends 'billing/base.html' %}
+{% block title %}Billing Periods{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Billing Periods</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'billing_period_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Period
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in periods %}
+                <tr>
+                    <td>{{ period.period_name }}</td>
+                    <td>{{ period.period_code }}</td>
+                    <td>{{ period.start_date }}</td>
+                    <td>{{ period.end_date }}</td>
+                    <td>
+                        <span class="badge badge-{% if period.status == 'reading_open' %}success{% elif period.status == 'closed' %}secondary{% else %}warning{% endif %}">
+                            {{ period.get_status_display }}
+                        </span>
+                    </td>
+                    <td><a href="{% url 'billing_period_edit' period.id %}" class="btn btn-sm btn-primary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No periods</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

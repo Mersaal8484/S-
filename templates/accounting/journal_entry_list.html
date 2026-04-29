@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Journal Entries - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Journal Entries</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Reference</th>
+                <th>Description</th>
+                <th>Posted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.id }}</td>
+                <td>{{ entry.date }}</td>
+                <td>{{ entry.reference }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.is_posted|yesno:"Yes,No" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No journal entries</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

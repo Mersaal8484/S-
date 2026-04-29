@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Journals - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Journals</h1>
+        <a href="{% url 'contract_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for journal in journals %}
+            <tr>
+                <td>{{ journal.code }}</td>
+                <td>{{ journal.name }}</td>
+                <td>{{ journal.get_journal_type_display }}</td>
+                <td>
+                    {% if journal.is_active %}
+                    <span class="badge bg-success">Yes</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-muted">No journals found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

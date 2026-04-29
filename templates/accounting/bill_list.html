@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Bills - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Bills (AP)</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <a href="{% url 'bill_create' %}" class="btn btn-primary">Add Bill</a>
+    </div>
+</div>
+
+<form method="get" class="form-inline mb-3">
+    <select name="status" class="form-control mr-2" onchange="this.form.submit()">
+        <option value="">All Status</option>
+        <option value="DRAFT" {% if status == 'DRAFT' %}selected{% endif %}>Draft</option>
+        <option value="SUBMITTED" {% if status == 'SUBMITTED' %}selected{% endif %}>Submitted</option>
+        <option value="PAID" {% if status == 'PAID' %}selected{% endif %}>Paid</option>
+        <option value="CANCELLED" {% if status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+    </select>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Vendor</th>
+                <th>Date</th>
+                <th>Due Date</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                <td><a href="{% url 'bill_detail' bill.pk %}">{{ bill.id }}</a></td>
+                <td>{{ bill.vendor.name }}</td>
+                <td>{{ bill.date }}</td>
+                <td>{{ bill.due_date }}</td>
+                <td>{{ bill.reference }}</td>
+                <td><span class="badge badge-{% if bill.status == 'PAID' %}success{% elif bill.status == 'CANCELLED' %}secondary{% else %}warning{% endif %}">{{ bill.get_status_display }}</span></td>
+                <td>
+                    <a href="{% url 'bill_detail' bill.pk %}" class="btn btn-sm btn-info">View</a>
+                    <a href="{% url 'bill_edit' bill.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">No bills. <a href="{% url 'bill_create' %}">Create one</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

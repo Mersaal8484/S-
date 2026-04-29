@@ -1,0 +1,40 @@
+{% extends 'billing/base.html' %}
+{% block title %}SMS Providers{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>SMS Providers</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'sms_provider_create' %}" class="btn btn-primary">Add Provider</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>API URL</th>
+                    <th>Sender</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for provider in providers %}
+                <tr>
+                    <td>{{ provider.provider_name }}</td>
+                    <td>{{ provider.api_url|truncatechars:30 }}</td>
+                    <td>{{ provider.sender_name }}</td>
+                    <td>{% if provider.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center">No providers</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

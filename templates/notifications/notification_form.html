@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'notification_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Channel</label>
+                <select name="channel" class="form-control" id="channelSelect" onchange="updateFields()">
+                    <option value="SMS">SMS</option>
+                    <option value="WHATSAPP">WhatsApp</option>
+                    <option value="EMAIL">Email</option>
+                    <option value="PUSH">Push Notification</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Template</label>
+                <select name="template" class="form-control" id="templateSelect" onchange="loadTemplate()">
+                    <option value="">-- Select Template --</option>
+                    {% for t in templates %}
+                    <option value="{{ t.pk }}" data-channel="{{ t.channel }}" data-subject="{{ t.subject }}" data-body="{{ t.body|escapejs }}">{{ t.name }} ({{ t.get_channel_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Recipient Name</label>
+                <input type="text" name="recipient" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6" id="phoneField">
+            <div class="form-group mb-3">
+                <label class="form-label">Phone Number</label>
+                <input type="text" name="recipient_phone" class="form-control">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="emailField" style="display:none">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="recipient_email" class="form-control">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="fcmField" style="display:none">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">FCM Token</label>
+                <input type="text" name="recipient_fcm_token" class="form-control">
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Subject</label>
+        <input type="text" name="subject" class="form-control" id="subjectInput">
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Message</label>
+        <textarea name="body" class="form-control" rows="4" id="bodyInput" required></textarea>
+        <small class="text-muted">Use {'{variable}'} for dynamic content</small>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Provider (optional)</label>
+        <select name="provider" class="form-control">
+            <option value="">Default Provider</option>
+            {% for p in providers %}
+            <option value="{{ p.pk }}">{{ p.name }} ({{ p.get_channel_display }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Send Notification</button>
+</form>
+
+<script>
+function updateFields() {
+    var channel = document.getElementById('channelSelect').value;
+    document.getElementById('phoneField').style.display = (channel === 'SMS' || channel === 'WHATSAPP') ? 'block' : 'none';
+    document.getElementById('emailField').style.display = (channel === 'EMAIL') ? 'block' : 'none';
+    document.getElementById('fcmField').style.display = (channel === 'PUSH') ? 'block' : 'none';
+}
+
+function loadTemplate() {
+    var select = document.getElementById('templateSelect');
+    var option = select.options[select.selectedIndex];
+    if (option.value) {
+        document.getElementById('subjectInput').value = option.dataset.subject || '';
+        document.getElementById('bodyInput').value = option.dataset.body || '';
+    }
+}
+
+updateFields();
+</script>
+{% endblock %}

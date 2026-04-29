@@ -1,0 +1,80 @@
+{% extends 'billing/base.html' %}
+{% block title %}General Ledger{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Financial Transactions</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'system_settings' %}" class="btn btn-secondary">Settings</a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="form-inline">
+            <select name="customer" class="form-control mr-2">
+                <option value="">All Customers</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.customer_number }} - {{ c.full_name_ar }}</option>
+                {% endfor %}
+            </select>
+            <select name="type" class="form-control mr-2">
+                <option value="">All Types</option>
+                <option value="invoice_created">Invoice Created</option>
+                <option value="payment_received">Payment Received</option>
+                <option value="adjustment">Adjustment</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Reference</th>
+                    <th class="text-right">Debit</th>
+                    <th class="text-right">Credit</th>
+                    <th class="text-right">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in ledger %}
+                <tr>
+                    <td>{{ entry.transaction_date|date:"Y-m-d H:i" }}</td>
+                    <td><a href="{% url 'ledger_detail' entry.customer.id %}">{{ entry.customer.full_name_ar }}</a></td>
+                    <td>{{ entry.get_transaction_type_display }}</td>
+                    <td>{{ entry.notes }}</td>
+                    <td class="text-right">{{ entry.debit|floatformat:2 }}</td>
+                    <td class="text-right">{{ entry.credit|floatformat:2 }}</td>
+                    <td class="text-right">{{ entry.balance_after|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No transactions</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if ledger.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if ledger.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ ledger.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ ledger.number }} / {{ ledger.paginator.num_pages }}</span></li>
+                {% if ledger.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ ledger.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

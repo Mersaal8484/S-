@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Bill {{ bill.id }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Bill {{ bill.id }}</h1>
+        <a href="{% url 'bill_list' %}" class="btn btn-secondary">Back</a>
+        {% if bill.status == 'DRAFT' %}
+        <a href="{% url 'bill_post' bill.pk %}" class="btn btn-success">Post to Ledger</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Vendor:</strong> <a href="{% url 'vendor_accounts' bill.vendor.pk %}">{{ bill.vendor.name }}</a></p>
+                <p><strong>Date:</strong> {{ bill.date }}</p>
+                <p><strong>Due Date:</strong> {{ bill.due_date }}</p>
+                <p><strong>Reference:</strong> {{ bill.reference }}</p>
+                <p><strong>Status:</strong> <span class="badge badge-{% if bill.status == 'PAID' %}success{% elif bill.status == 'CANCELLED' %}secondary{% else %}warning{% endif %}">{{ bill.get_status_display }}</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Line Items</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Account</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in bill.items.all %}
+        <tr>
+            <td>{{ item.description }}</td>
+            <td>{{ item.account.code }} - {{ item.account.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unit_price }}</td>
+            <td>{{ item.amount }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="font-weight-bold">
+            <td colspan="4" class="text-right">Total</td>
+            <td>{{ bill.get_total }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

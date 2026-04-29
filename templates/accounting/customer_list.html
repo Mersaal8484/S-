@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Customers - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Customers</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <a href="{% url 'customer_create' %}" class="btn btn-primary">Add Customer</a>
+    </div>
+</div>
+
+<form method="get" class="form-inline mb-3">
+    <input type="text" name="q" value="{{ q|default:'' }}" class="form-control mr-2" placeholder="Search customers...">
+    <button type="submit" class="btn btn-outline-primary">Search</button>
+    {% if q %}<a href="{% url 'customer_list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Analysis Account</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td><a href="{% url 'customer_accounts' customer.pk %}">{{ customer.name }}</a></td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td>
+                    {% for ca in customer.customer_accounts.all %}
+                    <span class="badge badge-info">{{ ca.account.code }}</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    <a href="{% url 'customer_accounts' customer.pk %}" class="btn btn-sm btn-info">Accounts</a>
+                    <a href="{% url 'customer_edit' customer.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'customer_delete' customer.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No customers. <a href="{% url 'customer_create' %}">Create one</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

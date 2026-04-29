@@ -1,0 +1,42 @@
+{% extends 'billing/base.html' %}
+{% block title %}SMS Templates{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>SMS Templates</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'sms_template_create' %}" class="btn btn-primary">Add Template</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Language</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for template in templates %}
+                <tr>
+                    <td>{{ template.get_template_type_display }}</td>
+                    <td>{{ template.title_ar }}</td>
+                    <td>{{ template.language }}</td>
+                    <td>{% if template.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td>
+                    <td><a href="{% url 'sms_template_edit' template.id %}" class="btn btn-sm btn-primary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No templates</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

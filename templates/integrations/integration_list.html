@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Integrations - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Integrations</h1>
+        <a href="{% url 'integration_register' %}" class="btn btn-primary">Register New Integration</a>
+    </div>
+</div>
+
+<div class="row">
+    {% for category, label in categories %}
+    <div class="col-md-12 mb-4">
+        <h5>{{ label }}</h5>
+        <div class="row">
+            {% for integration in integrations %}
+            {% if integration.category == category %}
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ integration.name }}</h6>
+                        <p class="small text-muted">{{ integration.description|truncatewords:10 }}</p>
+                        <a href="{% url 'integration_detail' pk=integration.pk %}" class="btn btn-sm btn-outline-primary">Configure</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+        <p class="text-muted">No integrations registered. <a href="{% url 'integration_register' %}">Register one</a></p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

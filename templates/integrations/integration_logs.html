@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs - {{ config.name }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>Logs: {{ config.name }}</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'integration_detail' pk=config.integration.pk %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Error</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at|date:"M d, H:i:s" }}</td>
+            <td>{{ log.action }}</td>
+            <td>
+                {% if log.is_success %}
+                <span class="badge bg-success">{{ log.status_code }}</span>
+                {% else %}
+                <span class="badge bg-danger">{{ log.status_code }}</span>
+                {% endif %}
+            </td>
+            <td>{{ log.duration_ms }}ms</td>
+            <td class="text-muted">{{ log.error_message|truncatechars:30 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-muted">No logs yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

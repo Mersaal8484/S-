@@ -1,0 +1,45 @@
+{% extends 'billing/base.html' %}
+{% block title %}SMS Provider{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Add Provider</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'sms_provider_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Provider Name *</label>
+                <input type="text" name="provider_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>API URL *</label>
+                <input type="url" name="api_url" class="form-control" required placeholder="https://api.example.com/send">
+            </div>
+            <div class="form-group">
+                <label>API Key *</label>
+                <input type="text" name="api_key" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Sender Name</label>
+                <input type="text" name="sender_name" class="form-control" placeholder="ELEC-CO">
+            </div>
+            <div class="form-group">
+                <label>Country Code</label>
+                <input type="text" name="country_code" class="form-control" value="966">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'sms_provider_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

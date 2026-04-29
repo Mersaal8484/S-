@@ -1,0 +1,104 @@
+{% extends 'billing/base.html' %}
+{% block title %}Payment Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Payment: {{ payment.payment_number }}</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'payment_list' %}" class="btn btn-secondary">Back to list</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Amount</h6>
+                <h4>{{ payment.amount|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Payment Method</h6>
+                <p>{{ payment.get_payment_method_display }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Payment Date</h6>
+                <p>{{ payment.payment_date|date:"Y-m-d" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Source</h6>
+                <p>{{ payment.get_source_type_display }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Customer</h5></div>
+            <div class="card-body">
+                {% if payment.customer %}
+                <p><strong>{{ payment.customer.full_name_ar }}</strong></p>
+                <p>{{ payment.customer.customer_number }}</p>
+                <p>{{ payment.customer.mobile_phone }}</p>
+                {% else %}
+                <p class="text-muted">Not linked</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Contract</h5></div>
+            <div class="card-body">
+                {% if payment.contract %}
+                <p><strong>{{ payment.contract.contract_number }}</strong></p>
+                <p>{{ payment.contract.type.name_ar }}</p>
+                {% else %}
+                <p class="text-muted">Not linked</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Invoice</h5></div>
+            <div class="card-body">
+                {% if payment.invoice %}
+                <p><strong>{{ payment.invoice.invoice_number }}</strong></p>
+                <p>{{ payment.invoice.total_amount|floatformat:2 }}</p>
+                {% else %}
+                <p class="text-muted">Not linked</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Reference</h5></div>
+            <div class="card-body">
+                <p><strong>Reference:</strong> {{ payment.reference_number|default:"-" }}</p>
+                <p><strong>Bank:</strong> {{ payment.bank_name|default:"-" }}</p>
+                <p><strong>Notes:</strong> {{ payment.notes|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

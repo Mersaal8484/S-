@@ -1,0 +1,19 @@
+{% extends 'billing/base.html' %}
+{% block title %}Delete Template{% endblock %}
+
+{% block content %}
+<h3>Delete Template</h3>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <p>Are you sure you want to delete <strong>{{ template.line_name_ar }}</strong>?</p>
+    </div>
+    <div class="card-footer">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a href="{% url 'system_settings' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

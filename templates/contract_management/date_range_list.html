@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Date Ranges - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Date Ranges</h1>
+        <a href="{% url 'contract_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for range in ranges %}
+            <tr>
+                <td>{{ range.name }}</td>
+                <td>{{ range.type.name }}</td>
+                <td>{{ range.date_start }}</td>
+                <td>{{ range.date_end }}</td>
+                <td>
+                    {% if range.active %}
+                    <span class="badge bg-success">Yes</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-muted">No date ranges found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

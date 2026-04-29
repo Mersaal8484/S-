@@ -1,0 +1,58 @@
+{% extends 'billing/base.html' %}
+{% block title %}SMS Messages{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>SMS Messages</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'sms_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Send SMS
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mobile</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sms in messages %}
+                <tr>
+                    <td>{{ sms.mobile_number }}</td>
+                    <td>{{ sms.message_content|truncatechars:50 }}</td>
+                    <td>
+                        <span class="badge badge-{% if sms.status == 'sent' %}success{% elif sms.status == 'failed' %}danger{% else %}warning{% endif %}">
+                            {{ sms.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ sms.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center">No messages</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if messages.has_other_pages %}
+        <nav><ul class="pagination">
+            {% if messages.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ messages.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ messages.number }}</span></li>
+            {% if messages.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ messages.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul></nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

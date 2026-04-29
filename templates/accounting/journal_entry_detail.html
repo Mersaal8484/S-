@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Journal Entry {{ je.id }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Journal Entry {{ je.id }}</h1>
+        <a href="{% url 'journal_entry_list' %}" class="btn btn-secondary">Back</a>
+        {% if not je.is_posted %}
+        <a href="{% url 'journal_entry_post' je.pk %}" class="btn btn-success">Post</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Date:</strong> {{ je.date }}</p>
+                <p><strong>Reference:</strong> {{ je.reference }}</p>
+                <p><strong>Description:</strong> {{ je.description }}</p>
+                <p><strong>Status:</strong> <span class="badge badge-{% if je.is_posted %}success{% else %}warning{% endif %}">{{ je.is_posted|yesno:"Posted,Draft" }}</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Lines</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th>Debit</th>
+            <th>Credit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in je.lines.all %}
+        <tr>
+            <td>{{ line.account.code }} - {{ line.account.name }}</td>
+            <td>{{ line.debit }}</td>
+            <td>{{ line.credit }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="font-weight-bold">
+            <td>Total</td>
+            <td>{{ je.get_total_debit }}</td>
+            <td>{{ je.get_total_credit }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Customer</label>
+                <select name="customer" class="form-control" required>
+                    <option value="">Select Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.pk }}">{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Due Date</label>
+                <input type="date" name="due_date" class="form-control" required>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Reference</label>
+                <input type="text" name="reference" class="form-control">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control">
+                    <option value="DRAFT">Draft</option>
+                    <option value="SENT">Sent</option>
+                    <option value="PAID">Paid</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Notes</label>
+        <textarea name="notes" class="form-control" rows="2"></textarea>
+    </div>
+    
+    <h4>Line Items</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in "01234"|make_list %}
+            <tr>
+                <td>
+                    <select name="product_{{ i }}" class="form-control" onchange="fillProduct(this, {{ i }})">
+                        <option value="">Select Product</option>
+                        {% for product in products %}
+                        <option value="{{ product.pk }}" data-price="{{ product.sale_price }}" data-name="{{ product.name }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="text" name="description_{{ i }}" class="form-control" placeholder="Description"></td>
+                <td><input type="number" step="0.01" name="quantity_{{ i }}" class="form-control" value="1" onchange="calcAmount({{ i }})"></td>
+                <td><input type="number" step="0.01" name="unit_price_{{ i }}" class="form-control" placeholder="0.00" onchange="calcAmount({{ i }})"></td>
+                <td><input type="number" step="0.01" name="amount_{{ i }}" class="form-control" readonly></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <script>
+    function fillProduct(select, idx) {
+        var option = select.options[select.selectedIndex];
+        var price = option.getAttribute('data-price') || 0;
+        var name = option.getAttribute('data-name') || '';
+        document.querySelector('input[name="unit_price_' + idx + '"]').value = price;
+        if (name && !document.querySelector('input[name="description_' + idx + '"]').value) {
+            document.querySelector('input[name="description_' + idx + '"]').value = name;
+        }
+        calcAmount(idx);
+    }
+    function calcAmount(idx) {
+        var qty = parseFloat(document.querySelector('input[name="quantity_' + idx + '"]').value) || 0;
+        var price = parseFloat(document.querySelector('input[name="unit_price_' + idx + '"]').value) || 0;
+        document.querySelector('input[name="amount_' + idx + '"]').value = (qty * price).toFixed(2);
+    }
+    </script>
+    
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{% endblock %}

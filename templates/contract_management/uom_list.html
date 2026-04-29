@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Units of Measure - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Units of Measure</h1>
+        <a href="{% url 'contract_list' %}" class="btn btn-secondary">Back</a>
+        <a href="{% url 'uom_create' %}" class="btn btn-primary">Add UoM</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Factor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for uom in uoms %}
+            <tr>
+                <td>{{ uom.code }}</td>
+                <td>{{ uom.name }}</td>
+                <td>{{ uom.category.name|default:"-" }}</td>
+                <td>{{ uom.factor }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-muted">No units of measure found. <a href="{% url 'uom_create' %}">Add one</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'billing/base.html' %}
+{% block title %}Meters{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Meters</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'meter_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Meter
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="form-inline mb-3">
+            <input type="text" name="q" class="form-control mr-2" placeholder="Search..." value="{{ request.GET.q }}">
+            <select name="status" class="form-control mr-2">
+                <option value="">All Status</option>
+                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                <option value="defective" {% if request.GET.status == 'defective' %}selected{% endif %}>Defective</option>
+                <option value="replaced" {% if request.GET.status == 'replaced' %}selected{% endif %}>Replaced</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Search</button>
+        </form>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Meter Number</th>
+                    <th>Contract</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for meter in meters %}
+                <tr>
+                    <td>{{ meter.meter_number }}</td>
+                    <td>{{ meter.contract.contract_number }}</td>
+                    <td>{{ meter.contract.customer.full_name_ar }}</td>
+                    <td>{{ meter.get_meter_type_display }}</td>
+                    <td>
+                        <span class="badge badge-{% if meter.meter_status == 'active' %}success{% else %}warning{% endif %}">
+                            {{ meter.get_meter_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No meters</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if meters.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if meters.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ meters.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ meters.number }} / {{ meters.paginator.num_pages }}</span></li>
+                {% if meters.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ meters.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

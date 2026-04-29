@@ -1,0 +1,38 @@
+{% extends 'billing/base.html' %}
+{% block title %}Send SMS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Send SMS</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'sms_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Customer *</label>
+                <select name="customer" class="form-control" required>
+                    <option value="">Select Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.customer_number }} - {{ customer.full_name_ar }} ({{ customer.mobile_phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message *</label>
+                <textarea name="message" class="form-control" rows="4" required placeholder="Type your message here..."></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Send</button>
+            <a href="{% url 'sms_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

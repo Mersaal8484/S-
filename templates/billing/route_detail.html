@@ -1,0 +1,105 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ route.route_name_ar }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>{{ route.route_name_ar }}</h3>
+        <p>{{ route.route_code }}</p>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'route_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Type</h6>
+                <p>{{ route.get_route_type_display }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Region</h6>
+                <p>{{ route.region }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Status</h6>
+                <p>{% if route.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Contracts</h6>
+                <p>{{ route.contracts.count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h5>Add Contracts to Route</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'route_add_contract' route.id %}">
+            {% csrf_token %}
+            <select name="contract" class="form-control mr-2" required>
+                <option value="">Select Contract</option>
+                {% for contract in available_contracts %}
+                <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="stop_order" class="form-control mr-2" placeholder="Stop Order" style="width: 100px">
+            <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Route Contracts ({{ route.contracts.count }})</h5>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Contract</th>
+                    <th>Customer</th>
+                    <th>Address</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rc in route_contracts %}
+                <tr>
+                    <td>{{ rc.stop_order }}</td>
+                    <td>{{ rc.contract.contract_number }}</td>
+                    <td>{{ rc.contract.customer.full_name_ar }}</td>
+                    <td>{{ rc.contract.customer.address|truncatechars:30 }}</td>
+                    <td>
+                        <form method="post" action="{% url 'route_remove_contract' route.id rc.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No contracts assigned</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

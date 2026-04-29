@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'integration_detail' pk=integration.pk %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Configuration Name</label>
+                <input type="text" name="name" class="form-control" value="{{ config.name|default:'' }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Environment</label>
+                <select name="environment" class="form-control">
+                    <option value="SANDBOX" {% if config.environment == 'SANDBOX' %}selected{% endif %}>Sandbox</option>
+                    <option value="LIVE" {% if config.environment == 'LIVE' %}selected{% endif %}>Live</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Authentication Type</label>
+        <select name="auth_type" class="form-control" id="authTypeSelect" onchange="showAuthFields()">
+            {% for value, label in auth_types %}
+            <option value="{{ value }}" {% if config.auth_type == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-check mb-3">
+        <input type="checkbox" name="is_default" class="form-check-input" id="is_default"
+               {% if config.is_default %}checked{% endif %}>
+        <label class="form-check-label" for="is_default">Set as Default Configuration</label>
+    </div>
+    
+    <hr>
+    <h5>Authentication Credentials</h5>
+    
+    <!-- API Key Fields -->
+    <div id="apiKeyFields" class="auth-fields">
+        <div class="form-group mb-3">
+            <label class="form-label">API Key</label>
+            <input type="text" name="api_key" class="form-control" 
+                   value="{{ config.credentials.api_key|default:'' }}">
+        </div>
+    </div>
+    
+    <!-- Basic Auth Fields -->
+    <div id="basicAuthFields" class="auth-fields" style="display:none">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control"
+                           value="{{ config.credentials.username|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control"
+                           value="{{ config.credentials.password|default:'' }}">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bearer Token Fields -->
+    <div id="bearerTokenFields" class="auth-fields" style="display:none">
+        <div class="form-group mb-3">
+            <label class="form-label">Bearer Token</label>
+            <input type="password" name="token" class="form-control"
+                   value="{{ config.credentials.token|default:'' }}">
+        </div>
+    </div>
+    
+    <!-- OAuth2 Fields -->
+    <div id="oauth2Fields" class="auth-fields" style="display:none">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Client ID</label>
+                    <input type="text" name="client_id" class="form-control"
+                           value="{{ config.credentials.client_id|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Client Secret</label>
+                    <input type="password" name="client_secret" class="form-control"
+                           value="{{ config.credentials.client_secret|default:'' }}">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Access Token</label>
+                    <input type="password" name="access_token" class="form-control"
+                           value="{{ config.credentials.access_token|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Refresh Token</label>
+                    <input type="password" name="refresh_token" class="form-control"
+                           value="{{ config.credentials.refresh_token|default:'' }}">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Fields -->
+    <div id="customFields" class="auth-fields" style="display:none">
+        <div class="form-group mb-3">
+            <label class="form-label">Custom Configuration (JSON)</label>
+            <textarea name="custom_config" class="form-control" rows="6">{% if config.credentials %}{{ config.credentials|safe }}{% endif %}</textarea>
+        </div>
+    </div>
+    
+    <hr>
+    <h5>Additional Configuration</h5>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Webhook URL</label>
+                <input type="url" name="webhook_url" class="form-control"
+                       value="{{ config.config.webhook_url|default:'' }}">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Webhook Secret</label>
+                <input type="text" name="webhook_secret" class="form-control"
+                       value="{{ config.config.webhook_secret|default:'' }}">
+            </div>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Save Configuration</button>
+</form>
+
+<script>
+function showAuthFields() {
+    var authType = document.getElementById('authTypeSelect').value;
+    var fields = document.getElementsByClassName('auth-fields');
+    for (var i = 0; i < fields.length; i++) {
+        fields[i].style.display = 'none';
+    }
+    
+    if (authType === 'API_KEY') {
+        document.getElementById('apiKeyFields').style.display = 'block';
+    } else if (authType === 'BASIC_AUTH') {
+        document.getElementById('basicAuthFields').style.display = 'block';
+    } else if (authType === 'BEARER_TOKEN') {
+        document.getElementById('bearerTokenFields').style.display = 'block';
+    } else if (authType === 'OAUTH2') {
+        document.getElementById('oauth2Fields').style.display = 'block';
+    } else if (authType === 'CUSTOM') {
+        document.getElementById('customFields').style.display = 'block';
+    }
+}
+
+// Initialize on page load
+showAuthFields();
+</script>
+{% endblock %}

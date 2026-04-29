@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Providers - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Channel Providers</h1>
+        <a href="{% url 'notification_list' %}" class="btn btn-secondary">Notifications</a>
+        <a href="{% url 'provider_create' %}" class="btn btn-primary">Add Provider</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Channel</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in providers %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td><span class="badge badge-info">{{ p.get_channel_display }}</span></td>
+                <td>{{ p.provider_type }}</td>
+                <td>{% if p.is_default %}<span class="badge badge-success">Yes</span>{% endif %}</td>
+                <td>{% if p.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No providers</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

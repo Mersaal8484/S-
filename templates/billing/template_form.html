@@ -1,0 +1,57 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h3>{{ title }}</h3>
+
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Subscription Type</label>
+                <select name="type" class="form-control" required>
+                    {% for st in subscription_types %}
+                    <option value="{{ st.id }}" {% if template.type_id == st.id or selected_type == st.id %}selected{% endif %}>{{ st.name_ar }} - {{ st.name_en }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Line Order</label>
+                <input type="number" name="line_order" class="form-control" value="{{ template.line_order|default:0 }}">
+            </div>
+            <div class="form-group">
+                <label>Name (Arabic)</label>
+                <input type="text" name="line_name_ar" class="form-control" value="{{ template.line_name_ar|default:'' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Name (English)</label>
+                <input type="text" name="line_name_en" class="form-control" value="{{ template.line_name_en|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label>Calculation Type</label>
+                <select name="calculation_type" class="form-control" required>
+                    <option value="fixed" {% if template.calculation_type == 'fixed' %}selected{% endif %}>Fixed Amount</option>
+                    <option value="percentage" {% if template.calculation_type == 'percentage' %}selected{% endif %}>Percentage</option>
+                    <option value="tiered_kwh" {% if template.calculation_type == 'tiered_kwh' %}selected{% endif %}>Tiered kWh</option>
+                    <option value="single_rate_kwh" {% if template.calculation_type == 'single_rate_kwh' %}selected{% endif %}>Single Rate kWh</option>
+                    <option value="demand_charge" {% if template.calculation_type == 'demand_charge' %}selected{% endif %}>Demand Charge</option>
+                    <option value="minimum_charge" {% if template.calculation_type == 'minimum_charge' %}selected{% endif %}>Minimum Charge</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fixed Amount</label>
+                <input type="number" name="fixed_amount" class="form-control" value="{{ template.fixed_amount|stringformat:'f' }}" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Percentage Rate (%)</label>
+                <input type="number" name="percentage_rate" class="form-control" value="{{ template.percentage_rate|stringformat:'f' }}" step="0.01">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'system_settings' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

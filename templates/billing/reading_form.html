@@ -1,0 +1,59 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><h5>{{ title }}</h5></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Contract *</label>
+                <select name="contract" class="form-control" required onchange="updateMeterInfo()">
+                    <option value="">Select Contract</option>
+                    {% for contract in contracts %}
+                    <option value="{{ contract.id }}" data-meter="{{ contract.meters.first.meter_number }}" data-last="{{ contract.meters.first.last_approved_reading|default:'0' }}">
+                        {{ contract.contract_number }} - {{ contract.customer.full_name_ar }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="alert alert-info">
+                <p><strong>Meter:</strong> <span id="meterNumber">-</span></p>
+                <p><strong>Last Reading:</strong> <span id="lastReading">0</span></p>
+            </div>
+            
+            <div class="form-group">
+                <label>Current Reading *</label>
+                <input type="number" name="current_reading" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Reading Date</label>
+                <input type="date" name="reading_date" class="form-control" value="{{ today }}" required>
+            </div>
+            <div class="form-group">
+                <label>Reader Name</label>
+                <input type="text" name="reader_name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a href="{% url 'reading_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+
+<script>
+function updateMeterInfo() {
+    var select = document.querySelector('[name="contract"]');
+    var option = select.options[select.selectedIndex];
+    document.getElementById('meterNumber').textContent = option.getAttribute('data-meter') || '-';
+    document.getElementById('lastReading').textContent = option.getAttribute('data-last') || '0';
+}
+</script>
+{% endblock %}

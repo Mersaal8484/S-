@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'template_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Template Name</label>
+                <input type="text" name="name" class="form-control" value="{{ template.name|default:'' }}" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Channel</label>
+                <select name="channel" class="form-control">
+                    <option value="SMS" {% if template.channel == 'SMS' %}selected{% endif %}>SMS</option>
+                    <option value="WHATSAPP" {% if template.channel == 'WHATSAPP' %}selected{% endif %}>WhatsApp</option>
+                    <option value="EMAIL" {% if template.channel == 'EMAIL' %}selected{% endif %}>Email</option>
+                    <option value="PUSH" {% if template.channel == 'PUSH' %}selected{% endif %}>Push Notification</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Subject (for Email/Push)</label>
+        <input type="text" name="subject" class="form-control" value="{{ template.subject|default:'' }}">
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Message Body</label>
+        <textarea name="body" class="form-control" rows="6" required>{{ template.body|default:'' }}</textarea>
+        <small class="text-muted">Use {'{variable}'} syntax for dynamic fields. Example: Hello {'{name}'} your invoice {'{invoice_no}'} is {'{amount}'}</small>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Save Template</button>
+</form>
+{% endblock %}

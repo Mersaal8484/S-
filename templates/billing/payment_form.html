@@ -1,0 +1,87 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><h5>{{ title }}</h5></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Payment Type</label>
+                <select name="payment_type" class="form-control" id="paymentType" onchange="toggleFields()">
+                    <option value="invoice">By Invoice</option>
+                    <option value="contract">By Contract</option>
+                    <option value="customer">By Customer</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="invoiceField">
+                <label>Invoice</label>
+                <select name="invoice" class="form-control">
+                    <option value="">Select Invoice</option>
+                    {% for invoice in invoices %}
+                    <option value="{{ invoice.id }}">{{ invoice.invoice_number }} - {{ invoice.contract.customer.full_name_ar }} ({{ invoice.remaining_amount|floatformat:2 }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" id="contractField" style="display:none">
+                <label>Contract</label>
+                <select name="contract" class="form-control">
+                    <option value="">Select Contract</option>
+                    {% for contract in contracts %}
+                    <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" id="customerField" style="display:none">
+                <label>Customer</label>
+                <select name="customer" class="form-control">
+                    <option value="">Select Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.customer_number }} - {{ customer.full_name_ar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" name="amount" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select name="payment_method" class="form-control">
+                    <option value="cash">Cash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="card">Card</option>
+                    <option value="online">Online</option>
+                    <option value="cheque">Cheque</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reference Number</label>
+                <input type="text" name="reference_number" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'payment_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+
+<script>
+function toggleFields() {
+    var type = document.getElementById('paymentType').value;
+    document.getElementById('invoiceField').style.display = type === 'invoice' ? 'block' : 'none';
+    document.getElementById('contractField').style.display = type === 'contract' ? 'block' : 'none';
+    document.getElementById('customerField').style.display = type === 'customer' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

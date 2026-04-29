@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ integration.name }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>{{ integration.name }}</h1>
+        <p class="text-muted">{{ integration.description }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <span class="badge bg-{% if integration.is_active %}success{% else %}secondary{% endif %}">
+            {{ integration.get_category_display }}
+        </span>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h3>Configurations</h3>
+        <a href="{% url 'integration_config_create' integration_pk=integration.pk %}" class="btn btn-primary">Add Configuration</a>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Auth Type</th>
+            <th>Environment</th>
+            <th>Default</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for config in configs %}
+        <tr>
+            <td>{{ config.name }}</td>
+            <td>{{ config.get_auth_type_display }}</td>
+            <td>{{ config.get_environment_display }}</td>
+            <td>{% if config.is_default %}<span class="badge bg-success">Default</span>{% endif %}</td>
+            <td>{{ config.created_at|date:"M d, Y" }}</td>
+            <td>
+                <a href="{% url 'integration_config_edit' pk=config.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                <a href="{% url 'integration_logs' config_pk=config.pk %}" class="btn btn-sm btn-info">Logs</a>
+                <a href="{% url 'integration_config_delete' pk=config.pk %}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Delete this configuration?')">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-muted">No configurations. Add one to start using this integration.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if integration.documentation_url %}
+<div class="mt-4">
+    <a href="{{ integration.documentation_url }}" target="_blank" class="btn btn-outline-secondary">View Documentation</a>
+</div>
+{% endif %}
+{% endblock %}

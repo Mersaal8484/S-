@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoices - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Invoices (AR)</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+{% for invoice in invoices %}
+            <tr>
+                <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.id }}</a></td>
+                <td>{{ invoice.customer.name }}</td>
+                <td>{{ invoice.date }}</td>
+                <td>{{ invoice.due_date }}</td>
+                <td><span class="badge badge-{% if invoice.status == 'PAID' %}success{% elif invoice.status == 'CANCELLED' %}secondary{% else %}warning{% endif %}">{{ invoice.get_status_display }}</span></td>
+                <td>
+                    <a href="{% url 'invoice_detail' invoice.pk %}" class="btn btn-sm btn-info">View</a>
+                    <a href="{% url 'invoice_edit' invoice.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No invoices</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ customer.full_name_ar }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Account: {{ customer.full_name_ar }}</h3>
+        <p>{{ customer.customer_number }}</p>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'ledger_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Current Balance</h6>
+                <h4>{{ customer.current_balance|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Total Debit</h6>
+                <h4>{{ total_debit|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Total Credit</h6>
+                <h4>{{ total_credit|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Balance</h6>
+                <h4>{{ customer.current_balance|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Reference</th>
+                    <th class="text-right">Debit</th>
+                    <th class="text-right">Credit</th>
+                    <th class="text-right">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in ledger %}
+                <tr>
+                    <td>{{ entry.transaction_date|date:"Y-m-d H:i" }}</td>
+                    <td>{{ entry.get_transaction_type_display }}</td>
+                    <td>{{ entry.notes }}</td>
+                    <td class="text-right">{{ entry.debit|floatformat:2 }}</td>
+                    <td class="text-right">{{ entry.credit|floatformat:2 }}</td>
+                    <td class="text-right">{{ entry.balance_after|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No transactions</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

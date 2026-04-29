@@ -1,0 +1,106 @@
+{% extends 'billing/base.html' %}
+{% block title %}المشترك - {{ customer.customer_number }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h3>{{ customer.full_name_ar }}</h3>
+        <p class="text-muted">{{ customer.customer_number }}</p>
+    </div>
+    <div class="col-md-4 text-left">
+        <a href="{% url 'customer_update' customer.id %}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Mobile</h6>
+                <p class="mb-0">{{ customer.mobile_phone }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Email</h6>
+                <p class="mb-0">{{ customer.email|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">Balance</h6>
+                <p class="mb-0 {% if customer.current_balance > 0 %}text-danger{% elif customer.current_balance < 0 %}text-success{% endif %}">
+                    {{ customer.current_balance|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Contracts</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contract in contracts %}
+                        <tr>
+                            <td><a href="{% url 'contract_detail' contract.id %}">{{ contract.contract_number }}</a></td>
+                            <td>{{ contract.type.name_ar }}</td>
+                            <td><span class="badge badge-{% if contract.contract_status == 'active' %}success{% else %}warning{% endif %}">{{ contract.get_contract_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No contracts</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Invoices</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td><a href="{% url 'invoice_detail' invoice.id %}">{{ invoice.invoice_number }}</a></td>
+                            <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td><span class="badge badge-{% if invoice.invoice_status == 'paid' %}success{% else %}warning{% endif %}">{{ invoice.get_invoice_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No invoices</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

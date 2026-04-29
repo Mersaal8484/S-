@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Trial Balance - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Trial Balance</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+    </div>
+</div>
+
+<form method="get" class="form-inline mb-4">
+    <div class="form-group mr-2">
+        <label>Start Date:</label>
+        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control ml-2">
+    </div>
+    <div class="form-group mr-2">
+        <label>End Date:</label>
+        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control ml-2">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Account</th>
+                <th>Type</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.account.code }} - {{ item.account.name }}</td>
+                <td>{{ item.account.get_account_type_display }}</td>
+                <td class="text-right">{% if item.balance > 0 %}{{ item.balance }}{% endif %}</td>
+                <td class="text-right">{% if item.balance < 0 %}{{ item.balance|abs }}{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No data</td></tr>
+            {% endfor %}
+            <tr class="font-weight-bold">
+                <td colspan="2" class="text-right">Totals:</td>
+                <td class="text-right">{{ total_debit }}</td>
+                <td class="text-right">{{ total_credit }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

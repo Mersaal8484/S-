@@ -1,0 +1,54 @@
+{% extends 'billing/base.html' %}
+{% block title %}Routes{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Routes</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'route_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Route
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Region</th>
+                    <th>Status</th>
+                    <th>Contracts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for route in routes %}
+                <tr>
+                    <td>{{ route.route_code }}</td>
+                    <td><a href="{% url 'route_detail' route.id %}">{{ route.route_name_ar }}</a></td>
+                    <td>{{ route.get_route_type_display }}</td>
+                    <td>{{ route.region }}</td>
+                    <td>
+                        {% if route.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ route.contracts.count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No routes</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

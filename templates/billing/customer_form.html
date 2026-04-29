@@ -1,0 +1,35 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>{{ title }}</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'customer_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-right"></i>Back to list
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

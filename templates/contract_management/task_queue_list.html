@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Task Queue - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Task Queue</h1>
+        <a href="{% url 'task_queue_create' %}" class="btn btn-primary">Create Task</a>
+        <a href="{% url 'process_recurring_invoices' %}" class="btn btn-success">Process Recurring Invoices</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Retries</th>
+                <th>Scheduled</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.name }}</td>
+                <td>{{ task.task_type }}</td>
+                <td>
+                    {% if task.status == 'pending' %}<span class="badge bg-secondary">Pending</span>
+                    {% elif task.status == 'processing' %}<span class="badge bg-primary">Processing</span>
+                    {% elif task.status == 'completed' %}<span class="badge bg-success">Completed</span>
+                    {% elif task.status == 'failed' %}<span class="badge bg-danger">Failed</span>
+                    {% endif %}
+                </td>
+                <td>{{ task.priority }}</td>
+                <td>{{ task.retry_count }}/{{ task.max_retries }}</td>
+                <td>{{ task.scheduled_at|date:"M d, H:i" }}</td>
+                <td>{{ task.created_at|date:"M d, H:i" }}</td>
+                <td>
+                    {% if task.status == 'completed' %}
+                    <a href="#" class="btn btn-sm btn-info">View Result</a>
+                    {% elif task.status == 'failed' %}
+                    <a href="#" class="btn btn-sm btn-warning">Retry</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-muted">No tasks in queue. <a href="{% url 'task_queue_create' %}">Create one</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

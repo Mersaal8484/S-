@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ title }}</h1>
+        <a href="{% url 'provider_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Provider Name</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Channel</label>
+                <select name="channel" class="form-control" id="channelSelect" onchange="showConfig()">
+                    <option value="SMS">SMS</option>
+                    <option value="WHATSAPP">WhatsApp</option>
+                    <option value="EMAIL">Email</option>
+                    <option value="PUSH">Push Notification</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Provider Type</label>
+        <select name="provider_type" class="form-control" id="providerTypeSelect" onchange="showConfig()">
+            <option value="MOCK">Mock (Testing)</option>
+            <option value="TWILIO">Twilio</option>
+            <option value="WHATSAPP_API">WhatsApp API</option>
+            <option value="FCM">Firebase Cloud Messaging</option>
+            <option value="SMTP">SMTP</option>
+        </select>
+    </div>
+    
+    <div id="twilioConfig" style="display:none">
+        <h5>Twilio Configuration</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label">Account SID</label>
+                    <input type="text" name="account_sid" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label">Auth Token</label>
+                    <input type="password" name="auth_token" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label class="form-label">From Number</label>
+                    <input type="text" name="from_number" class="form-control" placeholder="+1234567890">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="whatsappConfig" style="display:none">
+        <h5>WhatsApp Configuration</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Phone Number ID</label>
+                    <input type="text" name="phone_number_id" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Access Token</label>
+                    <input type="password" name="access_token" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="fcmConfig" style="display:none">
+        <h5>Firebase Configuration</h5>
+        <div class="form-group mb-3">
+            <label class="form-label">FCM Credentials (JSON)</label>
+            <textarea name="fcm_credentials" class="form-control" rows="4"></textarea>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <div class="form-check">
+            <input type="checkbox" name="is_default" class="form-check-input" id="defaultCheck">
+            <label class="form-check-label" for="defaultCheck">Set as default provider</label>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Save Provider</button>
+</form>
+
+<script>
+function showConfig() {
+    var type = document.getElementById('providerTypeSelect').value;
+    document.getElementById('twilioConfig').style.display = (type === 'TWILIO') ? 'block' : 'none';
+    document.getElementById('whatsappConfig').style.display = (type === 'WHATSAPP_API') ? 'block' : 'none';
+    document.getElementById('fcmConfig').style.display = (type === 'FCM') ? 'block' : 'none';
+}
+</script>
+{% endblock %}

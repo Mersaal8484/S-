@@ -1,0 +1,180 @@
+{% extends 'billing/base.html' %}
+{% block title %}الرئيسية - نظام الكهرباء{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="mb-4">لوحة التحكم</h3>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">المشتركين</h6>
+                        <h2 class="mb-0">{{ customer_count }}</h2>
+                    </div>
+                    <i class="bi bi-people stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">العقود النشطة</h6>
+                        <h2 class="mb-0">{{ contract_count }}</h2>
+                    </div>
+                    <i class="bi bi-file-earmark-text stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">الفواتير</h6>
+                        <h2 class="mb-0">{{ invoice_count }}</h2>
+                    </div>
+                    <i class="bi bi-receipt stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">المدفوعات</h6>
+                        <h2 class="mb-0">{{ payment_count }}</h2>
+                    </div>
+                    <i class="bi bi-cash-stack stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">أخر الفواتير</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>رقم الفاتورة</th>
+                            <th>العميل</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in recent_invoices %}
+                        <tr>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.contract.customer.full_name_ar }}</td>
+                            <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                            <td>
+                                <span class="badge badge-{% if invoice.invoice_status == 'paid' %}success{% elif invoice.invoice_status == 'overdue' %}danger{% else %}warning{% endif %}">
+                                    {{ invoice.get_invoice_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">لا توجد فواتير</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">أخر المدفوعات</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>رقم الدفعة</th>
+                            <th>العميل</th>
+                            <th>المبلغ</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in recent_payments %}
+                        <tr>
+                            <td>{{ payment.payment_number }}</td>
+                            <td>{{ payment.customer.full_name_ar }}</td>
+                            <td>{{ payment.amount|floatformat:2 }}</td>
+                            <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">لا توجد مدفوعات</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">القراءات المعلقة</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>العداد</th>
+                            <th>العميل</th>
+                            <th>القراءة السابقة</th>
+                            <th>القراءة المقدمة</th>
+                            <th>الاستهلاك</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reading in pending_readings %}
+                        <tr>
+                            <td>{{ reading.meter.meter_number }}</td>
+                            <td>{{ reading.customer.full_name_ar }}</td>
+                            <td>{{ reading.previous_reading|floatformat:2 }}</td>
+                            <td>{{ reading.submitted_reading|floatformat:2 }}</td>
+                            <td>{{ reading.consumption|floatformat:2 }}</td>
+                            <td>
+                                <span class="badge badge-warning">{{ reading.get_approval_status_display }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">لا توجد قراءات معلقة</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Balance Sheet - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Balance Sheet</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>Assets</h5>
+            </div>
+            <table class="table">
+                {% for item in assets %}
+                <tr>
+                    <td>{{ item.account.code }} - {{ item.account.name }}</td>
+                    <td class="text-right">{{ item.balance }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-weight-bold">
+                    <td>Total Assets</td>
+                    <td class="text-right">{{ total_assets }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5>Liabilities</h5>
+            </div>
+            <table class="table">
+                {% for item in liabilities %}
+                <tr>
+                    <td>{{ item.account.code }} - {{ item.account.name }}</td>
+                    <td class="text-right">{{ item.balance }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-weight-bold">
+                    <td>Total Liabilities</td>
+                    <td class="text-right">{{ total_liabilities }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Equity</h5>
+            </div>
+            <table class="table">
+                {% for item in equity %}
+                <tr>
+                    <td>{{ item.account.code }} - {{ item.account.name }}</td>
+                    <td class="text-right">{{ item.balance }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>Retained Earnings</td>
+                    <td class="text-right">{{ retained_earnings }}</td>
+                </tr>
+                <tr class="font-weight-bold">
+                    <td>Total Equity</td>
+                    <td class="text-right">{{ total_equity }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

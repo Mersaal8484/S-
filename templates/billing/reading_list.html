@@ -1,0 +1,68 @@
+{% extends 'billing/base.html' %}
+{% block title %}Readings{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h3>Meter Readings</h3>
+    </div>
+    <div class="col-md-6 text-left">
+        <a href="{% url 'reading_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Submit Reading
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Meter</th>
+                    <th>Customer</th>
+                    <th>Previous</th>
+                    <th>Current</th>
+                    <th>Consumption</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reading in readings %}
+                <tr>
+                    <td>{{ reading.meter.meter_number }}</td>
+                    <td>{{ reading.customer.full_name_ar }}</td>
+                    <td>{{ reading.previous_reading|floatformat:2 }}</td>
+                    <td>{{ reading.submitted_reading|floatformat:2 }}</td>
+                    <td>{{ reading.consumption|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge badge-{% if reading.approval_status == 'approved' %}success{% elif reading.approval_status == 'rejected' %}danger{% else %}warning{% endif %}">
+                            {{ reading.get_approval_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if reading.approval_status == 'pending' %}
+                        <a href="{% url 'reading_approve' reading.id %}" class="btn btn-sm btn-primary">Review</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No readings</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if readings.has_other_pages %}
+        <nav><ul class="pagination">
+            {% if readings.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ readings.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ readings.number }}</span></li>
+            {% if readings.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ readings.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul></nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

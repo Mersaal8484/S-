@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.name }} - Accounts - elem{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>{{ customer.name }} - Receivables</h1>
+        <a href="{% url 'customer_list' %}" class="btn btn-secondary">Back to Customers</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Linked Accounts</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Account Name</th>
+                            <th>Type</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ca in customer_accounts %}
+                        <tr>
+                            <td>{{ ca.account.code }}</td>
+                            <td>{{ ca.account.name }}</td>
+                            <td>{{ ca.account.get_account_type_display }}</td>
+                            <td>{{ ca.account.get_balance }}</td>
+                            <td>
+                                <a href="{% url 'unlink_customer_account' customer.pk ca.account.pk %}" class="btn btn-sm btn-danger">Unlink</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5">No accounts linked</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Add Account</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'add_customer_account' customer.pk %}">
+                    {% csrf_token %}
+                    <select name="account" class="form-control mb-2">
+                        <option value="">Select Account</option>
+                        {% for account in all_accounts %}
+                        <option value="{{ account.pk }}">{{ account.code }} - {{ account.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
