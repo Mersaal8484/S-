@@ -29,6 +29,7 @@ urlpatterns = [
     path('readings/<int:pk>/approve/', views.reading_approve, name='reading_approve'),
     
     path('invoices/', views.invoice_list, name='invoice_list'),
+    path('invoices/create/', views.invoice_create, name='invoice_create'),
     path('invoices/<int:pk>/', views.invoice_detail, name='invoice_detail'),
     path('invoices/<int:pk>/print/', views.invoice_print, name='invoice_print'),
     path('invoices/<int:pk>/regenerate/', views.invoice_regenerate, name='invoice_regenerate'),

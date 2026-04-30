@@ -44,17 +44,23 @@
             </tr>
             {% endfor %}
             <tr class="subtotal">
-                <td colspan="2">Subtotal</td>
+                <td colspan="2">Current Invoice Total</td>
                 <td class="text-right">{{ invoice.total_amount|floatformat:2 }}</td>
             </tr>
+            {% if invoice.previous_indebtedness > 0 %}
+            <tr>
+                <td colspan="2">Previous Indebtedness</td>
+                <td class="text-right">{{ invoice.previous_indebtedness|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
         </tbody>
     </table>
     
-    {% if previous_balance > 0 %}
+    {% if invoice.previous_indebtedness > 0 %}
     <table class="invoice-table">
         <tr>
-            <td>Previous Balance</td>
-            <td class="text-right">{{ previous_balance|floatformat:2 }}</td>
+            <td><strong>Final Amount (with previous debt):</strong></td>
+            <td class="text-right"><strong>{{ invoice.final_amount|floatformat:2 }}</strong></td>
         </tr>
     </table>
     {% endif %}
@@ -62,12 +68,18 @@
     <div class="total-section">
         <div class="total-row">
             <span>Total Due:</span>
-            <span class="total-amount">{{ total_due|floatformat:2 }}</span>
+            <span class="total-amount">{{ invoice.final_amount|floatformat:2 }}</span>
         </div>
-        {% if invoice.invoice_status != 'paid' %}
+        {% if invoice.paid_amount > 0 %}
+        <div class="paid-row">
+            <span>Paid:</span>
+            <span>{{ invoice.paid_amount|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+        {% if invoice.remaining_with_debt > 0 %}
         <div class="remaining">
-            <span>Remaining:</span>
-            <span>{{ invoice.remaining_amount|floatformat:2 }}</span>
+            <span>Remaining (with Debt):</span>
+            <span>{{ invoice.remaining_with_debt|floatformat:2 }}</span>
         </div>
         {% endif %}
     </div>
@@ -105,7 +117,8 @@ function printInvoice(size) {
 
 .total-section { margin-top: 15px; padding-top: 10px; border-top: 2px solid #333; }
 .total-row { display: flex; justify-content: space-between; font-size: 14pt; font-weight: bold; }
-.remaining { display: flex; justify-content: space-between; color: #d00; margin-top: 5px; }
+.paid-row { display: flex; justify-content: space-between; color: #28a745; font-weight: bold; margin-top: 5px; }
+.remaining { display: flex; justify-content: space-between; color: #d00; margin-top: 5px; font-weight: bold; }
 
 @media print {
     @page { size: auto; margin: 5mm; }

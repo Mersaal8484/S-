@@ -220,7 +220,7 @@ class MeterReadingSubmission(models.Model):
     submitted_reading = models.DecimalField(max_digits=12, decimal_places=2)
     reading_date = models.DateField(null=True, blank=True)
     reading_source = models.CharField(max_length=20, choices=ReadingSource.choices, default=ReadingSource.MANUAL_ENTRY)
-    reader_name = models.CharField(max_length=100, blank=True)
+    reader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='submitted_readings')
     reader_notes = models.TextField(blank=True)
     approval_status = models.CharField(max_length=20, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -264,7 +264,7 @@ class MeterReading(models.Model):
     previous_reading = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     current_reading = models.DecimalField(max_digits=12, decimal_places=2)
     reading_source = models.CharField(max_length=20, choices=ReadingSource.choices, default=ReadingSource.MANUAL)
-    reader_name = models.CharField(max_length=100, blank=True)
+    reader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='meter_readings')
     notes = models.TextField(blank=True)
     is_billed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -298,13 +298,16 @@ class Invoice(models.Model):
 
     invoice_number = models.CharField(max_length=50, unique=True)
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='invoices')
+    subscription_type = models.ForeignKey('SubscriptionType', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
     reading = models.ForeignKey(MeterReading, on_delete=models.SET_NULL, null=True, blank=True)
     issue_date = models.DateField()
     due_date = models.DateField()
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    previous_indebtedness = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     invoice_status = models.CharField(max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.ISSUED)
     penalty_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    period = models.ForeignKey(BillingPeriod, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -317,6 +320,14 @@ class Invoice(models.Model):
     @property
     def remaining_amount(self):
         return self.total_amount - self.paid_amount
+
+    @property
+    def final_amount(self):
+        return self.total_amount + self.previous_indebtedness
+
+    @property
+    def remaining_with_debt(self):
+        return self.final_amount - self.paid_amount
 
 
 class InvoiceLine(models.Model):
@@ -371,6 +382,7 @@ class Payment(models.Model):
     bank_name = models.CharField(max_length=100, blank=True, default='')
     notes = models.TextField(blank=True, default='')
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    period = models.ForeignKey(BillingPeriod, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
 
     class Meta:
         ordering = ['-payment_date']

@@ -33,8 +33,13 @@
                 <input type="date" name="reading_date" class="form-control" value="{{ today }}" required>
             </div>
             <div class="form-group">
-                <label>Reader Name</label>
-                <input type="text" name="reader_name" class="form-control">
+                <label>Reader</label>
+                <select name="reader" class="form-control">
+                    <option value="">Select Reader</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group">
                 <label>Notes</label>

@@ -2,191 +2,547 @@
 {% block title %}Invoice Details{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h3>Invoice: {{ invoice.invoice_number }}</h3>
-    </div>
-    <div class="col-md-4 text-left">
-        <a href="{% url 'invoice_print' invoice.id %}" class="btn btn-success" target="_blank">
-            <i class="bi bi-printer"></i> Print
-        </a>
-        <a href="{% url 'invoice_regenerate' invoice.id %}" class="btn btn-warning">
-            <i class="bi bi-arrow-repeat"></i> Regenerate
-        </a>
-        <a href="{% url 'payment_create' %}?invoice={{ invoice.id }}" class="btn btn-primary">
-            Record Payment
-        </a>
+<style>
+    .invoice-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+    .invoice-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    .invoice-header .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+    .stat-card {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    .stat-card .card-body {
+        padding: 1.5rem;
+    }
+    .stat-card .stat-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+    }
+    .stat-card .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+    .stat-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-danger { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .stat-dark { background: linear-gradient(135deg, #434343 0%, #000000 100%); }
+    .info-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        transition: box-shadow 0.2s ease;
+    }
+    .info-card:hover {
+        box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    }
+    .info-card .card-header {
+        background: transparent;
+        border-bottom: 2px solid #f0f2f5;
+        padding: 1.25rem 1.5rem;
+    }
+    .info-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f7fa;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    .info-item .label {
+        color: #718096;
+        font-size: 0.875rem;
+    }
+    .info-item .value {
+        color: #2d3748;
+        font-weight: 600;
+        text-align: right;
+    }
+    .section-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .section-card .card-header {
+        background: #f8fafc;
+        border-bottom: 2px solid #f0f2f5;
+        padding: 1.25rem 1.5rem;
+    }
+    .section-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .section-card .table {
+        margin-bottom: 0;
+    }
+    .section-card .table thead th {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        color: #4a5568;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border: none;
+    }
+    .section-card .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #2d3748;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    .section-card .table tbody tr:hover {
+        background: #f8fafc;
+    }
+    .section-card .table tfoot td {
+        padding: 1rem;
+        background: #fafbfc;
+        font-weight: 600;
+        border-top: 2px solid #e2e8f0;
+    }
+    .progress-container {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .progress {
+        border-radius: 10px;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+    .progress-bar {
+        border-radius: 10px;
+    }
+    .btn-action {
+        border-radius: 10px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-print { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #1a1a2e; }
+    .btn-regen { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+    .btn-pay { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .btn-back { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3) !important; }
+    .btn-back:hover { background: rgba(255,255,255,0.3); }
+    .payment-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-radius: 10px;
+        background: #f8fafc;
+        margin-bottom: 0.75rem;
+        transition: background 0.2s ease;
+    }
+    .payment-item:hover {
+        background: #edf2f7;
+    }
+    .payment-item:last-child {
+        margin-bottom: 0;
+    }
+    .payment-amount {
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 1.1rem;
+    }
+    .payment-date {
+        color: #718096;
+        font-size: 0.8rem;
+    }
+    .payment-method-badge {
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+    }
+    .notes-card {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(252, 182, 159, 0.3);
+    }
+    .notes-card .card-body {
+        padding: 1.25rem 1.5rem;
+        color: #2d3748;
+    }
+    .divider {
+        border: none;
+        border-top: 1px dashed #e2e8f0;
+        margin: 1.5rem 0;
+    }
+</style>
+
+<div class="invoice-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h3><i class="bi bi-receipt mr-2"></i>Invoice: {{ invoice.invoice_number }}</h3>
+            <p class="mb-0 mt-1" style="opacity: 0.85;">
+                <i class="bi bi-person mr-1"></i> {{ invoice.contract.customer.full_name_ar }}
+                <span class="mx-2">|</span>
+                <i class="bi bi-file-text mr-1"></i> Contract: {{ invoice.contract.contract_number }}
+            </p>
+        </div>
+        <div class="col-md-4 text-md-left mt-3 mt-md-0">
+            <span class="badge {% if invoice.invoice_status == 'paid' %}bg-success{% elif invoice.invoice_status == 'overdue' %}bg-danger{% else %}bg-warning{% endif %} mr-2" style="background: {% if invoice.invoice_status == 'paid' %}rgba(67,233,123,0.3){% elif invoice.invoice_status == 'overdue' %}rgba(245,87,108,0.3){% else %}rgba(255,255,255,0.2){% endif %}; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;">
+                {{ invoice.get_invoice_status_display }}
+            </span>
+            <a href="{% url 'invoice_print' invoice.id %}" class="btn btn-action btn-print" target="_blank">
+                <i class="bi bi-printer"></i> Print
+            </a>
+            <a href="{% url 'invoice_regenerate' invoice.id %}" class="btn btn-action btn-regen">
+                <i class="bi bi-arrow-repeat"></i> Regenerate
+            </a>
+            <a href="{% url 'payment_create' %}?invoice={{ invoice.id }}" class="btn btn-action btn-pay">
+                <i class="bi bi-credit-card"></i> Record Payment
+            </a>
+        </div>
     </div>
 </div>
 
-{% if invoice.reading %}
 <div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card" style="background-color: #e3f2fd;">
-            <div class="card-body py-2">
-                <h6 class="mb-2">Meter Reading Info</h6>
-                <div class="row">
-                    <div class="col-md-3">
-                        <small class="text-muted">Previous</small><br>
-                        <strong>{{ invoice.reading.previous_reading }}</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Current</small><br>
-                        <strong>{{ invoice.reading.current_reading }}</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Consumption</small><br>
-                        <strong>{{ invoice.reading.consumption }}</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Date</small><br>
-                        <strong>{{ invoice.reading.reading_date }}</strong>
-                    </div>
+    <div class="col-md-4">
+        <div class="info-card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-person-circle" style="color: #667eea;"></i> Customer Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <span class="label">Customer</span>
+                    <span class="value">{{ invoice.contract.customer.full_name_ar }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Contract</span>
+                    <span class="value">{{ invoice.contract.contract_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Subscription Type</span>
+                    <span class="value">{{ invoice.subscription_type.name_ar|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Billing Period</span>
+                    <span class="value">{{ invoice.period.period_name|default:"-" }}</span>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="info-card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar3" style="color: #43e97b;"></i> Invoice Dates</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <span class="label">Issue Date</span>
+                    <span class="value"><i class="bi bi-calendar-event mr-1"></i>{{ invoice.issue_date }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Due Date</span>
+                    <span class="value {% if invoice.due_date < today_date %}text-danger{% endif %}"><i class="bi bi-calendar-x mr-1"></i>{{ invoice.due_date }}</span>
+                </div>
+                <hr class="divider">
+                <div class="info-item">
+                    <span class="label">Created At</span>
+                    <span class="value">{{ invoice.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="info-card h-100">
+            <div class="card-header">
+                <h5><i class="bi bi-speedometer2" style="color: #f093fb;"></i> Meter Reading</h5>
+            </div>
+            <div class="card-body">
+                {% if invoice.reading %}
+                <div class="info-item">
+                    <span class="label">Reading Date</span>
+                    <span class="value">{{ invoice.reading.reading_date }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Previous Reading</span>
+                    <span class="value">{{ invoice.reading.previous_reading }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Current Reading</span>
+                    <span class="value">{{ invoice.reading.current_reading }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label" style="color: #667eea; font-weight: 600;">Consumption</span>
+                    <span class="value" style="color: #667eea; font-size: 1.1rem;">{{ invoice.reading.consumption }} kWh</span>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-info-circle" style="font-size: 2rem; opacity: 0.5;"></i>
+                    <p class="mt-2 mb-0">No meter reading linked</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
 
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card">
+    <div class="col-lg col-md-6 mb-3 mb-lg-0">
+        <div class="stat-card stat-primary text-white text-center">
             <div class="card-body">
-                <h6 class="text-muted">Customer</h6>
-                <p>{{ invoice.contract.customer.full_name_ar }}</p>
+                <i class="bi bi-receipt stat-icon"></i>
+                <div class="stat-label">Current Amount</div>
+                <div class="stat-value">{{ invoice.total_amount|floatformat:2 }}</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+    <div class="col-lg col-md-6 mb-3 mb-lg-0">
+        <div class="stat-card stat-info text-white text-center">
             <div class="card-body">
-                <h6 class="text-muted">Contract</h6>
-                <p>{{ invoice.contract.contract_number }}</p>
+                <i class="bi bi-clock-history stat-icon"></i>
+                <div class="stat-label">Previous Indebtedness</div>
+                <div class="stat-value">{{ invoice.previous_indebtedness|floatformat:2 }}</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+    <div class="col-lg col-md-6 mb-3 mb-lg-0">
+        <div class="stat-card stat-danger text-white text-center">
             <div class="card-body">
-                <h6 class="text-muted">Issue Date</h6>
-                <p>{{ invoice.issue_date }}</p>
+                <i class="bi bi-exclamation-triangle stat-icon"></i>
+                <div class="stat-label">Final Amount (with Debt)</div>
+                <div class="stat-value">{{ invoice.final_amount|floatformat:2 }}</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
+    <div class="col-lg col-md-6 mb-3 mb-lg-0">
+        <div class="stat-card stat-success text-white text-center">
             <div class="card-body">
-                <h6 class="text-muted">Due Date</h6>
-                <p>{{ invoice.due_date }}</p>
+                <i class="bi bi-check-circle stat-icon"></i>
+                <div class="stat-label">Paid Amount</div>
+                <div class="stat-value">{{ invoice.paid_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg col-md-6 mb-3 mb-lg-0">
+        <div class="stat-card stat-dark text-white text-center">
+            <div class="card-body">
+                <i class="bi bi-exclamation-circle stat-icon"></i>
+                <div class="stat-label">Remaining (with Debt)</div>
+                <div class="stat-value">{{ invoice.remaining_with_debt|floatformat:2 }}</div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h6>Total Amount</h6>
-                <h4>{{ invoice.total_amount|floatformat:2 }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h6>Paid Amount</h6>
-                <h4>{{ invoice.paid_amount|floatformat:2 }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <h6>Remaining</h6>
-                <h4>{{ invoice.remaining_amount|floatformat:2 }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h6 class="text-muted">Status</h6>
-                <span class="badge badge-{% if invoice.invoice_status == 'paid' %}success{% elif invoice.invoice_status == 'overdue' %}danger{% else %}warning{% endif %}">
-                    {{ invoice.get_invoice_status_display }}
+    <div class="col-md-8">
+        <div class="progress-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="font-weight: 600; color: #2d3748;">
+                    <i class="bi bi-bar-chart-line mr-2" style="color: #667eea;"></i>Payment Progress
+                </span>
+                <span style="font-weight: 700; color: #43e97b;">
+                    {% if invoice.final_amount > 0 %}
+                        {% widthratio invoice.paid_amount invoice.final_amount 100 %}%
+                    {% else %}
+                        100%
+                    {% endif %}
                 </span>
             </div>
+            <div class="progress" style="height: 12px;">
+                {% if invoice.final_amount > 0 %}
+                <div class="progress-bar" role="progressbar" style="width: {% widthratio invoice.paid_amount invoice.final_amount 100 %}%; background: linear-gradient(90deg, #667eea, #43e97b);" aria-valuenow="{{ invoice.paid_amount }}" aria-valuemin="0" aria-valuemax="{{ invoice.final_amount }}"></div>
+                {% else %}
+                <div class="progress-bar" role="progressbar" style="width: 100%; background: linear-gradient(90deg, #667eea, #43e97b);"></div>
+                {% endif %}
+            </div>
+            <div class="row mt-3">
+                <div class="col-6 text-left">
+                    <small class="text-muted">Paid: <strong style="color: #43e97b;">{{ invoice.paid_amount|floatformat:2 }}</strong></small>
+                </div>
+                <div class="col-6 text-right">
+                    <small class="text-muted">Due: <strong style="color: #f5576c;">{{ invoice.remaining_with_debt|floatformat:2 }}</strong></small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card stat-success text-white text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calculator stat-icon"></i>
+                <div class="stat-label">Remaining (Current Invoice)</div>
+                <div class="stat-value">{{ invoice.remaining_amount|floatformat:2 }}</div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
+<div class="row mb-4">
+    <div class="col-lg-7">
+        <div class="section-card h-100">
             <div class="card-header">
-                <h5>Invoice Lines</h5>
+                <h5><i class="bi bi-list-ul" style="color: #667eea;"></i> Invoice Lines</h5>
             </div>
             <div class="card-body p-0">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Quantity</th>
-                            <th>Rate</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for line in lines %}
-                        <tr>
-                            <td>{{ line.line_name_ar }}</td>
-                            <td>{{ line.quantity|floatformat:2 }}</td>
-                            <td>{{ line.rate|floatformat:2 }}</td>
-                            <td>{{ line.amount|floatformat:2 }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4">No lines</td></tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
-                            <td><strong>{{ invoice.total_amount|floatformat:2 }}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Description</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-center">Rate</th>
+                                <th class="text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in lines %}
+                            <tr>
+                                <td><span class="badge badge-light">{{ forloop.counter }}</span></td>
+                                <td>
+                                    <div class="font-weight-600">{{ line.line_name_ar }}</div>
+                                    {% if line.line_name_en %}
+                                    <small class="text-muted">{{ line.line_name_en }}</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ line.quantity|floatformat:2 }}</td>
+                                <td class="text-center">{{ line.rate|floatformat:2 }}</td>
+                                <td class="text-right font-weight-600">{{ line.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 mb-0">No invoice lines</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-right">Subtotal:</td>
+                                <td class="text-right">{{ invoice.total_amount|floatformat:2 }}</td>
+                            </tr>
+                            {% if invoice.previous_indebtedness > 0 %}
+                            <tr style="background: #fff5f5;">
+                                <td colspan="4" class="text-right text-danger">Previous Indebtedness:</td>
+                                <td class="text-right text-danger">{{ invoice.previous_indebtedness|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td colspan="4" class="text-right"><strong>Final Amount:</strong></td>
+                                <td class="text-right"><strong style="font-size: 1.1rem;">{{ invoice.final_amount|floatformat:2 }}</strong></td>
+                            </tr>
+                            {% endif %}
+                            {% if invoice.paid_amount > 0 %}
+                            <tr>
+                                <td colspan="4" class="text-right text-success">Paid:</td>
+                                <td class="text-right text-success">- {{ invoice.paid_amount|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr style="background: #2d3748; color: white;">
+                                <td colspan="4" class="text-right"><strong style="font-size: 1rem;">Remaining Balance:</strong></td>
+                                <td class="text-right"><strong style="font-size: 1.2rem;">{{ invoice.remaining_with_debt|floatformat:2 }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Payments</h5>
+    <div class="col-lg-5">
+        <div class="section-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-credit-card-2-back" style="color: #43e97b;"></i> Payment History</h5>
+                <a href="{% url 'payment_create' %}?invoice={{ invoice.id }}" class="btn btn-action btn-pay" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                    <i class="bi bi-plus"></i> Add Payment
+                </a>
             </div>
-            <div class="card-body p-0">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Number</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for payment in payments %}
-                        <tr>
-                            <td>{{ payment.payment_number }}</td>
-                            <td>{{ payment.amount|floatformat:2 }}</td>
-                            <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="3">No payments</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="card-body">
+                {% for payment in payments %}
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-amount">{{ payment.amount|floatformat:2 }}</div>
+                        <div class="payment-date">
+                            <i class="bi bi-calendar-event mr-1"></i>{{ payment.payment_date|date:"Y-m-d H:i" }}
+                            <span class="ml-2 payment-method-badge">{{ payment.get_payment_method_display|default:"Cash" }}</span>
+                        </div>
+                        {% if payment.reference_number %}
+                        <div class="text-muted" style="font-size: 0.75rem;">Ref: {{ payment.reference_number }}</div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'payment_detail' payment.id %}" class="btn btn-sm btn-outline-secondary" style="border-radius: 8px;">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-wallet2" style="font-size: 2rem; opacity: 0.5;"></i>
+                    <p class="mt-2 mb-0">No payments recorded</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
+
+        {% if invoice.notes %}
+        <div class="notes-card mt-3">
+            <div class="card-body">
+                <h6 style="font-weight: 600; margin-bottom: 0.75rem;">
+                    <i class="bi bi-chat-square-text mr-2"></i>Notes
+                </h6>
+                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.6;">{{ invoice.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

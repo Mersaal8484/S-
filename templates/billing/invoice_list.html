@@ -3,8 +3,13 @@
 
 {% block content %}
 <div class="row mb-4">
-    <div class="col-md-12">
+    <div class="col-md-8">
         <h3>Invoices</h3>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'invoice_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Create Invoice
+        </a>
     </div>
 </div>
 
@@ -22,7 +27,10 @@
                     <th>Customer</th>
                     <th>Issue Date</th>
                     <th>Amount</th>
+                    <th>Prev Debt</th>
+                    <th>Final Amount</th>
                     <th>Paid</th>
+                    <th>Rem. (with Debt)</th>
                     <th>Status</th>
                     <th></th>
                 </tr>
@@ -34,7 +42,10 @@
                     <td>{{ invoice.contract.customer.full_name_ar }}</td>
                     <td>{{ invoice.issue_date }}</td>
                     <td>{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td>{% if invoice.previous_indebtedness > 0 %}{{ invoice.previous_indebtedness|floatformat:2 }}{% else %}-{% endif %}</td>
+                    <td>{{ invoice.final_amount|floatformat:2 }}</td>
                     <td>{{ invoice.paid_amount|floatformat:2 }}</td>
+                    <td>{{ invoice.remaining_with_debt|floatformat:2 }}</td>
                     <td>
                         <span class="badge badge-{% if invoice.invoice_status == 'paid' %}success{% elif invoice.invoice_status == 'overdue' %}danger{% else %}warning{% endif %}">
                             {{ invoice.get_invoice_status_display }}
@@ -48,7 +59,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center">No invoices</td>
+                    <td colspan="10" class="text-center">No invoices</td>
                 </tr>
                 {% endfor %}
             </tbody>

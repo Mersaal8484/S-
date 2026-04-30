@@ -147,13 +147,14 @@ class BillingPeriodForm(forms.ModelForm):
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
-        fields = ['contract', 'invoice', 'customer', 'amount', 'payment_method', 'reference_number', 'bank_name', 'notes']
+        fields = ['contract', 'invoice', 'customer', 'amount', 'payment_method', 'period', 'reference_number', 'bank_name', 'notes']
         widgets = {
             'contract': forms.Select(attrs={'class': 'form-control'}),
             'invoice': forms.Select(attrs={'class': 'form-control'}),
             'customer': forms.Select(attrs={'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
+            'period': forms.Select(attrs={'class': 'form-control'}),
             'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
             'bank_name': forms.TextInput(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),

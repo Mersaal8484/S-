@@ -4,6 +4,7 @@ Handles all business logic and connections between models
 """
 from django.db import transaction
 from django.utils import timezone
+from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from decimal import Decimal
 import random
@@ -97,6 +98,9 @@ def submit_meter_reading(meter, data):
             end_date__gte=reading_date
         ).first()
         
+        reader_id = data.get('reader_id')
+        reader = User.objects.filter(pk=reader_id).first() if reader_id else None
+        
         submission = MeterReadingSubmission.objects.create(
             meter=meter,
             contract=meter.contract,
@@ -104,7 +108,7 @@ def submit_meter_reading(meter, data):
             previous_reading=previous,
             submitted_reading=data.get('current_reading'),
             reading_date=reading_date,
-            reader_name=data.get('reader_name', ''),
+            reader=reader,
             reader_notes=data.get('notes', ''),
             period=period
         )
@@ -131,7 +135,7 @@ def approve_reading(submission, approved_reading, user):
             previous_reading=submission.previous_reading,
             current_reading=approved_reading,
             reading_source=submission.reading_source,
-            reader_name=submission.reader_name,
+            reader=submission.reader,
             is_billed=False
         )
         
@@ -162,10 +166,14 @@ def generate_invoice(submission):
         reading_date = dt.now().date()
     
     with transaction.atomic():
+        period = submission.period
+        
         invoice = Invoice.objects.create(
             invoice_number=generate_number('INV'),
             contract=contract,
+            subscription_type=contract.type,
             reading_id=None,
+            period=period,
             issue_date=reading_date,
             due_date=reading_date + timedelta(days=15),
             total_amount=0,
@@ -174,6 +182,20 @@ def generate_invoice(submission):
         )
         
         total = Decimal(0)
+        
+        earlier_unpaid = Invoice.objects.filter(
+            contract=contract,
+            issue_date__lt=reading_date,
+            invoice_status__in=['issued', 'partially_paid', 'overdue']
+        ).aggregate(prev=Sum('total_amount'))['prev'] or Decimal(0)
+        
+        earlier_paid = Invoice.objects.filter(
+            contract=contract,
+            issue_date__lt=reading_date,
+            invoice_status__in=['issued', 'partially_paid', 'overdue']
+        ).aggregate(paid=Sum('paid_amount'))['paid'] or Decimal(0)
+        
+        previous_indebtedness = earlier_unpaid - earlier_paid
         
         templates = InvoiceLineTemplate.objects.filter(
             type=contract.type,
@@ -222,19 +244,10 @@ def generate_invoice(submission):
             total += amount
         
         invoice.total_amount = total
+        invoice.previous_indebtedness = previous_indebtedness
         invoice.save()
         
-        BalanceLedger.objects.create(
-            customer=customer,
-            transaction_type='invoice_created',
-            reference_id=invoice.id,
-            debit=total,
-            credit=0,
-            balance_after=customer.current_balance + total,
-            notes=f'Invoice {invoice.invoice_number}'
-        )
-        
-        customer.current_balance += total
+        customer.current_balance += total + previous_indebtedness
         customer.save()
         
         BalanceLedger.objects.create(
@@ -243,12 +256,9 @@ def generate_invoice(submission):
             reference_id=invoice.id,
             debit=total,
             credit=0,
-            balance_after=customer.current_balance + total,
+            balance_after=customer.current_balance,
             notes=f'Invoice {invoice.invoice_number}'
         )
-        
-        customer.current_balance += total
-        customer.save()
     
     return invoice
 
@@ -285,6 +295,7 @@ def record_payment(invoice, amount, data):
             payment_number=generate_number('PAY'),
             invoice=invoice,
             customer=customer,
+            period=invoice.period,
             amount=amount,
             payment_method=data.get('payment_method', 'cash'),
             reference_number=data.get('reference_number', ''),

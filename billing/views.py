@@ -24,6 +24,7 @@ from .models import (
     InvoiceLineTemplate, InvoiceLineFormulaDetail, SystemSettings
 )
 from .forms import CustomerForm, ContractForm, MeterForm, BillingPeriodForm, PaymentForm
+from .services import generate_number
 from . import services
 
 
@@ -330,7 +331,7 @@ def reading_create(request):
             submission = services.submit_meter_reading(meter, {
                 'current_reading': Decimal(request.POST.get('current_reading')),
                 'reading_date': datetime.strptime(request.POST.get('reading_date'), '%Y-%m-%d').date(),
-                'reader_name': request.POST.get('reader_name', ''),
+                'reader_id': request.POST.get('reader'),
                 'notes': request.POST.get('notes', ''),
             })
             messages.success(request, 'Reading submitted')
@@ -339,11 +340,13 @@ def reading_create(request):
             messages.error(request, str(e))
     
     contracts = Contract.objects.filter(contract_status='active').select_related('customer')
+    users = User.objects.filter(is_active=True)
     
     return render(request, 'billing/reading_form.html', {
         'title': 'Submit Reading',
         'today': datetime.now().date().strftime('%Y-%m-%d'),
-        'contracts': contracts
+        'contracts': contracts,
+        'users': users
     })
 
 
@@ -389,6 +392,134 @@ def invoice_list(request):
     })
 
 
+@login_required
+def invoice_create(request):
+    if request.method == 'POST':
+        contract_id = request.POST.get('contract')
+        reading_id = request.POST.get('reading')
+        subscription_type_id = request.POST.get('subscription_type')
+        period_id = request.POST.get('period')
+        issue_date_str = request.POST.get('issue_date')
+        due_date_str = request.POST.get('due_date')
+
+        contract = get_object_or_404(Contract, pk=contract_id)
+        reading = get_object_or_404(MeterReading, pk=reading_id) if reading_id else None
+        subscription_type = get_object_or_404(SubscriptionType, pk=subscription_type_id) if subscription_type_id else None
+        period = get_object_or_404(BillingPeriod, pk=period_id) if period_id else None
+
+        issue_date = datetime.strptime(issue_date_str, '%Y-%m-%d').date() if issue_date_str else datetime.now().date()
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else issue_date + timedelta(days=15)
+
+        consumption = reading.consumption if reading else Decimal(0)
+
+        with transaction.atomic():
+            invoice = Invoice.objects.create(
+                invoice_number=generate_number('INV'),
+                contract=contract,
+                subscription_type=subscription_type,
+                reading=reading,
+                period=period,
+                issue_date=issue_date,
+                due_date=due_date,
+                total_amount=0,
+                paid_amount=0,
+                invoice_status='issued'
+            )
+
+            total = Decimal(0)
+            templates = InvoiceLineTemplate.objects.filter(
+                type=subscription_type,
+                is_active=True
+            ).order_by('line_order')
+
+            for template in templates:
+                amount = services.calculate_line_amount(template, consumption or 0)
+
+                if template.calculation_type == 'single_rate_kwh':
+                    quantity = consumption or Decimal(0)
+                    rate = template.fixed_amount or Decimal(0)
+                elif template.calculation_type == 'tiered_kwh':
+                    quantity = consumption or Decimal(0)
+                    rate = template.fixed_amount or Decimal(0)
+                elif template.calculation_type == 'fixed':
+                    quantity = Decimal(1)
+                    rate = amount
+                elif template.calculation_type == 'percentage':
+                    quantity = Decimal(1)
+                    rate = template.percentage_rate or Decimal(0)
+                elif template.calculation_type == 'demand_charge':
+                    quantity = Decimal(1)
+                    rate = amount
+                elif template.calculation_type == 'minimum_charge':
+                    quantity = Decimal(1)
+                    rate = amount
+                else:
+                    quantity = Decimal(1)
+                    rate = template.fixed_amount or Decimal(0)
+
+                InvoiceLine.objects.create(
+                    invoice=invoice,
+                    template=template,
+                    line_name_ar=template.line_name_ar,
+                    line_name_en=template.line_name_en,
+                    calculation_basis=str(template.calculation_type),
+                    quantity=quantity,
+                    rate=rate,
+                    amount=amount,
+                    line_order=template.line_order
+                )
+                total += amount
+
+            earlier_unpaid = Invoice.objects.filter(
+                contract=contract,
+                issue_date__lt=issue_date,
+                invoice_status__in=['issued', 'partially_paid', 'overdue']
+            ).aggregate(prev=Sum('total_amount'))['prev'] or Decimal(0)
+
+            earlier_paid = Invoice.objects.filter(
+                contract=contract,
+                issue_date__lt=issue_date,
+                invoice_status__in=['issued', 'partially_paid', 'overdue']
+            ).aggregate(paid=Sum('paid_amount'))['paid'] or Decimal(0)
+
+            invoice.total_amount = total
+            invoice.previous_indebtedness = earlier_unpaid - earlier_paid
+            invoice.save()
+
+        messages.success(request, 'Invoice created')
+        return redirect('invoice_detail', pk=invoice.id)
+
+    contracts = Contract.objects.filter(contract_status='active').select_related('customer')
+    subscription_types = SubscriptionType.objects.filter(is_active=True)
+    periods = BillingPeriod.objects.filter(status__in=['reading_open', 'billing_in_progress', 'billing_completed']).order_by('-start_date')
+
+    contract_readings = {}
+    for contract in contracts:
+        meters = contract.meters.all()
+        readings = MeterReading.objects.filter(meter__in=meters).order_by('-reading_date')
+        contract_readings[contract.id] = list(readings.values('id', 'previous_reading', 'current_reading', 'reading_date'))
+        for r in contract_readings[contract.id]:
+            r['consumption'] = str(r['current_reading'] - r['previous_reading'])
+            r['previous_reading'] = str(r['previous_reading'])
+            r['current_reading'] = str(r['current_reading'])
+            r['reading_date'] = str(r['reading_date'])
+
+    import json
+    contract_readings_json = json.dumps(contract_readings)
+
+    default_due = (datetime.now().date() + timedelta(days=15)).strftime('%Y-%m-%d')
+
+    return render(request, 'billing/invoice_form.html', {
+        'title': 'Create Invoice',
+        'contracts': contracts,
+        'subscription_types': subscription_types,
+        'periods': periods,
+        'today': datetime.now().date().strftime('%Y-%m-%d'),
+        'default_due': default_due,
+        'contract_readings_json': contract_readings_json,
+    })
+
+
 def invoice_detail(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     lines = invoice.lines.all()
@@ -400,6 +531,7 @@ def invoice_detail(request, pk):
         'lines': lines,
         'payments': payments,
         'penalties': penalties,
+        'today_date': datetime.now().date(),
     })
 
 
@@ -407,87 +539,111 @@ def invoice_detail(request, pk):
 def invoice_regenerate(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     contract = invoice.contract
-    
-    consumption = Decimal(0)
-    if invoice.reading:
-        consumption = invoice.reading.consumption
-    elif contract:
-        meters = contract.meters.all()
-        if meters.exists():
-            meter = meters.first()
-            prev_reading = Decimal(0)
-            readings = MeterReading.objects.filter(
-                meter=meter,
-                reading_date__lte=invoice.issue_date
-            ).order_by('reading_date')
-            for r in readings:
-                consumption = r.current_reading - prev_reading
-                prev_reading = r.current_reading
-    
-    with transaction.atomic():
-        invoice.lines.all().delete()
-        invoice.invoice_status = 'issued'
-        invoice.save()
-        
-        total = Decimal(0)
-        templates = InvoiceLineTemplate.objects.filter(
-            type=contract.type,
-            is_active=True
-        ).order_by('line_order')
-        
-        for template in templates:
-            amount = services.calculate_line_amount(template, consumption or 0)
-            
-            if template.calculation_type == 'single_rate_kwh':
-                quantity = consumption or Decimal(0)
-                rate = template.fixed_amount or Decimal(0)
-            elif template.calculation_type == 'tiered_kwh':
-                quantity = consumption or Decimal(0)
-                rate = template.fixed_amount or Decimal(0)
-            elif template.calculation_type == 'fixed':
-                quantity = Decimal(1)
-                rate = amount
-            elif template.calculation_type == 'percentage':
-                quantity = Decimal(1)
-                rate = template.percentage_rate or Decimal(0)
-            else:
-                quantity = Decimal(1)
-                rate = template.fixed_amount or Decimal(0)
-            
-            InvoiceLine.objects.create(
-                invoice=invoice,
-                template=template,
-                line_name_ar=template.line_name_ar,
-                line_name_en=template.line_name_en,
-                calculation_basis=str(template.calculation_type),
-                quantity=quantity,
-                rate=rate,
-                amount=amount,
-                line_order=template.line_order
-            )
-            total += amount
-        
-        invoice.total_amount = total
-        invoice.save()
-    
-    messages.success(request, 'Invoice regenerated')
-    return redirect('invoice_detail', pk=pk)
+
+    if request.method == 'POST':
+        reading_id = request.POST.get('reading')
+        subscription_type_id = request.POST.get('subscription_type')
+        period_id = request.POST.get('period')
+
+        reading = get_object_or_404(MeterReading, pk=reading_id) if reading_id else None
+        if subscription_type_id:
+            invoice.subscription_type_id = subscription_type_id
+        if period_id:
+            invoice.period_id = period_id
+        if reading_id:
+            invoice.reading = reading
+            consumption = reading.consumption
+        else:
+            consumption = Decimal(0)
+
+        with transaction.atomic():
+            invoice.lines.all().delete()
+            invoice.invoice_status = 'issued'
+            invoice.save()
+
+            total = Decimal(0)
+            templates = InvoiceLineTemplate.objects.filter(
+                type=invoice.subscription_type,
+                is_active=True
+            ).order_by('line_order')
+
+            for template in templates:
+                amount = services.calculate_line_amount(template, consumption or 0)
+
+                if template.calculation_type == 'single_rate_kwh':
+                    quantity = consumption or Decimal(0)
+                    rate = template.fixed_amount or Decimal(0)
+                elif template.calculation_type == 'tiered_kwh':
+                    quantity = consumption or Decimal(0)
+                    rate = template.fixed_amount or Decimal(0)
+                elif template.calculation_type == 'fixed':
+                    quantity = Decimal(1)
+                    rate = amount
+                elif template.calculation_type == 'percentage':
+                    quantity = Decimal(1)
+                    rate = template.percentage_rate or Decimal(0)
+                elif template.calculation_type == 'demand_charge':
+                    quantity = Decimal(1)
+                    rate = amount
+                elif template.calculation_type == 'minimum_charge':
+                    quantity = Decimal(1)
+                    rate = amount
+                else:
+                    quantity = Decimal(1)
+                    rate = template.fixed_amount or Decimal(0)
+
+                InvoiceLine.objects.create(
+                    invoice=invoice,
+                    template=template,
+                    line_name_ar=template.line_name_ar,
+                    line_name_en=template.line_name_en,
+                    calculation_basis=str(template.calculation_type),
+                    quantity=quantity,
+                    rate=rate,
+                    amount=amount,
+                    line_order=template.line_order
+                )
+                total += amount
+
+            earlier_unpaid = Invoice.objects.filter(
+                contract=contract,
+                issue_date__lt=invoice.issue_date,
+                invoice_status__in=['issued', 'partially_paid', 'overdue']
+            ).aggregate(prev=Sum('total_amount'))['prev'] or Decimal(0)
+
+            earlier_paid = Invoice.objects.filter(
+                contract=contract,
+                issue_date__lt=invoice.issue_date,
+                invoice_status__in=['issued', 'partially_paid', 'overdue']
+            ).aggregate(paid=Sum('paid_amount'))['paid'] or Decimal(0)
+
+            invoice.total_amount = total
+            invoice.previous_indebtedness = earlier_unpaid - earlier_paid
+            invoice.save()
+
+        messages.success(request, 'Invoice regenerated')
+        return redirect('invoice_detail', pk=pk)
+
+    meters = contract.meters.all()
+    readings = MeterReading.objects.filter(meter__in=meters).order_by('-reading_date')
+    subscription_types = SubscriptionType.objects.filter(is_active=True)
+    periods = BillingPeriod.objects.filter(status__in=['reading_open', 'billing_in_progress', 'billing_completed']).order_by('-start_date')
+
+    return render(request, 'billing/invoice_regenerate.html', {
+        'invoice': invoice,
+        'readings': readings,
+        'subscription_types': subscription_types,
+        'periods': periods,
+        'title': 'Regenerate Invoice',
+    })
 
 
 def invoice_print(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     customer = invoice.contract.customer
     
-    previous_balance = 0
-    earlier_invoices = Invoice.objects.filter(
-        contract__customer=customer,
-        invoice_status__in=['issued', 'partially_paid', 'overdue'],
-        issue_date__lt=invoice.issue_date
-    )
-    for inv in earlier_invoices:
-        previous_balance += float(inv.total_amount) - float(inv.paid_amount)
-    
-    total_due = float(invoice.total_amount) + previous_balance
+    previous_balance = float(invoice.previous_indebtedness)
+    total_due = float(invoice.final_amount)
     
     return render(request, 'billing/invoice_print.html', {
         'invoice': invoice,
@@ -522,6 +678,8 @@ def payment_create(request):
         amount = Decimal(request.POST.get('amount'))
         invoice_id = request.POST.get('invoice')
         contract_id = request.POST.get('contract')
+        period_id = request.POST.get('period')
+        period = get_object_or_404(BillingPeriod, pk=period_id) if period_id else None
         
         try:
             if invoice_id:
@@ -532,6 +690,7 @@ def payment_create(request):
                 payment = Payment.objects.create(
                     contract=contract,
                     customer=contract.customer,
+                    period=period,
                     amount=amount,
                     payment_method=request.POST.get('payment_method', 'cash'),
                     reference_number=request.POST.get('reference_number', ''),
@@ -554,6 +713,7 @@ def payment_create(request):
                 customer = get_object_or_404(Customer, pk=customer_id)
                 payment = Payment.objects.create(
                     customer=customer,
+                    period=period,
                     amount=amount,
                     payment_method=request.POST.get('payment_method', 'cash'),
                     reference_number=request.POST.get('reference_number', ''),
@@ -582,12 +742,14 @@ def payment_create(request):
     
     contracts = Contract.objects.filter(contract_status='active')
     customers = Customer.objects.filter(is_active=True)
+    periods = BillingPeriod.objects.filter(status__in=['reading_open', 'billing_in_progress', 'billing_completed'])
     
     return render(request, 'billing/payment_form.html', {
         'title': 'Record Payment',
         'invoices': invoices,
         'contracts': contracts,
-        'customers': customers
+        'customers': customers,
+        'periods': periods
     })
 
 

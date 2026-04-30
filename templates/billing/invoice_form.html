@@ -1,0 +1,155 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h3>{{ title }}</h3>
+    </div>
+    <div class="col-md-4 text-left">
+        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header"><h5>Invoice Details</h5></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Contract <span class="text-danger">*</span></label>
+                        <select name="contract" class="form-control" required id="contractSelect">
+                            <option value="">Select Contract</option>
+                            {% for contract in contracts %}
+                            <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Subscription Type <span class="text-danger">*</span></label>
+                        <select name="subscription_type" class="form-control" required>
+                            <option value="">Select Subscription Type</option>
+                            {% for st in subscription_types %}
+                            <option value="{{ st.id }}">{{ st.name_ar }}{% if st.name_en %} ({{ st.name_en }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Billing Period</label>
+                        <select name="period" class="form-control">
+                            <option value="">Select Period (Optional)</option>
+                            {% for period in periods %}
+                            <option value="{{ period.id }}">{{ period.period_name }} ({{ period.period_code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Meter Reading <span class="text-danger">*</span></label>
+                        <select name="reading" class="form-control" required id="readingSelect">
+                            <option value="">Select a reading</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Issue Date</label>
+                        <input type="date" name="issue_date" class="form-control" value="{{ today }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" name="due_date" class="form-control" value="{{ default_due }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3" id="readingPreview" style="display:none;">
+                <h6>Reading Preview:</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <small class="text-muted">Previous Reading</small><br>
+                        <strong id="previewPrevious">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Current Reading</small><br>
+                        <strong id="previewCurrent">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Consumption</small><br>
+                        <strong id="previewConsumption">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Date</small><br>
+                        <strong id="previewDate">-</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check"></i> Create Invoice
+            </button>
+            <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</form>
+
+<script>
+var contractReadings = {{ contract_readings_json|safe }};
+
+document.getElementById('contractSelect').addEventListener('change', function() {
+    var contractId = this.value;
+    var readingSelect = document.getElementById('readingSelect');
+    var preview = document.getElementById('readingPreview');
+    
+    readingSelect.innerHTML = '<option value="">Select a reading</option>';
+    preview.style.display = 'none';
+    
+    if (contractId && contractReadings[contractId]) {
+        var readings = contractReadings[contractId];
+        readings.forEach(function(reading) {
+            var option = document.createElement('option');
+            option.value = reading.id;
+            option.setAttribute('data-previous', reading.previous_reading);
+            option.setAttribute('data-current', reading.current_reading);
+            option.setAttribute('data-consumption', reading.consumption);
+            option.setAttribute('data-date', reading.reading_date);
+            option.textContent = 'Date: ' + reading.reading_date + ' | Prev: ' + reading.previous_reading + ' | Curr: ' + reading.current_reading + ' (Cons: ' + reading.consumption + ')';
+            readingSelect.appendChild(option);
+        });
+    }
+});
+
+document.getElementById('readingSelect').addEventListener('change', function() {
+    var option = this.options[this.selectedIndex];
+    var preview = document.getElementById('readingPreview');
+
+    if (option.value) {
+        document.getElementById('previewPrevious').textContent = option.getAttribute('data-previous');
+        document.getElementById('previewCurrent').textContent = option.getAttribute('data-current');
+        document.getElementById('previewConsumption').textContent = option.getAttribute('data-consumption');
+        document.getElementById('previewDate').textContent = option.getAttribute('data-date');
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
