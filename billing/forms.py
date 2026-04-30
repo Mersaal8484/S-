@@ -67,7 +67,7 @@ class ContractForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['customer'].queryset = Customer.objects.filter(is_active=True)
         self.fields['type'].queryset = SubscriptionType.objects.filter(is_active=True)
-        for field in ['contract_number', 'connection_load', 'deposit_amount', 'contract_status']:
+        for field in ['contract_number', 'end_date', 'connection_load', 'deposit_amount', 'contract_status']:
             self.fields[field].required = False
         if not self.instance.pk:
             self.initial['contract_number'] = generate_number('CTR')
@@ -87,6 +87,12 @@ class ContractForm(forms.ModelForm):
     
     def clean_contract_status(self):
         return self.cleaned_data.get('contract_status') or 'active'
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data.get('end_date')
+        if end_date == '':
+            return None
+        return end_date
 
 
 class MeterForm(forms.ModelForm):

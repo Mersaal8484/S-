@@ -69,6 +69,9 @@ class Contract(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    def __str__(self):
+        return f"{self.contract_number} - {self.customer.full_name_ar}"
+
     def save(self, *args, **kwargs):
         if not self.contract_number:
             import random
@@ -76,8 +79,9 @@ class Contract(models.Model):
             self.contract_number = f"CTR-{dt.now().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
         if not self.start_date:
             self.start_date = dt.now().date()
+        if self.end_date == '':
+            self.end_date = None
         super().save(*args, **kwargs)
-        return f"{self.contract_number} - {self.customer.full_name_ar}"
 
 
 class Meter(models.Model):

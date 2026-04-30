@@ -3,6 +3,7 @@ Workflow Services for Electricity Billing System
 Handles all business logic and connections between models
 """
 from django.db import transaction
+from django.db.models import Sum
 from django.utils import timezone
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
@@ -24,6 +25,9 @@ def generate_number(prefix, length=4):
 
 def create_customer(data):
     """Create new customer with auto-generated number"""
+    is_active = data.get('is_active')
+    is_active = True if is_active == 'on' else False
+    
     customer = Customer.objects.create(
         customer_number=data.get('customer_number') or generate_number('CUST'),
         full_name_ar=data['full_name_ar'],
@@ -36,7 +40,7 @@ def create_customer(data):
         city=data.get('city', ''),
         credit_limit=data.get('credit_limit', 0),
         notes=data.get('notes', ''),
-        is_active=data.get('is_active', True)
+        is_active=is_active
     )
     
     CustomerBalance.objects.create(
@@ -50,12 +54,32 @@ def create_customer(data):
 
 def create_contract(customer, data):
     """Create new contract for customer"""
+    type_id = data.get('type')
+    subscription_type = SubscriptionType.objects.get(pk=type_id) if type_id else None
+    
+    def parse_date(date_val):
+        if not date_val:
+            return None
+        if isinstance(date_val, str):
+            date_val = date_val.strip()
+            if not date_val:
+                return None
+            from datetime import datetime as dt
+            try:
+                return dt.strptime(date_val, '%Y-%m-%d').date()
+            except:
+                return None
+        return date_val
+    
+    end_date = parse_date(data.get('end_date'))
+    start_date = parse_date(data.get('start_date')) or datetime.now().date()
+    
     contract = Contract.objects.create(
         contract_number=data.get('contract_number') or generate_number('CTR'),
         customer=customer,
-        type=data['type'],
-        start_date=data.get('start_date', datetime.now().date()),
-        end_date=data.get('end_date'),
+        type=subscription_type,
+        start_date=start_date,
+        end_date=end_date,
         contract_status=data.get('contract_status', 'active'),
         connection_load=data.get('connection_load', 0),
         deposit_amount=data.get('deposit_amount', 0),

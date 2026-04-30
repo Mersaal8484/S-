@@ -18,6 +18,7 @@ urlpatterns = [
     
     path('meters/', views.meter_list, name='meter_list'),
     path('meters/create/', views.meter_create, name='meter_create'),
+    path('meters/<int:pk>/edit/', views.meter_edit, name='meter_edit'),
     
     path('periods/', views.billing_period_list, name='billing_period_list'),
     path('periods/create/', views.billing_period_create, name='billing_period_create'),

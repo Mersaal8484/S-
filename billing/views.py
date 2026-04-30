@@ -17,6 +17,15 @@ def to_decimal(value):
         return Decimal('0')
 
 
+def to_bool(value):
+    """Convert POST checkbox value to boolean"""
+    if value is None:
+        return False
+    return value == 'on'
+
+
+from django.contrib.auth.models import User
+
 from .models import (
     Customer, Contract, Meter, SubscriptionType, BillingPeriod, MeterReadingSubmission,
     MeterReading, Invoice, InvoiceLine, Payment, Penalty, CustomerBalance, BalanceLedger,
@@ -66,7 +75,7 @@ def index(request):
 
 
 def customer_list(request):
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by('customer_number')
     query = request.GET.get('q')
     if query:
         customers = customers.filter(
@@ -241,6 +250,24 @@ def meter_create(request):
     return render(request, 'billing/meter_form.html', {
         'form': MeterForm(),
         'title': 'Add Meter'
+    })
+
+
+def meter_edit(request, pk):
+    meter = get_object_or_404(Meter, pk=pk)
+    
+    if request.method == 'POST':
+        form = MeterForm(request.POST, instance=meter)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Meter updated')
+            return redirect('meter_list')
+    else:
+        form = MeterForm(instance=meter)
+    
+    return render(request, 'billing/meter_form.html', {
+        'form': form,
+        'title': 'Edit Meter'
     })
 
 
@@ -1021,7 +1048,7 @@ def subscription_type_create(request):
             name_ar=request.POST.get('name_ar'),
             name_en=request.POST.get('name_en', ''),
             description=request.POST.get('description', ''),
-            is_active=request.POST.get('is_active') == 'on'
+            is_active=to_bool(request.POST.get('is_active'))
         )
         messages.success(request, 'Subscription type created')
         return redirect('system_settings')
@@ -1034,7 +1061,7 @@ def subscription_type_edit(request, pk):
         st.name_ar = request.POST.get('name_ar')
         st.name_en = request.POST.get('name_en', '')
         st.description = request.POST.get('description', '')
-        st.is_active = request.POST.get('is_active') == 'on'
+        st.is_active = to_bool(request.POST.get('is_active'))
         st.save()
         messages.success(request, 'Subscription type updated')
         return redirect('system_settings')
