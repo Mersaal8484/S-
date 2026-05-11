@@ -289,6 +289,8 @@ def generate_invoice(submission):
 
 def calculate_line_amount(template, consumption):
     """Calculate line amount based on calculation type"""
+    from decimal import Decimal
+    
     if template.calculation_type == 'fixed':
         return template.fixed_amount or Decimal(0)
     
@@ -296,15 +298,39 @@ def calculate_line_amount(template, consumption):
         return (template.fixed_amount or Decimal(0)) * consumption
     
     elif template.calculation_type == 'tiered_kwh':
-        return (template.fixed_amount or Decimal(0)) * consumption
+        # ✅ Correct Tiered Calculation
+        total = Decimal(0)
+        remaining = Decimal(consumption)
+        # Order tiers by min_value to process them sequentially
+        tiers = template.formula_details.all().order_by('min_value')
+        
+        if not tiers.exists():
+            # Fallback to fixed_amount if no tiers are defined
+            return (template.fixed_amount or Decimal(0)) * consumption
+
+        for tier in tiers:
+            if remaining <= 0:
+                break
+            
+            tier_min = tier.min_value or Decimal(0)
+            tier_max = tier.max_value or Decimal('999999999')
+            
+            # Range size for this tier
+            tier_range = tier_max - tier_min
+            
+            # How much of the remaining consumption falls into this tier
+            consumed_in_tier = min(remaining, tier_range)
+            
+            total += consumed_in_tier * (tier.rate_or_amount or Decimal(0))
+            remaining -= consumed_in_tier
+            
+        return total
     
     elif template.calculation_type == 'percentage':
+        # Base amount calculation should be handled by the caller or passed in
         return Decimal(0)
     
-    elif template.calculation_type == 'demand_charge':
-        return template.fixed_amount or Decimal(0)
-    
-    elif template.calculation_type == 'minimum_charge':
+    elif template.calculation_type in ('demand_charge', 'minimum_charge'):
         return template.fixed_amount or Decimal(0)
     
     return Decimal(0)
