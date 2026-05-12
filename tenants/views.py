@@ -41,26 +41,27 @@ def register(request):
             messages.error(request, 'اسم الشركة مستخدم بالفعل')
             return redirect('tenants:register')
 
-        tenant = Tenant.objects.create(
-            company_name=company_name,
-            email=email,
-            phone=phone,
-            plan=plan,
-            is_active=True,
-        )
-
-        Domain.objects.create(
-            domain=f"{schema_name}.{settings.ALLOWED_HOSTS[0] if isinstance(settings.ALLOWED_HOSTS, list) else settings.ALLOWED_HOSTS.split(',')[0] if hasattr(settings.ALLOWED_HOSTS, 'split') else 'yoursaas.com'}",
-            tenant=tenant,
-            is_primary=True,
-        )
-
-        with schema_context(tenant.schema_name):
-            User.objects.create_superuser(
-                username=email,
+        with schema_context('public'):
+            tenant = Tenant.objects.create(
+                company_name=company_name,
                 email=email,
-                password=password,
+                phone=phone,
+                plan=plan,
+                is_active=True,
             )
+
+            Domain.objects.create(
+                domain=f"{schema_name}.{settings.ALLOWED_HOSTS[0] if isinstance(settings.ALLOWED_HOSTS, list) else settings.ALLOWED_HOSTS.split(',')[0] if hasattr(settings.ALLOWED_HOSTS, 'split') else 'yoursaas.com'}",
+                tenant=tenant,
+                is_primary=True,
+            )
+
+            with schema_context(tenant.schema_name):
+                User.objects.create_superuser(
+                    username=email,
+                    email=email,
+                    password=password,
+                )
 
         request.session['tenant_id'] = tenant.id
         messages.success(request, f'تم إنشاء الحساب بنجاح! مرحباً {company_name}')

@@ -4,46 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل شركة جديدة | S-B SaaS</title>
-    {% load bootstrap4 %}
-    {% bootstrap_css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="bg-dark text-white">
     <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">تسجيل شركة جديدة</h4>
-                    </div>
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label>اسم الشركة</label>
-                                <input type="text" name="company_name" class="form-control" required>
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-5 mt-4">
+                    <a href="/" class="text-decoration-none">
+                        <h2 class="gradient-text font-weight-bold"><i class="bi bi-lightning-charge-fill"></i> S-B SaaS</h2>
+                    </a>
+                </div>
+                
+                <div class="f-card p-5" style="background: var(--glass);">
+                    <h3 class="text-center mb-4 font-weight-bold">إنشاء حساب جديد</h3>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger bg-transparent border-danger text-danger py-2">
+                                {{ message }}
                             </div>
-                            <div class="form-group">
-                                <label>البريد الإلكتروني</label>
-                                <input type="email" name="email" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>رقم الجوال</label>
-                                <input type="text" name="phone" class="form-control" dir="ltr">
-                            </div>
-                            <div class="form-group">
-                                <label>كلمة المرور</label>
-                                <input type="password" name="password" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>الخطة</label>
-                                <select name="plan" class="form-control" required>
-                                    {% for plan in plans %}
-                                    <option value="{{ plan.id }}">{{ plan.name }} - ${{ plan.price_monthly }}/شهر</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">تسجيل</button>
-                        </form>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group mb-4">
+                            <label class="text-dim">اسم الشركة</label>
+                            <input type="text" name="company_name" class="form-control bg-transparent text-white border-secondary py-4" placeholder="مثلاً: شركة الفا للكهرباء" required style="border-radius: 12px;">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-dim">البريد الإلكتروني للإدارة</label>
+                            <input type="email" name="email" class="form-control bg-transparent text-white border-secondary py-4" placeholder="admin@company.com" required style="border-radius: 12px;">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-dim">رقم الجوال</label>
+                            <input type="text" name="phone" class="form-control bg-transparent text-white border-secondary py-4" dir="ltr" placeholder="+966 5x xxx xxxx" style="border-radius: 12px;">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="text-dim">كلمة المرور</label>
+                            <input type="password" name="password" class="form-control bg-transparent text-white border-secondary py-4" required style="border-radius: 12px;">
+                        </div>
+                        <div class="form-group mb-5">
+                            <label class="text-dim">الخطة المطلوبة</label>
+                            <select name="plan" class="form-control bg-transparent text-white border-secondary" required style="border-radius: 12px; height: 50px;">
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" class="bg-dark">{{ plan.name }} - ${{ plan.price_monthly }}/شهر</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-main btn-block btn-lg py-3">تأكيد التسجيل وبدء التجربة</button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-dim">لديك حساب بالفعل؟ <a href="/admin/" class="text-primary">تسجيل الدخول</a></p>
                     </div>
                 </div>
             </div>

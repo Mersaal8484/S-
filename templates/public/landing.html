@@ -3,61 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام S-B للفوترة | حلول الكهرباء والمياه السحابية</title>
-    {% load bootstrap4 %}
-    {% bootstrap_css %}
+    <title>S-B SaaS | الحل الذكي لفوترة الكهرباء والمياه</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        .hero { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 80px 0; }
-        .feature-icon { font-size: 2.5rem; color: #3498db; }
-    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Navbar -->
+    <nav class="custom-nav">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="bi bi-lightning-charge"></i> S-B SaaS</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'tenants:pricing' %}">الخطط</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'tenants:register' %}">اشتراك</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/admin/">دخول</a></li>
+            <div class="nav-content">
+                <a class="navbar-brand m-0" href="#">
+                    <h3 class="m-0 font-weight-bold"><i class="bi bi-lightning-charge-fill text-primary"></i> <span class="gradient-text">S-B SaaS</span></h3>
+                </a>
+                
+                <ul class="nav-links d-none d-lg-flex">
+                    <li><a href="#features">المميزات</a></li>
+                    <li><a href="{% url 'tenants:pricing' %}">الأسعار</a></li>
+                    <li><a href="/admin/">تسجيل الدخول</a></li>
                 </ul>
+
+                <div>
+                    <a href="{% url 'tenants:register' %}" class="btn-main">ابدأ الآن</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <section class="hero text-center">
+    <!-- Hero -->
+    <header class="hero">
         <div class="container">
-            <h1 class="display-4 mb-4">نظام فوترة الكهرباء والمياه السحابي</h1>
-            <p class="lead mb-5">حل متكامل لإدارة المشتركين والعدادات والقراءات والفواتير والمدفوعات</p>
-            <a href="{% url 'tenants:register' %}" class="btn btn-light btn-lg px-5">ابدأ الآن مجاناً</a>
+            <div class="mb-4">
+                <span class="badge badge-pill badge-primary py-2 px-3">الجيل الجديد من أنظمة الفوترة</span>
+            </div>
+            <h1 class="font-weight-bold">مستقبل الفوترة <br><span class="gradient-text">بين يديك الآن</span></h1>
+            <p>
+                نظام سحابي متكامل لإدارة شركات الكهرباء والمياه الخاصة. دقة في الحسابات، سرعة في التنفيذ، وتجربة مستخدم لا تضاهى مصممة خصيصاً لاحتياجاتك.
+            </p>
+            <div class="d-flex justify-content-center flex-wrap" style="gap: 15px;">
+                <a href="{% url 'tenants:register' %}" class="btn-main btn-lg">سجل شركتك مجاناً</a>
+                <a href="#features" class="btn-outline btn-lg">اكتشف المميزات</a>
+            </div>
         </div>
-    </section>
+    </header>
 
-    <section class="py-5">
+    <!-- Features -->
+    <section id="features" class="py-5">
         <div class="container">
-            <div class="row text-center">
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon mb-3"><i class="bi bi-people"></i></div>
-                    <h4>إدارة المشتركين</h4>
-                    <p class="text-muted">سجل كامل للمشتركين مع إدارة العقود والعدادات</p>
+            <div class="text-center mb-5">
+                <h2 class="font-weight-bold">لماذا تختار <span class="gradient-text">S-B SaaS</span>؟</h2>
+                <p class="text-dim">حلول ذكية متكاملة لإدارة الموارد والتحصيل</p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Card 1 -->
+                <div class="f-card">
+                    <i class="bi bi-shield-lock-fill text-primary"></i>
+                    <h4>عزل تام للبيانات</h4>
+                    <p class="text-dim">قواعد بيانات مستقلة لكل عميل لضمان أقصى درجات الأمان والخصوصية باستخدام تقنية PostgreSQL Schemas.</p>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon mb-3"><i class="bi bi-receipt"></i></div>
-                    <h4>فوترة آلية</h4>
-                    <p class="text-muted">حساب الفواتير تلقائياً مع شرائح استهلاك متدرجة</p>
+                
+                <!-- Card 2 -->
+                <div class="f-card">
+                    <i class="bi bi-calculator-fill text-primary"></i>
+                    <h4>محرك فوترة ذكي</h4>
+                    <p class="text-dim">دعم كامل للشرائح المتدرجة، الرسوم الثابتة، والضرائب مع توليد تلقائي للفواتير بدقة متناهية.</p>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon mb-3"><i class="bi bi-cash-stack"></i></div>
-                    <h4>مدفوعات إلكترونية</h4>
-                    <p class="text-muted">دعم STC Pay, Tap, ومحافظ إلكترونية متعددة</p>
+                
+                <!-- Card 3 -->
+                <div class="f-card">
+                    <i class="bi bi-phone-vibrate-fill text-primary"></i>
+                    <h4>مدفوعات رقمية</h4>
+                    <p class="text-dim">تكامل مع STC Pay و Tap و Apple Pay لتسهيل عملية التحصيل من المشتركين عبر الموبايل.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-dark text-white text-center py-4">
-        <p class="mb-0">&copy; 2026 S-B SaaS. جميع الحقوق محفوظة</p>
+    <!-- CTA -->
+    <section class="py-5" style="background: rgba(79, 70, 229, 0.05);">
+        <div class="container text-center py-5">
+            <div class="f-card" style="max-width: 800px; margin: 0 auto; background: var(--glass);">
+                <h2 class="mb-4">هل أنت جاهز للتحول الرقمي؟</h2>
+                <p class="mb-5 text-dim">انضم اليوم إلى مئات الشركات التي تدير عملياتها المالية بكفاءة عالية عبر نظامنا السحابي.</p>
+                <a href="{% url 'tenants:register' %}" class="btn-main btn-lg">ابدأ الفترة التجريبية الآن</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 border-top border-secondary">
+        <div class="container text-center">
+            <p class="text-dim mb-0">&copy; 2026 S-B SaaS. جميع الحقوق محفوظة.</p>
+        </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
