@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{% if form.errors %}{% translate "Error:" %} {% endif %}{{ block.super }}{% endblock %}
+{% block extrastyle %}{{ block.super }}{{ form.media }}{% endblock %}
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-bg">
+    <div class="login-orbe orbe-1"></div>
+    <div class="login-orbe orbe-2"></div>
+    <div class="login-orbe orbe-3"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-card-header">
+      <div class="login-emblem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <h1 class="login-heading">SaaS Billing</h1>
+      <p class="login-desc">{% translate 'Enter your credentials to access the admin panel' %}</p>
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+    <div class="login-notice error">
+      <i class="ico ico-err"></i>
+      {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+    </div>
+    {% endif %}
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+    <div class="login-notice error">
+      <i class="ico ico-err"></i>
+      {{ error }}
+    </div>
+      {% endfor %}
+    {% endif %}
+    {% if user.is_authenticated %}
+    <div class="login-notice warning">
+      <i class="ico ico-warn"></i>
+      {% blocktranslate trimmed %}You are authenticated as {{ username }}, but are not authorized to access this page. Would you like to login to a different account?{% endblocktranslate %}
+    </div>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form" class="login-form-elegant">
+      {% csrf_token %}
+      <div class="login-field">
+        <label class="login-label" for="{{ form.username.id_for_label }}">
+          {{ form.username.label_tag }}
+        </label>
+        <div class="login-input-wrap">{{ form.username }}</div>
+        {{ form.username.errors }}
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="{{ form.password.id_for_label }}">
+          {{ form.password.label_tag }}
+        </label>
+        <div class="login-input-wrap">{{ form.password }}<input type="hidden" name="next" value="{{ next }}"></div>
+        {{ form.password.errors }}
+      </div>
+      {% url 'admin_password_reset' as password_reset_url %}
+      {% if password_reset_url %}
+      <div class="login-forgot">
+        <a href="{{ password_reset_url }}">{% translate 'Forgotten your login credentials?' %}</a>
+      </div>
+      {% endif %}
+      <button type="submit" class="login-submit">
+        <span>{% translate 'Log in' %}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

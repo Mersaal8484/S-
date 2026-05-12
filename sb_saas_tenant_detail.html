@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#07091a;
+  --s1:#0d1230;
+  --s2:#111c42;
+  --s3:#162050;
+  --s4:#1a2660;
+  --elec:#00d4ff;
+  --water:#38bdf8;
+  --energy:#a78bfa;
+  --warn:#fb923c;
+  --ok:#34d399;
+  --danger:#f43f5e;
+  --border:rgba(0,212,255,0.1);
+  --border2:rgba(0,212,255,0.22);
+  --t1:#e0f4ff;
+  --t2:#94c8e0;
+  --t3:#4a7a95;
+}
+body{background:var(--ink);color:var(--t1);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* ORBS */
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.o{position:absolute;border-radius:50%;animation:drift 12s ease-in-out infinite}
+.o1{width:500px;height:500px;background:radial-gradient(circle,rgba(0,212,255,0.1),transparent);top:-150px;left:-100px}
+.o2{width:400px;height:400px;background:radial-gradient(circle,rgba(167,139,250,0.08),transparent);bottom:-100px;right:-80px;animation-delay:-5s;animation-duration:15s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-20px)}}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 20px}
+
+/* BACK BAR */
+.backbar{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.back-btn{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:7px 14px;font-size:12px;color:var(--t2);cursor:pointer;transition:all .2s;font-family:Cairo,sans-serif}
+.back-btn:hover{border-color:var(--elec);color:var(--elec)}
+.crumb{font-size:12px;color:var(--t3)}
+.crumb span{color:var(--t2)}
+.crumb-sep{margin:0 6px;color:var(--t3)}
+
+/* HERO CARD */
+.hero{background:var(--s1);border:1px solid var(--border2);border-radius:20px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00d4ff,#a78bfa,#38bdf8)}
+.hero-inner{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.tenant-avatar{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00d4ff,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0;position:relative}
+.ta-badge{position:absolute;bottom:-4px;left:-4px;width:20px;height:20px;border-radius:6px;background:var(--s1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px}
+.hero-info{flex:1}
+.t-name{font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1.2}
+.t-domain{font-size:13px;color:var(--elec);font-family:monospace;margin-top:4px;display:flex;align-items:center;gap:6px}
+.t-domain-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 5px var(--ok)}50%{opacity:.3}}
+.t-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.meta-pill{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--t2)}
+.hero-stats{display:flex;gap:16px;flex-wrap:wrap;margin-right:auto}
+.hs{text-align:center;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:14px 20px;min-width:100px}
+.hs-val{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.hs-lbl{font-size:10px;color:var(--t3);margin-top:4px;font-weight:600}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:20px;overflow-x:auto}
+.tab{padding:9px 18px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .2s;white-space:nowrap;font-family:Cairo,sans-serif;border:none;background:none}
+.tab.on{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(167,139,250,0.1));color:var(--elec);border:1px solid rgba(0,212,255,0.2)}
+.tab:hover:not(.on){color:var(--t2);background:rgba(0,212,255,0.05)}
+
+/* TAB PANELS */
+.tp{display:none}.tp.on{display:block}
+
+/* GRID 2 */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.g21{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px}
+
+/* PANEL */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.ph{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.pt{font-size:13px;font-weight:700;color:var(--t1)}
+.ps{font-size:11px;color:var(--t3);margin-top:2px}
+.pa{margin-right:auto}
+
+/* CONSUMPTION BARS */
+.cons-list{padding:16px}
+.cons-row{margin-bottom:16px}
+.cons-head{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px}
+.cons-lbl{color:var(--t2);font-weight:600}
+.cons-val{color:var(--t1);font-weight:700}
+.cons-track{height:8px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;position:relative}
+.cons-fill{height:100%;border-radius:8px;position:relative;transition:width 1.3s cubic-bezier(.4,0,.2,1)}
+.cons-fill::after{content:'';position:absolute;top:0;right:0;width:6px;height:6px;border-radius:50%;background:#fff;top:1px}
+.cons-sub{font-size:10px;color:var(--t3);margin-top:4px}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.info-cell{background:var(--s1);padding:14px 16px}
+.ic-lbl{font-size:10px;color:var(--t3);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.ic-val{font-size:13px;color:var(--t1);font-weight:600;display:flex;align-items:center;gap:6px}
+.ic-val code{font-size:11px;color:var(--elec);background:rgba(0,212,255,0.08);padding:2px 8px;border-radius:6px;font-family:monospace}
+
+/* BADGE */
+.b{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.bg{background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
+.bb{background:rgba(0,212,255,0.1);color:var(--elec);border:1px solid rgba(0,212,255,0.2)}
+.by{background:rgba(251,146,60,0.12);color:var(--warn);border:1px solid rgba(251,146,60,0.25)}
+.br{background:rgba(244,63,94,0.12);color:var(--danger);border:1px solid rgba(244,63,94,0.25)}
+.bp{background:rgba(167,139,250,0.12);color:var(--energy);border:1px solid rgba(167,139,250,0.25)}
+
+/* INVOICE TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;color:var(--t3);padding:8px 16px;text-align:right;font-weight:700;letter-spacing:.5px;border-bottom:1px solid var(--border);background:rgba(17,28,66,0.5)}
+.tbl td{padding:12px 16px;font-size:12px;border-bottom:1px solid rgba(0,212,255,0.04);color:var(--t1)}
+.tbl tr:hover td{background:rgba(0,212,255,0.03)}
+.tbl tr:last-child td{border:none}
+.inv-num{font-family:monospace;font-size:11px;color:var(--elec)}
+.pay-btn{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);color:#34d399;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700;transition:all .2s}
+.pay-btn:hover{background:rgba(52,211,153,0.2)}
+.dl-btn{background:rgba(0,212,255,0.08);border:1px solid var(--border);color:var(--elec);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif;transition:all .2s}
+
+/* MINI CHART */
+.mini-chart{padding:12px 16px}
+.mc-svg{width:100%;overflow:visible}
+
+/* STRIPE INFO */
+.stripe-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.stripe-cell{background:var(--s1);padding:14px 16px}
+.sc-lbl{font-size:10px;color:var(--t3);font-weight:700;letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase}
+.sc-val{font-size:12px;color:var(--t1);font-weight:600;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stripe-event{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(0,212,255,0.04);cursor:pointer;transition:background .2s}
+.stripe-event:hover{background:rgba(0,212,255,0.04)}
+.stripe-event:last-child{border:none}
+.se-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.se-type{font-size:11px;font-weight:700;color:var(--t1);font-family:monospace}
+.se-id{font-size:10px;color:var(--t3);margin-top:2px}
+.se-amt{font-size:12px;font-weight:800;margin-right:auto}
+.se-time{font-size:10px;color:var(--t3)}
+
+/* DOMAINS */
+.dom-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(0,212,255,0.04);cursor:pointer;transition:background .2s}
+.dom-item:hover{background:rgba(0,212,255,0.03)}
+.dom-item:last-child{border:none}
+.dom-icon{width:36px;height:36px;border-radius:10px;background:rgba(0,212,255,0.08);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.dom-name{font-size:13px;font-weight:700;color:var(--t1);font-family:monospace}
+.dom-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.dom-ssl{font-size:10px;color:var(--ok);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);padding:2px 8px;border-radius:20px;margin-right:auto}
+
+/* PLAN CARD */
+.plan-card{background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(0,212,255,0.06));border:1px solid rgba(167,139,250,0.25);border-radius:14px;padding:18px;margin:14px}
+.pc-name{font-size:18px;font-weight:800;color:var(--energy);margin-bottom:12px}
+.pc-price{font-size:32px;font-weight:900;color:#fff;line-height:1}<br>.pc-per{font-size:12px;color:var(--t3)}
+.pc-features{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.pc-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2)}
+.pc-feat-dot{width:16px;height:16px;border-radius:5px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.chg-btn{margin:0 14px 14px;background:linear-gradient(135deg,var(--energy),var(--elec));border:none;color:var(--ink);padding:10px;border-radius:10px;width:calc(100%-28px);font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;transition:opacity .2s;display:block;text-align:center}
+.chg-btn:hover{opacity:.85}
+
+/* ACTION BAR */
+.action-bar{display:flex;gap:10px;flex-wrap:wrap;padding:16px;background:var(--s1);border:1px solid var(--border);border-radius:16px;margin-bottom:20px}
+.ab-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:Cairo,sans-serif;border:1px solid;flex:1;min-width:140px;justify-content:center}
+.ab-primary{background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(167,139,250,0.15));border-color:rgba(0,212,255,0.3);color:var(--elec)}
+.ab-primary:hover{border-color:var(--elec);box-shadow:0 0 16px rgba(0,212,255,0.2)}
+.ab-warn{background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.25);color:var(--warn)}
+.ab-warn:hover{background:rgba(251,146,60,0.15)}
+.ab-danger{background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.25);color:var(--danger)}
+.ab-danger:hover{background:rgba(244,63,94,0.15)}
+.ab-ok{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.25);color:var(--ok)}
+.ab-ok:hover{background:rgba(52,211,153,0.15)}
+
+/* SCROLLBAR */
+.body::-webkit-scrollbar,.wrap::-webkit-scrollbar{width:3px}
+.body::-webkit-scrollbar-thumb,.wrap::-webkit-scrollbar-thumb{background:var(--s3);border-radius:4px}
+
+/* ACTIVITY TIMELINE */
+.timeline{padding:14px 16px;display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;position:relative;padding-bottom:16px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:last-child .tl-line{display:none}
+.tl-dot{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:1px solid rgba(0,212,255,0.1);z-index:1}
+.tl-line{position:absolute;top:34px;right:13px;bottom:0;width:1px;background:linear-gradient(to bottom,rgba(0,212,255,0.15),transparent)}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:700;color:var(--t1)}
+.tl-sub{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.5}
+.tl-time{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* USAGE GAUGE */
+.gauge-wrap{display:flex;justify-content:center;padding:20px 16px 8px;position:relative}
+.gauge-label{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);text-align:center}
+.gl-val{font-size:20px;font-weight:800;color:#fff}
+.gl-sub{font-size:10px;color:var(--t3)}
+
+/* METER MINI CARDS */
+.meter-minis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px}
+.mm{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+.mm-ico{font-size:20px;margin-bottom:6px}
+.mm-val{font-size:17px;font-weight:800;color:#fff}
+.mm-lbl{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* ANIMATED COUNT */
+.count{display:inline-block}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="o o1"></div><div class="o o2"></div></div>
+<div class="wrap">
+
+  <!-- BACK + CRUMB -->
+  <div class="backbar">
+    <button class="back-btn" onclick="sendPrompt('ارجع للوحة التحكم الرئيسية')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      رجوع
+    </button>
+    <div class="crumb">المستأجرون <span class="crumb-sep">›</span> <span>كهرباء صنعاء</span></div>
+    <div style="margin-right:auto;display:flex;gap:8px">
+      <span class="b bg">● نشط</span>
+      <span class="b bb">Enterprise</span>
+      <span class="b" style="background:rgba(0,212,255,0.08);color:var(--elec);border:1px solid var(--border)">⚡ كهرباء</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="tenant-avatar">كص<div class="ta-badge">⚡</div></div>
+      <div class="hero-info">
+        <div class="t-name">شركة كهرباء صنعاء</div>
+        <div class="t-domain">
+          <div class="t-domain-dot"></div>
+          sanaa.electric.ye
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </div>
+        <div class="t-meta">
+          <div class="meta-pill">🗓 عضو منذ: يناير 2024</div>
+          <div class="meta-pill">👤 المدير: أحمد البارقي</div>
+          <div class="meta-pill">📍 صنعاء، اليمن</div>
+          <div class="meta-pill">🏢 القطاع الحكومي</div>
+          <div class="meta-pill">💳 Visa ••••4892</div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hs">
+          <div class="hs-val" id="h1">0</div>
+          <div class="hs-lbl">ر.ي إجمالي الدفع</div>
+        </div>
+        <div class="hs">
+          <div class="hs-val" id="h2">0</div>
+          <div class="hs-lbl">فاتورة مدفوعة</div>
+        </div>
+        <div class="hs">
+          <div class="hs-val" id="h3">0</div>
+          <div class="hs-lbl">كيلوواط هذا الشهر</div>
+        </div>
+        <div class="hs" style="border-color:rgba(251,146,60,0.3)">
+          <div class="hs-val" style="color:var(--warn)" id="h4">0</div>
+          <div class="hs-lbl">فاتورة معلقة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="ab-btn ab-primary" onclick="sendPrompt('أنشئ فاتورة جديدة لشركة كهرباء صنعاء')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      إنشاء فاتورة
+    </button>
+    <button class="ab-btn ab-ok" onclick="sendPrompt('سجّل دفعة جديدة لشركة كهرباء صنعاء')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      تسجيل دفعة
+    </button>
+    <button class="ab-btn ab-primary" onclick="sendPrompt('أرسل تذكيراً بالفاتورة لشركة كهرباء صنعاء')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.27-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      إرسال تذكير
+    </button>
+    <button class="ab-btn ab-warn" onclick="sendPrompt('عدّل بيانات مستأجر كهرباء صنعاء')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      تعديل البيانات
+    </button>
+    <button class="ab-btn ab-danger" onclick="sendPrompt('هل تريد تعليق حساب كهرباء صنعاء؟')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+      تعليق الحساب
+    </button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('overview',this)">📊 النظرة العامة</button>
+    <button class="tab" onclick="switchTab('invoices',this)">📄 الفواتير</button>
+    <button class="tab" onclick="switchTab('consumption',this)">⚡ الاستهلاك</button>
+    <button class="tab" onclick="switchTab('stripe',this)">💳 Stripe</button>
+    <button class="tab" onclick="switchTab('domains',this)">🌐 النطاقات</button>
+    <button class="tab" onclick="switchTab('activity',this)">📅 السجل</button>
+  </div>
+
+  <!-- ══════ TAB: OVERVIEW ══════ -->
+  <div class="tp on" id="t-overview">
+
+    <div class="g21">
+      <!-- CONSUMPTION CHART -->
+      <div class="panel">
+        <div class="ph"><div><div class="pt">الاستهلاك الشهري</div><div class="ps">كيلوواط · ساعة · آخر 6 أشهر</div></div></div>
+        <div class="mini-chart">
+          <svg class="mc-svg" viewBox="0 0 460 140" id="tenChart"></svg>
+        </div>
+        <div class="cons-list">
+          <div class="cons-row">
+            <div class="cons-head"><span class="cons-lbl">⚡ الكهرباء المستهلكة</span><span class="cons-val">284,920 كيلوواط</span></div>
+            <div class="cons-track"><div class="cons-fill" style="background:linear-gradient(90deg,#00d4ff,#60a5fa);width:0%" id="cf1"></div></div>
+            <div class="cons-sub">78% من الحد الأقصى المسموح · تحديث تلقائي يومياً</div>
+          </div>
+          <div class="cons-row">
+            <div class="cons-head"><span class="cons-lbl">💰 الفواتير المحصّلة</span><span class="cons-val">14 فاتورة مدفوعة</span></div>
+            <div class="cons-track"><div class="cons-fill" style="background:linear-gradient(90deg,#a78bfa,#ec4899);width:0%" id="cf2"></div></div>
+            <div class="cons-sub">93% معدل التحصيل · أعلى من المتوسط بـ 15%</div>
+          </div>
+          <div class="cons-row">
+            <div class="cons-head"><span class="cons-lbl">⚠️ الفواتير المعلقة</span><span class="cons-val" style="color:var(--warn)">1 فاتورة · 3,840 ر.ي</span></div>
+            <div class="cons-track"><div class="cons-fill" style="background:linear-gradient(90deg,#fb923c,#f43f5e);width:0%" id="cf3"></div></div>
+            <div class="cons-sub">تجاوزت 30 يوماً · يُنصح بالمتابعة</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO + PLAN -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- PLAN -->
+        <div class="panel">
+          <div class="ph"><div class="pt">الخطة الحالية</div></div>
+          <div class="plan-card">
+            <div class="pc-name">⚡ Enterprise</div>
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <div class="pc-price">$1,490</div>
+              <div class="pc-per">/ شهرياً</div>
+            </div>
+            <div class="pc-features">
+              <div class="pc-feat"><div class="pc-feat-dot">✓</div>مستخدمون غير محدودون</div>
+              <div class="pc-feat"><div class="pc-feat-dot">✓</div>فواتير غير محدودة</div>
+              <div class="pc-feat"><div class="pc-feat-dot">✓</div>تقارير متقدمة + API</div>
+              <div class="pc-feat"><div class="pc-feat-dot">✓</div>دعم مخصص 24/7</div>
+              <div class="pc-feat"><div class="pc-feat-dot">✓</div>نطاقات مخصصة غير محدودة</div>
+            </div>
+          </div>
+          <button class="chg-btn" onclick="sendPrompt('غيّر خطة اشتراك كهرباء صنعاء')">تغيير الخطة</button>
+        </div>
+
+        <!-- MINI METERS -->
+        <div class="panel">
+          <div class="ph"><div class="pt">مؤشرات سريعة</div></div>
+          <div class="meter-minis">
+            <div class="mm"><div class="mm-ico">👥</div><div class="mm-val">47</div><div class="mm-lbl">مستخدم نشط</div></div>
+            <div class="mm"><div class="mm-ico">🌐</div><div class="mm-val">3</div><div class="mm-lbl">نطاق مفعّل</div></div>
+            <div class="mm"><div class="mm-ico">🔑</div><div class="mm-val">2</div><div class="mm-lbl">مفتاح API</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL INFO -->
+    <div class="panel" style="margin-bottom:16px">
+      <div class="ph"><div class="pt">بيانات المستأجر الكاملة</div></div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="ic-lbl">اسم الشركة</div><div class="ic-val">شركة كهرباء صنعاء</div></div>
+        <div class="info-cell"><div class="ic-lbl">Stripe Customer ID</div><div class="ic-val"><code>cus_SaNaA1234xYz</code></div></div>
+        <div class="info-cell"><div class="ic-lbl">النطاق الرئيسي</div><div class="ic-val"><code>sanaa.electric.ye</code></div></div>
+        <div class="info-cell"><div class="ic-lbl">رقم الاشتراك</div><div class="ic-val"><code>sub_eNt3rPrIsE_01</code></div></div>
+        <div class="info-cell"><div class="ic-lbl">تاريخ الإنشاء</div><div class="ic-val">يناير 15، 2024</div></div>
+        <div class="info-cell"><div class="ic-lbl">تاريخ التجديد</div><div class="ic-val">يونيو 15، 2026</div></div>
+        <div class="info-cell"><div class="ic-lbl">البريد الإلكتروني</div><div class="ic-val">admin@sanaa.electric.ye</div></div>
+        <div class="info-cell"><div class="ic-lbl">رقم الهاتف</div><div class="ic-val">+967-1-234-5678</div></div>
+        <div class="info-cell"><div class="ic-lbl">طريقة الدفع</div><div class="ic-val">💳 Visa ••••4892 · 09/27</div></div>
+        <div class="info-cell"><div class="ic-lbl">حالة الحساب</div><div class="ic-val"><span class="b bg">● نشط</span></div></div>
+        <div class="info-cell"><div class="ic-lbl">مستوى الخطة</div><div class="ic-val"><span class="b bp">Enterprise</span></div></div>
+        <div class="info-cell"><div class="ic-lbl">نوع القطاع</div><div class="ic-val">⚡ كهرباء — حكومي</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: INVOICES ══════ -->
+  <div class="tp" id="t-invoices">
+    <div class="panel">
+      <div class="ph">
+        <div><div class="pt">سجل الفواتير</div><div class="ps">15 فاتورة إجمالاً</div></div>
+        <div class="pa" style="display:flex;gap:8px;margin-right:auto">
+          <span class="b bg">14 مدفوعة</span>
+          <span class="b by">1 معلقة</span>
+        </div>
+        <button onclick="sendPrompt('أنشئ فاتورة جديدة لكهرباء صنعاء')" style="background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(167,139,250,0.1));border:1px solid rgba(0,212,255,0.25);color:var(--elec);padding:6px 14px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">+ فاتورة</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>رقم الفاتورة</th><th>الشهر</th><th>الاستهلاك</th><th>المبلغ</th><th>الحالة</th><th>تاريخ الدفع</th><th>إجراء</th></tr></thead>
+        <tbody id="invoiceBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: CONSUMPTION ══════ -->
+  <div class="tp" id="t-consumption">
+    <div class="g2">
+      <div class="panel">
+        <div class="ph"><div><div class="pt">مخطط الاستهلاك التفصيلي</div><div class="ps">كيلوواط · ساعة يومياً</div></div></div>
+        <div style="padding:16px">
+          <svg width="100%" viewBox="0 0 400 160" id="consChart" style="overflow:visible"></svg>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">
+          <div style="background:var(--s1);padding:14px 16px"><div style="font-size:10px;color:var(--t3);margin-bottom:4px">أعلى استهلاك</div><div style="font-size:16px;font-weight:800;color:#00d4ff">52,400 kWh</div><div style="font-size:10px;color:var(--t3)">يناير 2026</div></div>
+          <div style="background:var(--s1);padding:14px 16px"><div style="font-size:10px;color:var(--t3);margin-bottom:4px">أدنى استهلاك</div><div style="font-size:16px;font-weight:800;color:#34d399">28,900 kWh</div><div style="font-size:10px;color:var(--t3)">مارس 2025</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div><div class="pt">مؤشر الحمل الزائد</div><div class="ps">نسبة الاستخدام من الحد المسموح</div></div></div>
+        <div class="gauge-wrap">
+          <svg width="200" height="110" viewBox="0 0 200 110" id="gaugeS"></svg>
+          <div class="gauge-label"><div class="gl-val" style="color:#00d4ff">78%</div><div class="gl-sub">من الحد الأقصى</div></div>
+        </div>
+        <div class="meter-minis">
+          <div class="mm"><div class="mm-ico">📊</div><div class="mm-val">284K</div><div class="mm-lbl">كيلوواط الشهر</div></div>
+          <div class="mm"><div class="mm-ico">📈</div><div class="mm-val">12%</div><div class="mm-lbl">نمو من الشهر</div></div>
+          <div class="mm"><div class="mm-ico">🎯</div><div class="mm-val">365K</div><div class="mm-lbl">الحد الأقصى</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">تفاصيل الاستهلاك اليومي — مايو 2026</div></div>
+      <div style="padding:14px 16px">
+        <svg width="100%" viewBox="0 0 700 80" id="dailyChart" style="overflow:visible"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: STRIPE ══════ -->
+  <div class="tp" id="t-stripe">
+    <div class="g2">
+      <div class="panel">
+        <div class="ph"><div><div class="pt">بيانات Stripe</div><div class="ps">معلومات الحساب والاشتراك</div></div></div>
+        <div class="stripe-grid">
+          <div class="stripe-cell"><div class="sc-lbl">Customer ID</div><div class="sc-val">cus_SaNaA1234xYz</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Subscription ID</div><div class="sc-val">sub_eNt3rPrIsE_01</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Plan ID</div><div class="sc-val">price_enterprise_monthly</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Status</div><div class="sc-val"><span class="b bg">● active</span></div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Current Period Start</div><div class="sc-val">2026-05-15</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Current Period End</div><div class="sc-val">2026-06-15</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Payment Method</div><div class="sc-val">pm_visa_4892</div></div>
+          <div class="stripe-cell"><div class="sc-lbl">Default Currency</div><div class="sc-val">USD</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div><div class="pt">أحداث Stripe الأخيرة</div></div></div>
+        <div id="stripeEvents"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: DOMAINS ══════ -->
+  <div class="tp" id="t-domains">
+    <div class="panel">
+      <div class="ph">
+        <div><div class="pt">النطاقات المرتبطة</div><div class="ps">3 نطاقات فعالة</div></div>
+        <button class="pa" onclick="sendPrompt('أضف نطاقاً جديداً لكهرباء صنعاء')" style="margin-right:auto;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--elec);padding:5px 13px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">+ نطاق جديد</button>
+      </div>
+      <div class="dom-item"><div class="dom-icon">🌐</div><div><div class="dom-name">sanaa.electric.ye</div><div class="dom-sub">النطاق الرئيسي · متحقق · SSL نشط</div></div><span class="dom-ssl">🔒 SSL</span><span class="b bg">● نشط</span></div>
+      <div class="dom-item"><div class="dom-icon">🌐</div><div><div class="dom-name">billing.sanaa.electric.ye</div><div class="dom-sub">نطاق الفواتير · متحقق · SSL نشط</div></div><span class="dom-ssl">🔒 SSL</span><span class="b bg">● نشط</span></div>
+      <div class="dom-item"><div class="dom-icon">🌐</div><div><div class="dom-name">api.sanaa.electric.ye</div><div class="dom-sub">نطاق API · متحقق · SSL نشط</div></div><span class="dom-ssl">🔒 SSL</span><span class="b bg">● نشط</span></div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: ACTIVITY ══════ -->
+  <div class="tp" id="t-activity">
+    <div class="panel">
+      <div class="ph"><div><div class="pt">سجل النشاطات</div><div class="ps">آخر الأحداث لهذا المستأجر</div></div></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ══ TABS ══
+function switchTab(id,btn){
+  document.querySelectorAll('.tp').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('t-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='consumption')buildGauge();
+}
+
+// ══ COUNT UPS ══
+function cu(id,target,suffix=''){
+  const el=document.getElementById(id);
+  if(!el)return;
+  let cur=0,total=1500;
+  const step=target/(total/16);
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=Math.round(cur).toLocaleString('ar')+suffix;
+    if(cur>=target)clearInterval(t);
+  },16);
+}
+setTimeout(()=>{
+  cu('h1',48250);cu('h2',14);cu('h3',284920);cu('h4',1);
+  setTimeout(()=>{
+    document.getElementById('cf1').style.width='78%';
+    document.getElementById('cf2').style.width='93%';
+    document.getElementById('cf3').style.width='22%';
+  },400);
+},200);
+
+// ══ TENANT CHART ══
+const months=['ديسمبر','يناير','فبراير','مارس','أبريل','مايو'];
+const vals=[240,260,195,270,250,285];
+const svg2=document.getElementById('tenChart');
+const W=460,H=130,p={t:10,b:25,l:10,r:10};
+const dw=W-p.l-p.r,dh=H-p.t-p.b;
+const mx=Math.max(...vals)+30;
+// gradient def
+const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+const lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+lg.setAttribute('id','cg1');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','0');lg.setAttribute('y2','1');
+['rgba(0,212,255,0.35)','rgba(0,212,255,0)'].forEach((c,i)=>{
+  const s=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s.setAttribute('offset',i===0?'0%':'100%');s.setAttribute('stop-color',c);lg.appendChild(s);
+});
+defs.appendChild(lg);svg2.appendChild(defs);
+// bars
+const bw=(dw/months.length)-6;
+months.forEach((m,i)=>{
+  const x=p.l+i*(dw/months.length)+3;
+  const bh=Math.round((vals[i]/mx)*dh);
+  const y=p.t+dh-bh;
+  // bar
+  const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x',x);r.setAttribute('y',p.t+dh);r.setAttribute('width',bw);r.setAttribute('height',0);
+  r.setAttribute('fill','url(#cg1)');r.setAttribute('rx','4');r.setAttribute('stroke','rgba(0,212,255,0.4)');r.setAttribute('stroke-width','1');
+  r.style.transition='y .8s cubic-bezier(.4,0,.2,1),height .8s cubic-bezier(.4,0,.2,1)';
+  svg2.appendChild(r);
+  setTimeout(()=>{r.setAttribute('y',y);r.setAttribute('height',bh);},200+i*80);
+  // label
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x+bw/2);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=m;
+  svg2.appendChild(t);
+});
+
+// ══ INVOICE TABLE ══
+const invoices=[
+  {num:'INV-2026-015',month:'مايو 2026',kwh:'49,200',amt:'6,140',status:'pending',date:'—'},
+  {num:'INV-2026-014',month:'أبريل 2026',kwh:'51,800',amt:'6,475',status:'paid',date:'01/05/2026'},
+  {num:'INV-2026-013',month:'مارس 2026',kwh:'43,000',amt:'5,375',status:'paid',date:'02/04/2026'},
+  {num:'INV-2026-012',month:'فبراير 2026',kwh:'47,500',amt:'5,940',status:'paid',date:'01/03/2026'},
+  {num:'INV-2026-011',month:'يناير 2026',kwh:'52,400',amt:'6,550',status:'paid',date:'02/02/2026'},
+  {num:'INV-2025-010',month:'ديسمبر 2025',kwh:'45,100',amt:'5,640',status:'paid',date:'01/01/2026'},
+];
+const tb=document.getElementById('invoiceBody');
+invoices.forEach(iv=>{
+  const tr=document.createElement('tr');
+  const badge=iv.status==='paid'?'<span class="b bg">● مدفوعة</span>':'<span class="b by">◑ معلقة</span>';
+  const action=iv.status==='paid'?`<button class="dl-btn" onclick="sendPrompt('تنزيل فاتورة ${iv.num}')">⬇ تنزيل</button>`:`<button class="pay-btn" onclick="sendPrompt('سجّل دفعة فاتورة ${iv.num}')">💳 دفع</button>`;
+  tr.innerHTML=`<td><span class="inv-num">${iv.num}</span></td><td style="color:var(--t2)">${iv.month}</td><td style="color:var(--elec);font-weight:700">${iv.kwh} kWh</td><td style="font-weight:800;color:${iv.status==='paid'?'#34d399':'var(--warn)'}">$${iv.amt}</td><td>${badge}</td><td style="color:var(--t3);font-size:11px">${iv.date}</td><td>${action}</td>`;
+  tr.style.cursor='pointer';
+  tb.appendChild(tr);
+});
+
+// ══ STRIPE EVENTS ══
+const events=[
+  {icon:'💳',type:'payment_intent.succeeded',id:'evt_1AbC...xyz9',amt:'+$1,490',amtColor:'#34d399',time:'12 مايو، 09:41'},
+  {icon:'🔄',type:'customer.subscription.updated',id:'evt_2DeF...uvw8',amt:'ترقية',amtColor:'var(--energy)',time:'15 أبريل، 14:22'},
+  {icon:'💳',type:'payment_intent.succeeded',id:'evt_3GhI...rst7',amt:'+$1,490',amtColor:'#34d399',time:'12 أبريل، 09:38'},
+  {icon:'📧',type:'invoice.sent',id:'evt_4JkL...mno6',amt:'—',amtColor:'var(--t3)',time:'01 أبريل، 08:00'},
+  {icon:'💳',type:'payment_intent.succeeded',id:'evt_5MnO...pqr5',amt:'+$1,490',amtColor:'#34d399',time:'12 مارس، 09:42'},
+];
+const ec=document.getElementById('stripeEvents');
+events.forEach(e=>{
+  const d=document.createElement('div');
+  d.className='stripe-event';
+  d.innerHTML=`<div class="se-ico" style="background:rgba(0,212,255,0.08)">${e.icon}</div><div style="flex:1"><div class="se-type">${e.type}</div><div class="se-id">${e.id}</div></div><div class="se-amt" style="color:${e.amtColor}">${e.amt}</div><div class="se-time">${e.time}</div>`;
+  d.onclick=()=>sendPrompt('تفاصيل حدث Stripe: '+e.type);
+  ec.appendChild(d);
+});
+
+// ══ TIMELINE ══
+const acts=[
+  {icon:'💳',ico_bg:'rgba(52,211,153,0.12)',title:'دفعة مستلمة بنجاح',sub:'$1,490 · Enterprise · فاتورة مايو 2026',time:'12 مايو 2026 · 09:41'},
+  {icon:'📄',ico_bg:'rgba(0,212,255,0.1)',title:'فاتورة شهر مايو أُنشئت',sub:'INV-2026-015 · 49,200 kWh · $6,140',time:'01 مايو 2026 · 08:00'},
+  {icon:'💳',ico_bg:'rgba(52,211,153,0.12)',title:'دفعة مستلمة — أبريل 2026',sub:'$1,490 · تمت بنجاح عبر Visa ••••4892',time:'12 أبريل 2026 · 09:38'},
+  {icon:'⬆️',ico_bg:'rgba(167,139,250,0.1)',title:'ترقية الخطة',sub:'من Pro إلى Enterprise · تفعيل فوري',time:'15 أبريل 2026 · 14:22'},
+  {icon:'🌐',ico_bg:'rgba(0,212,255,0.08)',title:'نطاق جديد مُفعَّل',sub:'api.sanaa.electric.ye · SSL مثبّت',time:'10 مارس 2026 · 11:05'},
+  {icon:'👤',ico_bg:'rgba(251,146,60,0.1)',title:'تعديل بيانات الشركة',sub:'تحديث رقم الهاتف والعنوان من قِبل المدير',time:'02 فبراير 2026 · 16:30'},
+  {icon:'🎉',ico_bg:'rgba(52,211,153,0.1)',title:'تفعيل الحساب',sub:'انضم كمستأجر جديد · خطة Pro · التحويل لاحقاً',time:'15 يناير 2024 · 10:00'},
+];
+const tl=document.getElementById('timeline');
+acts.forEach(a=>{
+  const d=document.createElement('div');
+  d.className='tl-item';
+  d.innerHTML=`<div class="tl-line"></div><div class="tl-dot" style="background:${a.ico_bg}">${a.icon}</div><div class="tl-body"><div class="tl-title">${a.title}</div><div class="tl-sub">${a.sub}</div><div class="tl-time">${a.time}</div></div>`;
+  tl.appendChild(d);
+});
+
+// ══ GAUGE ══
+function buildGauge(){
+  const gs=document.getElementById('gaugeS');
+  if(gs.children.length>0)return;
+  const cx=100,cy=100,R=85,sw=14;
+  const toRad=d=>d*Math.PI/180;
+  function arc(cx,cy,r,start,end,color,width,dash=''){
+    const s=toRad(start),e2=toRad(end);
+    const x1=cx+r*Math.cos(s),y1=cy+r*Math.sin(s);
+    const x2=cx+r*Math.cos(e2),y2=cy+r*Math.sin(e2);
+    const lf=end-start>180?1:0;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M${x1},${y1} A${r},${r} 0 ${lf},1 ${x2},${y2}`);
+    p.setAttribute('fill','none');p.setAttribute('stroke',color);
+    p.setAttribute('stroke-width',width);p.setAttribute('stroke-linecap','round');
+    if(dash)p.setAttribute('stroke-dasharray',dash);
+    gs.appendChild(p);
+  }
+  arc(cx,cy,R,180,360,'rgba(255,255,255,0.05)',sw);
+  arc(cx,cy,R,180,180+180*0.78,'#00d4ff',sw);
+}
+
+// ══ CONSUMPTION CHART ══
+(function(){
+  const sv=document.getElementById('consChart');
+  if(!sv)return;
+  const months2=['ديسمبر','يناير','فبراير','مارس','أبريل','مايو'];
+  const vals2=[240,260,195,270,250,285];
+  const W=400,H=150,p2={t:15,b:25,l:10,r:10};
+  const dw=W-p2.l-p2.r,dh=H-p2.t-p2.b;
+  const mx=Math.max(...vals2)+30;
+  // line
+  const pts=vals2.map((v,i)=>{
+    const x=p2.l+i*(dw/(months2.length-1));
+    const y=p2.t+dh*(1-v/mx);
+    return x+','+y;
+  }).join(' ');
+  const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  poly.setAttribute('points',pts);poly.setAttribute('fill','none');
+  poly.setAttribute('stroke','#00d4ff');poly.setAttribute('stroke-width','2.5');
+  poly.setAttribute('stroke-linejoin','round');poly.setAttribute('stroke-linecap','round');
+  sv.appendChild(poly);
+  vals2.forEach((v,i)=>{
+    const x=p2.l+i*(dw/(months2.length-1));
+    const y=p2.t+dh*(1-v/mx);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','5');
+    c.setAttribute('fill','#07091a');c.setAttribute('stroke','#00d4ff');c.setAttribute('stroke-width','2');
+    sv.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=months2[i];
+    sv.appendChild(t);
+  });
+})();
+
+// ══ DAILY BARS ══
+(function(){
+  const sv=document.getElementById('dailyChart');
+  if(!sv)return;
+  const days=12,W=700,H=80,p={t:8,b:20,l:5,r:5};
+  const dw=W-p.l-p.r,dh=H-p.t-p.b;
+  const data=Array.from({length:days},(_,i)=>Math.round(8000+Math.random()*6000));
+  const mx=Math.max(...data);
+  const bw=Math.round(dw/days)-4;
+  data.forEach((v,i)=>{
+    const x=p.l+i*(dw/days)+2;
+    const bh=Math.round((v/mx)*dh);
+    const hue=v>12000?'#fb923c':v>10000?'#00d4ff':'#38bdf8';
+    const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x);r.setAttribute('y',p.t+dh-bh);r.setAttribute('width',bw);r.setAttribute('height',bh);
+    r.setAttribute('fill',hue);r.setAttribute('rx','3');r.setAttribute('opacity','0.75');
+    r.style.cursor='pointer';
+    r.addEventListener('mouseenter',()=>r.setAttribute('opacity','1'));
+    r.addEventListener('mouseleave',()=>r.setAttribute('opacity','0.75'));
+    sv.appendChild(r);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x+bw/2);t.setAttribute('y',H-2);t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','9');t.setAttribute('fill','#4a7a95');t.textContent=i+1;
+    sv.appendChild(t);
+  });
+})();
+</script>
+</body>
+</html>

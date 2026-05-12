@@ -1,0 +1,186 @@
+{% load i18n static %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static "admin/css/base.css" %}">
+{% block dark-mode-vars %}
+<link rel="stylesheet" href="{% static "admin/css/dark_mode.css" %}">
+<script src="{% static "admin/js/theme.js" %}"></script>
+{% endblock %}
+{% if not is_popup and is_nav_sidebar_enabled %}
+<link rel="stylesheet" href="{% static "admin/css/nav_sidebar.css" %}">
+<script src="{% static 'admin/js/nav_sidebar.js' %}" defer></script>
+{% endif %}
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'css/admin-custom.css' %}">
+{% endblock %}
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
+{% block extrahead %}{% endblock %}
+{% block responsive %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static "admin/css/responsive.css" %}">
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" href="{% static "admin/css/responsive_rtl.css" %}">{% endif %}
+{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now "Z" %}">
+
+<!-- ══ BACKGROUND ══ -->
+<div class="scene">
+  <div class="orbe o1"></div>
+  <div class="orbe o2"></div>
+  <div class="orbe o3"></div>
+</div>
+<div class="grid-bg"></div>
+
+<a href="#content-start" class="skip-link">{% translate 'Skip to main content' %}</a>
+
+<div id="container" class="shell">
+  {% if not is_popup %}
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="nav-sidebar">
+    <div class="sidebar-circuit">
+      <svg width="240" height="300" viewBox="0 0 240 300">
+        <path d="M20 0 L20 100 L120 100 L120 200 L240 200" stroke="#00d4ff" stroke-width="1" fill="none"/>
+        <path d="M60 0 L60 140 L180 140" stroke="#00d4ff" stroke-width="1" fill="none"/>
+        <circle cx="20" cy="100" r="3" fill="#00d4ff"/><circle cx="120" cy="100" r="3" fill="#00d4ff"/>
+        <circle cx="120" cy="200" r="3" fill="#00d4ff"/><circle cx="60" cy="140" r="3" fill="#00d4ff"/>
+      </svg>
+    </div>
+
+    <div class="brand">
+      <div class="brand-hex">
+        <svg viewBox="0 0 42 42"><polygon points="21,2 40,12 40,30 21,40 2,30 2,12" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/><polygon points="21,8 34,15.5 34,26.5 21,34 8,26.5 8,15.5" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/></svg>
+        <span class="brand-letter">SB</span>
+      </div>
+      <div>
+        <div class="brand-name">{% block branding %}{% endblock %}</div>
+        <div class="brand-tag">{% translate 'Smart Billing System' %}</div>
+      </div>
+    </div>
+
+    <div class="live-bar">
+      <div class="live-dot-wrap"><div class="live-dot"></div><div class="pulse-ring"></div></div>
+      <span class="live-txt">{% translate 'System Online' %}</span>
+      <span class="live-sub">99.98% uptime</span>
+    </div>
+
+    <div class="nav-scroll">
+      {% block nav-sidebar %}
+        {% include "admin/nav_sidebar.html" %}
+      {% endblock %}
+    </div>
+
+    <div class="sidebar-foot">
+      {% if has_permission %}
+      <div class="user-tile">
+        <div class="user-avatar">{{ user.get_username|first|upper }}</div>
+        <div>
+          <div class="user-name">{{ user.get_username }}</div>
+          <div class="user-role">{% if user.is_superuser %}{% translate 'Super Admin' %}{% else %}{% translate 'Staff' %}{% endif %}</div>
+        </div>
+        <a href="{% url 'admin:password_change' %}" class="user-sett" title="{% translate 'Settings' %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        {% block content_title %}<div class="pg-title">{% if title %}{{ title }}{% else %}{% translate 'Dashboard' %}{% endif %}</div>{% endblock %}
+        {% block nav-breadcrumbs %}
+        <nav aria-label="{% translate 'Breadcrumbs' %}">
+          {% block breadcrumbs %}
+          <div class="pg-crumb"><a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>{% if title %} · {{ title }}{% endif %}</div>
+          {% endblock %}
+        </nav>
+        {% endblock %}
+      </div>
+      <div class="tb-right">
+        {% block usertools %}
+        {% if has_permission %}
+        <div id="user-tools">
+          {% block welcome-msg %}{% endblock %}
+          {% block userlinks %}{% endblock %}
+        </div>
+        {% endif %}
+        {% endblock %}
+      </div>
+    </header>
+
+    {% endif %}{# is_popup #}
+
+    <main id="content-start" class="main-body">
+
+      {% block messages %}
+      {% if messages %}
+      <div class="msg-strip">
+        {% for message in messages %}
+        <div class="msg msg-{{ message.tags }}">
+          <i class="ico ico-{% if message.tags == 'success' %}check{% elif message.tags == 'warning' %}warn{% elif message.tags == 'error' %}err{% else %}info{% endif %}"></i>
+          <span>{{ message|capfirst }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endblock messages %}
+
+      <div id="content" class="content-area {% block coltype %}colM{% endblock %}">
+        {% block pretitle %}{% endblock %}
+        {% block content_subtitle %}{% if subtitle %}<h2 class="subtitle">{{ subtitle }}</h2>{% endif %}{% endblock %}
+        {% block content %}
+          {% block object-tools %}{% endblock %}
+          {{ content }}
+        {% endblock %}
+        {% block sidebar %}{% endblock %}
+      </div>
+
+    </main>
+
+    {% if not is_popup %}
+    <footer class="admin-footer">
+      {% block footer %}
+      <div class="footer-inner">
+        <span>&copy; {% now "Y" %} <strong>SaaS Billing</strong>. {% translate 'All rights reserved.' %}</span>
+        <span class="foot-badge">v1.0.0</span>
+      </div>
+      {% endblock %}
+    </footer>
+    {% endif %}
+
+  </div><!-- /main-area -->
+</div><!-- /shell -->
+
+<svg class="base-svgs" xmlns="http://www.w3.org/2000/svg">
+  <symbol viewBox="0 0 24 24" id="icon-auto"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 1 0 0 16z"/></symbol>
+  <symbol viewBox="0 0 24 24" id="icon-moon"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol>
+  <symbol viewBox="0 0 24 24" id="icon-sun"><path d="M0 0h24v24H0z" fill="currentColor"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol>
+</svg>
+
+{% block extrabody %}{% endblock extrabody %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var sidebar = document.getElementById('nav-sidebar');
+  var toggleBtn = document.getElementById('sidebar-toggle-btn');
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', function() {
+      sidebar.classList.toggle('collapsed');
+    });
+  }
+});
+</script>
+</body>
+</html>

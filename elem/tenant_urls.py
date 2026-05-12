@@ -8,6 +8,7 @@ from django.http import HttpResponse
 urlpatterns = [
     path('tenant-test/', lambda r: HttpResponse("Tenant URLConf Active")),
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', include('main.urls')),
     path('billing/', include('billing.urls')),
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

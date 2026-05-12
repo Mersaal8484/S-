@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#07091a;
+  --s1:#0d1230;
+  --s2:#111c42;
+  --s3:#162050;
+  --elec:#00d4ff;
+  --water:#38bdf8;
+  --energy:#a78bfa;
+  --warn:#fb923c;
+  --ok:#34d399;
+  --border:rgba(0,212,255,0.12);
+  --border2:rgba(0,212,255,0.25);
+  --glow:rgba(0,212,255,0.08);
+  --t1:#e0f4ff;
+  --t2:#94c8e0;
+  --t3:#4a7a95;
+}
+body{
+  background:var(--ink);
+  color:var(--t1);
+  font-family:'Cairo',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ══ GRID BACKGROUND ══ */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ══ ORBS ══ */
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.o1{position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.12) 0%,transparent 70%);
+  top:-200px;left:-150px;animation:drift 12s ease-in-out infinite}
+.o2{position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 70%);
+  bottom:-150px;right:-100px;animation:drift 15s ease-in-out infinite reverse}
+.o3{position:absolute;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%);
+  top:40%;right:20%;animation:drift 9s ease-in-out infinite 3s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-25px)}}
+
+/* ══ LAYOUT ══ */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* ══ SIDEBAR ══ */
+.aside{
+  background:rgba(13,18,48,0.95);
+  backdrop-filter:blur(24px);
+  border-left:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+  overflow:hidden;
+}
+.aside::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--elec),var(--energy),var(--water));
+}
+
+/* Brand */
+.brand{padding:22px 18px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--border)}
+.brand-hex{
+  width:42px;height:42px;position:relative;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.brand-hex svg{position:absolute;inset:0;width:100%;height:100%}
+.brand-letter{font-size:17px;font-weight:900;color:#fff;position:relative;z-index:1;letter-spacing:-1px}
+.brand-name{font-size:15px;font-weight:700;color:var(--t1);line-height:1.2}
+.brand-tag{font-size:10px;color:var(--elec);font-weight:600;letter-spacing:.5px}
+
+/* Live Status */
+.live-bar{margin:12px 14px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:blink 1.4s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--ok)}50%{opacity:.4;box-shadow:none}}
+.live-txt{font-size:11px;color:var(--ok);font-weight:600}
+.live-sub{font-size:10px;color:var(--t3);margin-right:auto}
+
+/* Nav */
+.nav-grp{padding:8px 10px 4px;font-size:9px;color:var(--t3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 14px;margin:2px 6px;border-radius:10px;cursor:pointer;font-size:12.5px;color:var(--t2);transition:all .2s;position:relative}
+.ni:hover{background:rgba(0,212,255,0.07);color:var(--t1)}
+.ni.on{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(167,139,250,0.08));color:var(--elec);border:1px solid rgba(0,212,255,0.2)}
+.ni svg{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.ni.on svg{opacity:1}
+.ni-badge{margin-right:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.nb-cyan{background:rgba(0,212,255,0.15);color:var(--elec)}
+.nb-warn{background:rgba(251,146,60,0.15);color:var(--warn)}
+.nb-ok{background:rgba(52,211,153,0.15);color:var(--ok)}
+
+/* Aside footer */
+.aside-foot{margin-top:auto;padding:14px}
+.user-tile{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px}
+.ua{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--elec),var(--energy));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.un{font-size:12px;font-weight:700;color:var(--t1)}
+.ur{font-size:10px;color:var(--t3)}
+.usett{margin-right:auto;width:28px;height:28px;border-radius:8px;background:rgba(0,212,255,0.08);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.usett svg{width:14px;height:14px;color:var(--t2)}
+
+/* ══ MAIN ══ */
+.main{display:flex;flex-direction:column;overflow:hidden}
+
+/* Top bar */
+.topbar{
+  background:rgba(13,18,48,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  height:60px;display:flex;align-items:center;padding:0 24px;gap:14px;
+  position:sticky;top:0;z-index:10;
+}
+.pg-title{font-size:16px;font-weight:700;color:var(--t1)}
+.pg-crumb{font-size:11px;color:var(--t3)}
+.tb-right{margin-right:auto;display:flex;align-items:center;gap:10px}
+.search{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:7px 13px;font-size:12px;color:var(--t3);min-width:200px}
+.ib{width:34px;height:34px;border-radius:9px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .2s}
+.ib:hover{border-color:var(--elec);color:var(--elec);box-shadow:0 0 12px rgba(0,212,255,0.2)}
+.ib svg{width:15px;height:15px}
+.rel{position:relative}
+.ndot::after{content:'';position:absolute;top:5px;left:5px;width:6px;height:6px;background:var(--warn);border-radius:50%;border:2px solid var(--ink)}
+
+/* ══ CONTENT ══ */
+.body{padding:20px 24px;overflow-y:auto;flex:1}
+.body::-webkit-scrollbar{width:3px}
+.body::-webkit-scrollbar-thumb{background:var(--s3);border-radius:4px}
+
+/* ══ ENERGY METERS ROW ══ */
+.meters{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.meter{
+  background:var(--s1);border:1px solid var(--border);border-radius:16px;
+  padding:18px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+}
+.meter:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,212,255,0.1)}
+.meter::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.me::after{background:linear-gradient(90deg,#00d4ff,#60a5fa)}
+.mw::after{background:linear-gradient(90deg,#38bdf8,#34d399)}
+.mr::after{background:linear-gradient(90deg,#a78bfa,#ec4899)}
+.mp::after{background:linear-gradient(90deg,#fb923c,#f43f5e)}
+.m-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.m-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.m-ico svg{width:20px;height:20px}
+.mie{background:rgba(0,212,255,0.1);color:var(--elec)}
+.miw{background:rgba(56,189,248,0.1);color:var(--water)}
+.mir{background:rgba(167,139,250,0.1);color:var(--energy)}
+.mip{background:rgba(251,146,60,0.1);color:var(--warn)}
+.m-trend{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.tup{background:rgba(52,211,153,0.1);color:var(--ok)}
+.tdn{background:rgba(251,146,60,0.1);color:var(--warn)}
+.m-val{font-size:28px;font-weight:800;color:#fff;line-height:1;letter-spacing:-1px}
+.m-unit{font-size:11px;color:var(--t3);margin-top:5px}
+.m-bar{margin-top:14px;height:4px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden}
+.m-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+
+/* ══ MAIN GRID ══ */
+.mg{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px}
+
+/* ══ CHART PANEL ══ */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.ph{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.pt{font-size:13px;font-weight:700;color:var(--t1)}
+.ps{font-size:11px;color:var(--t3);margin-top:2px}
+.pact{margin-right:auto;display:flex;gap:6px}
+.pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--t2);cursor:pointer;transition:all .2s;font-family:'Cairo',sans-serif}
+.pill.on,.pill:hover{background:var(--elec);border-color:var(--elec);color:var(--ink);font-weight:700}
+
+/* SVG Chart */
+.chart-svg-wrap{padding:16px 20px 8px}
+.chart-svg-wrap svg text{font-family:'Cairo',sans-serif}
+
+/* ══ DONUT PANEL ══ */
+.donut-wrap{display:flex;flex-direction:column;gap:10px;padding:16px 20px}
+.donut-center{display:flex;justify-content:center;position:relative}
+.donut-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.dl-val{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.dl-sub{font-size:10px;color:var(--t3)}
+.legend-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .2s}
+.legend-item:hover{background:rgba(0,212,255,0.05)}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.leg-name{font-size:12px;color:var(--t2);flex:1}
+.leg-pct{font-size:12px;font-weight:700;margin-right:auto}
+.leg-bar{width:60px;height:3px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.leg-fill{height:100%;border-radius:3px}
+
+/* ══ BOTTOM GRID ══ */
+.bg3{display:grid;grid-template-columns:1.1fr 1fr 0.9fr;gap:16px;margin-bottom:16px}
+
+/* ══ TABLE ══ */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;color:var(--t3);padding:8px 16px;text-align:right;font-weight:700;letter-spacing:.5px;border-bottom:1px solid var(--border);background:rgba(17,28,66,0.5)}
+.tbl td{padding:11px 16px;font-size:12px;border-bottom:1px solid rgba(0,212,255,0.05)}
+.tbl tr:hover td{background:rgba(0,212,255,0.03)}
+.tbl tr:last-child td{border:none}
+.av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.row-info{display:flex;align-items:center;gap:8px}
+.rn{font-size:12px;font-weight:600;color:var(--t1)}
+.rd{font-size:10px;color:var(--t3)}
+
+/* ══ BADGE ══ */
+.b{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.bg{background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
+.bb{background:rgba(0,212,255,0.1);color:var(--elec);border:1px solid rgba(0,212,255,0.2)}
+.by{background:rgba(251,146,60,0.12);color:var(--warn);border:1px solid rgba(251,146,60,0.25)}
+.br{background:rgba(244,63,94,0.12);color:#f43f5e;border:1px solid rgba(244,63,94,0.25)}
+.bp{background:rgba(167,139,250,0.12);color:var(--energy);border:1px solid rgba(167,139,250,0.25)}
+
+/* ══ EVENTS FEED ══ */
+.ev-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(0,212,255,0.05);cursor:pointer;transition:background .2s}
+.ev-item:hover{background:rgba(0,212,255,0.04)}
+.ev-item:last-child{border:none}
+.ev-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+.ev-t{font-size:12px;color:var(--t1);line-height:1.4}
+.ev-s{font-size:10px;color:var(--t3);margin-top:2px}
+.ev-time{font-size:10px;color:var(--t3);margin-right:auto;white-space:nowrap}
+
+/* ══ QUICK ACTIONS ══ */
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}
+.qa-c{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.qa-c::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s}
+.qa-c:hover{border-color:var(--elec);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,212,255,0.15)}
+.qa-c:hover::before{opacity:1}
+.qa-i{font-size:22px;margin-bottom:6px}
+.qa-l{font-size:11px;color:var(--t2);font-weight:600;line-height:1.3}
+
+/* ══ MINI SPARKLINES ══ */
+.spark{display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:8px}
+.sp{border-radius:2px 2px 0 0;flex:1;transition:height .8s cubic-bezier(.4,0,.2,1),opacity .2s}
+.sp:hover{opacity:.7}
+
+/* ══ PULSE RING ══ */
+@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.8);opacity:0}}
+.pulse-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--elec);animation:ring 2s ease-out infinite;pointer-events:none}
+
+/* ══ SCROLLBAR ══ */
+body::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="o1"></div><div class="o2"></div><div class="o3"></div></div>
+<div class="shell">
+
+<!-- ══════ SIDEBAR ══════ -->
+<aside class="aside">
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <!-- subtle circuit lines -->
+    <svg style="position:absolute;bottom:80px;left:0;opacity:.04" width="240" height="300" viewBox="0 0 240 300">
+      <path d="M20 0 L20 100 L120 100 L120 200 L240 200" stroke="#00d4ff" stroke-width="1" fill="none"/>
+      <path d="M60 0 L60 140 L180 140" stroke="#00d4ff" stroke-width="1" fill="none"/>
+      <circle cx="20" cy="100" r="3" fill="#00d4ff"/>
+      <circle cx="120" cy="100" r="3" fill="#00d4ff"/>
+      <circle cx="120" cy="200" r="3" fill="#00d4ff"/>
+      <circle cx="60" cy="140" r="3" fill="#00d4ff"/>
+    </svg>
+  </div>
+
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-hex">
+      <svg viewBox="0 0 42 42"><polygon points="21,2 40,12 40,30 21,40 2,30 2,12" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="1.5"/><polygon points="21,8 34,15.5 34,26.5 21,34 8,26.5 8,15.5" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/></svg>
+      <span class="brand-letter">SB</span>
+    </div>
+    <div>
+      <div class="brand-name">S-B SaaS</div>
+      <div class="brand-tag">⚡ نظام الفوترة الذكي</div>
+    </div>
+  </div>
+
+  <!-- Live -->
+  <div class="live-bar">
+    <div style="position:relative"><div class="live-dot"></div><div class="pulse-ring" style="width:15px;height:15px;inset:-4px;animation-duration:2s"></div></div>
+    <span class="live-txt">النظام يعمل</span>
+    <span class="live-sub">99.98% uptime</span>
+  </div>
+
+  <div style="overflow-y:auto;flex:1">
+    <div class="nav-grp">لوحة التحكم</div>
+    <div class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>نظرة عامة<span class="ni-badge nb-cyan">مباشر</span></div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>الكهرباء<span class="ni-badge nb-warn">3 تنبيه</span></div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>المياه<span class="ni-badge nb-ok">طبيعي</span></div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستأجرون<span class="ni-badge nb-cyan">24</span></div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>الفواتير</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>التحليلات</div>
+
+    <div class="nav-grp">Stripe & API</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>الخطط<span class="ni-badge nb-cyan">3</span></div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>المدفوعات</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Stripe Events</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>مفاتيح API</div>
+
+    <div class="nav-grp">الإدارة</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>الإعدادات</div>
+    <div class="ni" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</div>
+  </div>
+
+  <div class="aside-foot">
+    <div class="user-tile">
+      <div class="ua">B</div>
+      <div>
+        <div class="un">barq@gmail.com</div>
+        <div class="ur">مدير النظام الرئيسي</div>
+      </div>
+      <div class="usett"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════ MAIN ══════ -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="pg-title">لوحة التحكم</div>
+      <div class="pg-crumb">النظرة العامة · مايو 2026</div>
+    </div>
+    <div class="tb-right">
+      <div class="search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        بحث في النظام...
+      </div>
+      <div class="ib rel ndot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="ib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+      <button onclick="sendPrompt('أضف تقريراً جديداً للنظام')" style="background:linear-gradient(135deg,#00d4ff,#a78bfa);border:none;color:#07091a;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap">+ تصدير تقرير</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- ══ ENERGY METERS ══ -->
+    <div class="meters">
+      <div class="meter me" onclick="sendPrompt('تفاصيل استهلاك الكهرباء')">
+        <div class="m-head">
+          <div class="m-ico mie">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="m-trend tup">▲ 12%</span>
+        </div>
+        <div class="m-val" id="ev">0</div>
+        <div class="m-unit">كيلوواط · ساعة إجمالي الشهر</div>
+        <div class="spark" id="sp1"></div>
+        <div class="m-bar"><div class="m-fill" style="background:linear-gradient(90deg,#00d4ff,#60a5fa);width:0%" id="mb1"></div></div>
+      </div>
+      <div class="meter mw" onclick="sendPrompt('تفاصيل استهلاك المياه')">
+        <div class="m-head">
+          <div class="m-ico miw">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          </div>
+          <span class="m-trend tdn">▼ 3%</span>
+        </div>
+        <div class="m-val" id="wv">0</div>
+        <div class="m-unit">م³ · إجمالي استهلاك المياه</div>
+        <div class="spark" id="sp2"></div>
+        <div class="m-bar"><div class="m-fill" style="background:linear-gradient(90deg,#38bdf8,#34d399);width:0%" id="mb2"></div></div>
+      </div>
+      <div class="meter mr" onclick="sendPrompt('تفاصيل الإيرادات الشهرية')">
+        <div class="m-head">
+          <div class="m-ico mir">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <span class="m-trend tup">▲ 18%</span>
+        </div>
+        <div class="m-val" id="rv">0</div>
+        <div class="m-unit">ر.ي · إجمالي الإيرادات</div>
+        <div class="spark" id="sp3"></div>
+        <div class="m-bar"><div class="m-fill" style="background:linear-gradient(90deg,#a78bfa,#ec4899);width:0%" id="mb3"></div></div>
+      </div>
+      <div class="meter mp" onclick="sendPrompt('تفاصيل الفواتير المعلقة')">
+        <div class="m-head">
+          <div class="m-ico mip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <span class="m-trend tdn">7 معلق</span>
+        </div>
+        <div class="m-val" id="pv">0</div>
+        <div class="m-unit">ر.ي · فواتير تحتاج متابعة</div>
+        <div class="spark" id="sp4"></div>
+        <div class="m-bar"><div class="m-fill" style="background:linear-gradient(90deg,#fb923c,#f43f5e);width:0%" id="mb4"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CHART + DONUT ══ -->
+    <div class="mg">
+      <!-- Chart -->
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">الاستهلاك والإيرادات</div><div class="ps">آخر 6 أشهر · مقارنة كهرباء / مياه</div></div>
+          <div class="pact">
+            <div class="pill on">شهري</div>
+            <div class="pill">ربع سنوي</div>
+            <div class="pill">سنوي</div>
+          </div>
+        </div>
+        <div class="chart-svg-wrap">
+          <svg id="mainChart" width="100%" viewBox="0 0 580 200" style="overflow:visible"></svg>
+        </div>
+        <div style="display:flex;gap:20px;padding:0 20px 16px;font-size:11px;color:var(--t3)">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:24px;height:3px;background:#00d4ff;border-radius:2px;display:inline-block"></span>الكهرباء (كيلوواط)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:24px;height:3px;background:#38bdf8;border-radius:2px;display:inline-block"></span>المياه (م³)</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:24px;height:3px;background:#a78bfa;border-radius:2px;display:inline-block;border-style:dashed"></span>الإيرادات</span>
+        </div>
+      </div>
+
+      <!-- Donut -->
+      <div class="panel">
+        <div class="ph"><div><div class="pt">توزيع الخطط</div><div class="ps">24 مستأجر نشط</div></div></div>
+        <div class="donut-wrap">
+          <div class="donut-center">
+            <svg id="donut" width="160" height="160" viewBox="0 0 160 160"></svg>
+            <div class="donut-label">
+              <div class="dl-val">24</div>
+              <div class="dl-sub">مستأجر</div>
+            </div>
+          </div>
+          <div id="legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TENANTS + EVENTS + ACTIONS ══ -->
+    <div class="bg3">
+      <!-- Tenants table -->
+      <div class="panel">
+        <div class="ph">
+          <div><div class="pt">آخر المستأجرين</div><div class="ps">شركات الكهرباء والمياه</div></div>
+          <button onclick="sendPrompt('أضف مستأجراً جديداً')" style="margin-right:auto;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--elec);padding:5px 13px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">+ جديد</button>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>الشركة</th><th>النوع</th><th>الخطة</th><th>الحالة</th></tr></thead>
+          <tbody>
+            <tr onclick="sendPrompt('تفاصيل شركة كهرباء صنعاء')">
+              <td><div class="row-info"><div class="av" style="background:linear-gradient(135deg,#00d4ff,#3b82f6)">كص</div><div><div class="rn">كهرباء صنعاء</div><div class="rd">sanaa.electric.ye</div></div></div></td>
+              <td><span class="b bb">⚡ كهرباء</span></td>
+              <td><span class="b bp">Enterprise</span></td>
+              <td><span class="b bg">● نشط</span></td>
+            </tr>
+            <tr onclick="sendPrompt('تفاصيل شركة مياه عدن')">
+              <td><div class="row-info"><div class="av" style="background:linear-gradient(135deg,#38bdf8,#34d399)">مع</div><div><div class="rn">مياه عدن</div><div class="rd">aden.water.ye</div></div></div></td>
+              <td><span class="b" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.25)">💧 مياه</span></td>
+              <td><span class="b bb">Pro</span></td>
+              <td><span class="b bg">● نشط</span></td>
+            </tr>
+            <tr onclick="sendPrompt('تفاصيل شركة كهرباء تعز')">
+              <td><div class="row-info"><div class="av" style="background:linear-gradient(135deg,#a78bfa,#ec4899)">كت</div><div><div class="rn">كهرباء تعز</div><div class="rd">taiz.electric.ye</div></div></div></td>
+              <td><span class="b bb">⚡ كهرباء</span></td>
+              <td><span class="b bb">Pro</span></td>
+              <td><span class="b by">◑ تجربة</span></td>
+            </tr>
+            <tr onclick="sendPrompt('تفاصيل مياه حضرموت')">
+              <td><div class="row-info"><div class="av" style="background:linear-gradient(135deg,#fb923c,#f43f5e)">مح</div><div><div class="rn">مياه حضرموت</div><div class="rd">hadhr.water.ye</div></div></div></td>
+              <td><span class="b" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.25)">💧 مياه</span></td>
+              <td><span class="b by">Basic</span></td>
+              <td><span class="b br">● متوقف</span></td>
+            </tr>
+            <tr onclick="sendPrompt('تفاصيل كهرباء الحديدة')">
+              <td><div class="row-info"><div class="av" style="background:linear-gradient(135deg,#34d399,#10b981)">كح</div><div><div class="rn">كهرباء الحديدة</div><div class="rd">hod.electric.ye</div></div></div></td>
+              <td><span class="b bb">⚡ كهرباء</span></td>
+              <td><span class="b bp">Enterprise</span></td>
+              <td><span class="b bg">● نشط</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Events -->
+      <div class="panel">
+        <div class="ph"><div><div class="pt">أحداث النظام</div><div class="ps">تحديث تلقائي</div></div><span class="b bg" style="margin-right:auto">مباشر</span></div>
+        <div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(52,211,153,0.12)">💳</div>
+            <div style="flex:1"><div class="ev-t">دفعة ناجحة · كهرباء صنعاء</div><div class="ev-s">payment_intent.succeeded · $1,240</div></div>
+            <div class="ev-time">منذ 2د</div>
+          </div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(0,212,255,0.1)">🆕</div>
+            <div style="flex:1"><div class="ev-t">مستأجر جديد · مياه إب</div><div class="ev-s">customer.created · خطة Pro</div></div>
+            <div class="ev-time">منذ 18د</div>
+          </div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(167,139,250,0.1)">⬆️</div>
+            <div style="flex:1"><div class="ev-t">ترقية · مياه عدن</div><div class="ev-s">Basic → Enterprise</div></div>
+            <div class="ev-time">منذ 1س</div>
+          </div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(251,146,60,0.12)">⚠️</div>
+            <div style="flex:1"><div class="ev-t">تحذير استهلاك · كهرباء تعز</div><div class="ev-s">تجاوز حد الفاتورة بـ 23%</div></div>
+            <div class="ev-time">منذ 3س</div>
+          </div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(244,63,94,0.1)">❌</div>
+            <div style="flex:1"><div class="ev-t">فشل دفعة · مياه حضرموت</div><div class="ev-s">invoice.payment_failed · بطاقة منتهية</div></div>
+            <div class="ev-time">منذ 5س</div>
+          </div>
+          <div class="ev-item">
+            <div class="ev-ico" style="background:rgba(52,211,153,0.1)">🌐</div>
+            <div style="flex:1"><div class="ev-t">نطاق مفعّل · كهرباء الحديدة</div><div class="ev-s">hod.electric.ye → DNS verified</div></div>
+            <div class="ev-time">منذ 8س</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="panel">
+        <div class="ph"><div><div class="pt">إجراءات سريعة</div><div class="ps">اختصارات النظام</div></div></div>
+        <div class="qa">
+          <div class="qa-c" onclick="sendPrompt('أضف مستأجراً جديداً لشركة كهرباء أو مياه')"><div class="qa-i">🏢</div><div class="qa-l">مستأجر جديد</div></div>
+          <div class="qa-c" onclick="sendPrompt('أنشئ فاتورة كهرباء أو مياه جديدة')"><div class="qa-i">📄</div><div class="qa-l">فاتورة جديدة</div></div>
+          <div class="qa-c" onclick="sendPrompt('أضف نطاقاً جديداً للنظام')"><div class="qa-i">🌐</div><div class="qa-l">نطاق جديد</div></div>
+          <div class="qa-c" onclick="sendPrompt('أنشئ خطة اشتراك جديدة')"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></div>
+          <div class="qa-c" onclick="sendPrompt('اعرض تقرير الإيرادات التفصيلي')"><div class="qa-i">📊</div><div class="qa-l">تقرير مالي</div></div>
+          <div class="qa-c" onclick="sendPrompt('إعدادات مفاتيح API وStripe')"><div class="qa-i">🔑</div><div class="qa-l">إعدادات API</div></div>
+        </div>
+
+        <!-- System health -->
+        <div style="padding:0 14px 14px">
+          <div style="font-size:10px;color:var(--t3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">صحة النظام</div>
+          <div id="health"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ══ NAV ══
+function setNav(el){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ══ PILLS ══
+document.querySelectorAll('.pill').forEach(p=>{
+  p.onclick=()=>{p.closest('.pact').querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on')};
+});
+
+// ══ COUNT UP ══
+function countUp(id,target,decimals=0,prefix='',suffix=''){
+  const el=document.getElementById(id);
+  let start=0,dur=1600,step=dur/60;
+  const inc=target/step;
+  let cur=0;
+  const t=setInterval(()=>{
+    cur=Math.min(cur+inc,target);
+    el.textContent=prefix+cur.toLocaleString('ar',{maximumFractionDigits:decimals})+suffix;
+    if(cur>=target)clearInterval(t);
+  },16);
+}
+setTimeout(()=>{
+  countUp('ev',284920,0,'','');
+  countUp('wv',12840,0,'','');
+  countUp('rv',48250,0,'','');
+  countUp('pv',3840,0,'','');
+  document.getElementById('mb1').style.width='78%';
+  document.getElementById('mb2').style.width='54%';
+  document.getElementById('mb3').style.width='88%';
+  document.getElementById('mb4').style.width='32%';
+},200);
+
+// ══ SPARKLINES ══
+const sparkData=[
+  [[40,55,45,70,60,80,72],[var1='#00d4ff']],
+  [[60,50,65,55,70,60,54],[var2='#38bdf8']],
+  [[30,45,55,40,65,70,80],[var3='#a78bfa']],
+  [[70,60,80,50,40,55,45],[var4='#fb923c']],
+];
+['sp1','sp2','sp3','sp4'].forEach((id,i)=>{
+  const wrap=document.getElementById(id);
+  const vals=sparkData[i][0],col=sparkData[i][1];
+  const mx=Math.max(...vals);
+  vals.forEach(v=>{
+    const b=document.createElement('div');
+    b.className='sp';
+    b.style.cssText=`background:${col};height:0%;opacity:0.7;border-radius:2px 2px 0 0`;
+    wrap.appendChild(b);
+    setTimeout(()=>b.style.height=Math.round(v/mx*100)+'%',400+i*100);
+  });
+});
+
+// ══ MAIN CHART ══
+const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو'];
+const elecData=[210,240,195,270,245,285];
+const waterData=[95,110,88,130,115,128];
+const revData=[38,44,35,50,45,48];
+const svg=document.getElementById('mainChart');
+const W=580,H=180,pad={t:20,b:30,l:10,r:10};
+const dw=W-pad.l-pad.r,dh=H-pad.t-pad.b;
+const mx=Math.max(...elecData);
+const cols=months.length,colW=dw/cols;
+
+// Grid lines
+for(let i=0;i<=4;i++){
+  const y=pad.t+dh*(1-i/4);
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',pad.l);line.setAttribute('x2',W-pad.r);
+  line.setAttribute('y1',y);line.setAttribute('y2',y);
+  line.setAttribute('stroke','rgba(0,212,255,0.06)');line.setAttribute('stroke-width','1');
+  svg.appendChild(line);
+}
+
+function pts(data,yMx){
+  return data.map((v,i)=>{
+    const x=pad.l+i*colW+colW/2;
+    const y=pad.t+dh*(1-v/yMx);
+    return x+','+y;
+  }).join(' ');
+}
+
+// Elec area
+const ea=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+const ep=pts(elecData,mx+50);
+ea.setAttribute('points',ep);
+ea.setAttribute('fill','none');ea.setAttribute('stroke','#00d4ff');
+ea.setAttribute('stroke-width','2');ea.setAttribute('stroke-linejoin','round');
+ea.setAttribute('stroke-linecap','round');
+svg.appendChild(ea);
+
+// Water line
+const wa=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+wa.setAttribute('points',pts(waterData,mx+50));
+wa.setAttribute('fill','none');wa.setAttribute('stroke','#38bdf8');
+wa.setAttribute('stroke-width','2');wa.setAttribute('stroke-linejoin','round');
+wa.setAttribute('stroke-linecap','round');
+svg.appendChild(wa);
+
+// Revenue dashed
+const ra=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+ra.setAttribute('points',pts(revData,mx+50));
+ra.setAttribute('fill','none');ra.setAttribute('stroke','#a78bfa');
+ra.setAttribute('stroke-width','1.5');ra.setAttribute('stroke-dasharray','5,3');
+ra.setAttribute('stroke-linejoin','round');
+svg.appendChild(ra);
+
+// Dots + labels
+months.forEach((m,i)=>{
+  const x=pad.l+i*colW+colW/2;
+  // dot elec
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',x);c.setAttribute('cy',pad.t+dh*(1-elecData[i]/(mx+50)));
+  c.setAttribute('r','4');c.setAttribute('fill','#07091a');c.setAttribute('stroke','#00d4ff');c.setAttribute('stroke-width','2');
+  svg.appendChild(c);
+  // month label
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');
+  t.textContent=m;svg.appendChild(t);
+});
+
+// ══ DONUT ══
+const plans=[
+  {name:'Enterprise',count:8,color:'#a78bfa',pct:33},
+  {name:'Pro',count:12,color:'#00d4ff',pct:50},
+  {name:'Basic',count:4,color:'#38bdf8',pct:17},
+];
+const dsvg=document.getElementById('donut');
+const cx=80,cy=80,r=60,ir=42;
+let angle=-Math.PI/2;
+plans.forEach(p=>{
+  const a=p.pct/100*2*Math.PI;
+  const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+  const x2=cx+r*Math.cos(angle+a),y2=cy+r*Math.sin(angle+a);
+  const lf=a>Math.PI?1:0;
+  const ix1=cx+ir*Math.cos(angle),iy1=cy+ir*Math.sin(angle);
+  const ix2=cx+ir*Math.cos(angle+a),iy2=cy+ir*Math.sin(angle+a);
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',`M${x1},${y1} A${r},${r} 0 ${lf},1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${lf},0 ${ix1},${iy1} Z`);
+  path.setAttribute('fill',p.color);path.setAttribute('opacity','0.85');
+  path.style.cursor='pointer';
+  path.addEventListener('mouseenter',()=>path.setAttribute('opacity','1'));
+  path.addEventListener('mouseleave',()=>path.setAttribute('opacity','0.85'));
+  dsvg.appendChild(path);
+  angle+=a;
+});
+// center ring
+const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r',38);
+ring.setAttribute('fill','#0d1230');ring.setAttribute('stroke','rgba(0,212,255,0.1)');ring.setAttribute('stroke-width','1');
+dsvg.appendChild(ring);
+// Legend
+const leg=document.getElementById('legend');
+plans.forEach(p=>{
+  const d=document.createElement('div');
+  d.className='legend-item';
+  d.innerHTML=`<div class="leg-dot" style="background:${p.color}"></div><span class="leg-name">${p.name}</span><div class="leg-bar"><div class="leg-fill" style="background:${p.color};width:${p.pct}%"></div></div><span class="leg-pct" style="color:${p.color}">${p.count}</span>`;
+  leg.appendChild(d);
+});
+
+// ══ HEALTH ══
+const services=[
+  {name:'Stripe API',ok:true,ms:42},
+  {name:'قاعدة البيانات',ok:true,ms:8},
+  {name:'Django Server',ok:true,ms:120},
+  {name:'خدمة DNS',ok:false,ms:999},
+];
+const hc=document.getElementById('health');
+services.forEach(s=>{
+  const d=document.createElement('div');
+  d.style.cssText='display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px';
+  d.innerHTML=`<div style="width:7px;height:7px;border-radius:50%;background:${s.ok?'#34d399':'#f43f5e'};flex-shrink:0"></div><span style="color:var(--t2);flex:1">${s.name}</span><span style="color:${s.ok?'#34d399':'#f43f5e'};font-weight:700">${s.ok?s.ms+'ms':'خطأ'}</span>`;
+  hc.appendChild(d);
+});
+</script>
+</body>
+</html>

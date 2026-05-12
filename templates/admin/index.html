@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* تصفير شامل وحذف أي أثر لـ Django Admin في لوحات التحكم المخصصة */
+html, body { background: #07091a !important; margin: 0 !important; padding: 0 !important; }
+#header, .breadcrumbs, #nav-sidebar, #footer, .messagelist, .module h2, .userlinks { display: none !important; }
+#container { background: transparent !important; border: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+#main { background: transparent !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+#content { background: transparent !important; padding: 0 !important; margin: 0 !important; }
+header#header, nav.breadcrumbs { display: none !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% comment %}
+التمييز الدقيق:
+- إذا كان الرابط يبدأ بـ 127.0.0.1 أو localhost مباشرة (النظام الأم)
+- غير ذلك (المستأجرين)
+{% endcomment %}
+
+{% if request.get_host == '127.0.0.1:8000' or request.get_host == 'localhost:8000' or request.get_host == '127.0.0.1' or request.get_host == 'localhost' %}
+    <!-- النظام الأم: عرض لوحة الـ Ultra Dashboard -->
+    <div style="position: fixed; inset: 0; z-index: 9999; background: #07091a; overflow-y: auto;">
+        {% include "admin/index_public.html" %}
+    </div>
+{% else %}
+    <!-- نظام المستأجر: عرض لوحة الـ Tenant Detail Dashboard -->
+    <div style="position: fixed; inset: 0; z-index: 9999; background: #07091a; overflow-y: auto;">
+        {% include "admin/index_tenant.html" %}
+    </div>
+{% endif %}
+{% endblock %}

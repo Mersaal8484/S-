@@ -15,6 +15,7 @@ if DEBUG:
 SHARED_APPS = [
     'django_tenants',
     'tenants',
+    'core',
     'djstripe',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -73,6 +74,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'billing.context_processors.language_context',
+                'core.context_processors.dashboard_stats',
             ],
         },
     },
