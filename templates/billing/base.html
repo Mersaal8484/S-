@@ -4,127 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}نظام الكهرباء{% endblock %}</title>
+    {% load static %}
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        .htmx-swapping { opacity: 0; transition: opacity 0.3s ease; }
-        .sidebar { min-height: 100vh; background: #2c3e50; }
-        .sidebar a { color: #ecf0f1; padding: 12px 20px; display: block; text-decoration: none; border-radius: 0; }
-        .sidebar a:hover { background: #34495e; }
-        .sidebar a.active { background: #3498db; }
-        .card-stat { border: none; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .stat-icon { font-size: 2.5rem; opacity: 0.8; }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-light">
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 d-none d-md-block sidebar p-0">
-                <div class="text-center py-4 border-bottom border-secondary">
-                    <h5 class="text-white mb-0"><i class="bi bi-lightning-charge"></i> الكهرباء</h5>
-                </div>
-                <div class="py-2">
-                    <a href="{% url 'billing_index' %}" class="{% if request.path == '/billing/' %}active{% endif %}">
-                        <i class="bi bi-house-door"></i> الرئيسية
-                    </a>
-                    <a href="{% url 'customer_list' %}" class="{% if '/billing/customers/' in request.path %}active{% endif %}">
-                        <i class="bi bi-people"></i> المشتركين
-                    </a>
-                    <a href="{% url 'contract_list' %}" class="{% if '/billing/contracts/' in request.path %}active{% endif %}">
-                        <i class="bi bi-file-earmark-text"></i> العقود
-                    </a>
-                    <a href="{% url 'meter_list' %}" class="{% if '/billing/meters/' in request.path %}active{% endif %}">
-                        <i class="bi bi-speedometer2"></i> العدادات
-                    </a>
-                    <a href="{% url 'billing_period_list' %}" class="{% if '/billing/periods/' in request.path %}active{% endif %}">
-                        <i class="bi bi-calendar3"></i> الفترات
-                    </a>
-                    <a href="{% url 'reading_list' %}" class="{% if '/billing/readings/' in request.path %}active{% endif %}">
-                        <i class="bi bi-eye"></i> القراءات
-                    </a>
-                    <a href="{% url 'invoice_list' %}" class="{% if '/billing/invoices/' in request.path %}active{% endif %}">
-                        <i class="bi bi-receipt"></i> الفواتير
-                    </a>
-                    <a href="{% url 'payment_list' %}" class="{% if '/billing/payments/' in request.path %}active{% endif %}">
-                        <i class="bi bi-cash-stack"></i> المدفوعات
-                    </a>
-                    <a href="{% url 'collector_list' %}" class="{% if '/billing/collectors/' in request.path %}active{% endif %}">
-                        <i class="bi bi-person-badge"></i> المتحصلين
-                    </a>
-                    <a href="{% url 'route_list' %}" class="{% if '/billing/routes/' in request.path %}active{% endif %}">
-                        <i class="bi bi-signpost-2"></i> خطوط السير
-                    </a>
-                    <a href="{% url 'sms_list' %}" class="{% if '/billing/sms/' in request.path and request.path != '/billing/sms/providers/' and request.path != '/billing/sms/templates/' %}active{% endif %}">
-                        <i class="bi bi-chat-dots"></i> الرسائل
-                    </a>
-                    <a href="{% url 'sms_provider_list' %}" class="{% if '/billing/sms/providers/' in request.path %}active{% endif %}">
-                        <i class="bi bi-modem"></i> Providers
-                    </a>
-                    <a href="{% url 'sms_template_list' %}" class="{% if '/billing/sms/templates/' in request.path %}active{% endif %}">
-                        <i class="bi bi-file-text"></i> Templates
-                    </a>
-                    <a href="{% url 'system_settings' %}" class="{% if '/billing/settings/' in request.path %}active{% endif %}">
-                        <i class="bi bi-gear"></i> الإعدادات
-                    </a>
-                    <a href="{% url 'ledger_list' %}" class="{% if '/billing/ledger/' in request.path %}active{% endif %}">
-                        <i class="bi bi-journal-text"></i> دفتر الأستاذ
-                    </a>
-                </div>
-            </nav>
-            <div class="col-md-10">
-                <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded mb-4">
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav mr-auto">
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'billing_index' %}">نظام الكهرباء</a>
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav">
-                            {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <span class="nav-link">{{ user.username }}</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'ar' %}خروج{% else %}Logout{% endif %}</a>
-                            </li>
-                            {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'login' %}">{% if LANGUAGE_CODE == 'ar' %}دخول{% else %}Login{% endif %}</a>
-                            </li>
-                            {% endif %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
-                                    {% if LANGUAGE_CODE == 'ar' %}العربية{% else %}English{% endif %}
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="{% url 'set_language' 'ar' %}">العربية</a>
-                                    <a class="dropdown-item" href="{% url 'set_language' 'en' %}">English</a>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-                {% if messages %}
-                <div class="messages mb-4">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% block content %}{% endblock %}
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+            <div class="brand-text">
+                نظام الكهرباء
+                <span class="brand-sub">Electricity Billing System</span>
             </div>
         </div>
-    </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-title">القائمة الرئيسية</div>
+
+            <a href="{% url 'billing_index' %}" class="sidebar-link {% if request.path == '/billing/' %}active{% endif %}">
+                <i class="bi bi-grid-1x2"></i> لوحة التحكم
+            </a>
+            <a href="{% url 'customer_list' %}" class="sidebar-link {% if '/billing/customers/' in request.path %}active{% endif %}">
+                <i class="bi bi-people"></i> المشتركين
+            </a>
+            <a href="{% url 'contract_list' %}" class="sidebar-link {% if '/billing/contracts/' in request.path %}active{% endif %}">
+                <i class="bi bi-file-earmark-text"></i> العقود
+            </a>
+            <a href="{% url 'meter_list' %}" class="sidebar-link {% if '/billing/meters/' in request.path %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> العدادات
+            </a>
+
+            <div class="sidebar-section-title">الفواتير والقراءات</div>
+
+            <a href="{% url 'billing_period_list' %}" class="sidebar-link {% if '/billing/periods/' in request.path %}active{% endif %}">
+                <i class="bi bi-calendar3"></i> الفترات
+            </a>
+            <a href="{% url 'reading_list' %}" class="sidebar-link {% if '/billing/readings/' in request.path %}active{% endif %}">
+                <i class="bi bi-eye"></i> القراءات
+            </a>
+            <a href="{% url 'invoice_list' %}" class="sidebar-link {% if '/billing/invoices/' in request.path %}active{% endif %}">
+                <i class="bi bi-receipt"></i> الفواتير
+            </a>
+            <a href="{% url 'payment_list' %}" class="sidebar-link {% if '/billing/payments/' in request.path %}active{% endif %}">
+                <i class="bi bi-cash-stack"></i> المدفوعات
+            </a>
+
+            <div class="sidebar-section-title">الإدارة</div>
+
+            <a href="{% url 'collector_list' %}" class="sidebar-link {% if '/billing/collectors/' in request.path %}active{% endif %}">
+                <i class="bi bi-person-badge"></i> المتحصلين
+            </a>
+            <a href="{% url 'route_list' %}" class="sidebar-link {% if '/billing/routes/' in request.path %}active{% endif %}">
+                <i class="bi bi-signpost-2"></i> خطوط السير
+            </a>
+            <a href="{% url 'sms_list' %}" class="sidebar-link {% if '/billing/sms/' in request.path and request.path != '/billing/sms/providers/' and request.path != '/billing/sms/templates/' %}active{% endif %}">
+                <i class="bi bi-chat-dots"></i> الرسائل
+            </a>
+            <a href="{% url 'sms_provider_list' %}" class="sidebar-link {% if '/billing/sms/providers/' in request.path %}active{% endif %}">
+                <i class="bi bi-modem"></i> مزودي الخدمة
+            </a>
+            <a href="{% url 'sms_template_list' %}" class="sidebar-link {% if '/billing/sms/templates/' in request.path %}active{% endif %}">
+                <i class="bi bi-file-text"></i> قوالب الرسائل
+            </a>
+            <a href="{% url 'ledger_list' %}" class="sidebar-link {% if '/billing/ledger/' in request.path %}active{% endif %}">
+                <i class="bi bi-journal-text"></i> دفتر الأستاذ
+            </a>
+            <a href="{% url 'system_settings' %}" class="sidebar-link {% if '/billing/settings/' in request.path %}active{% endif %}">
+                <i class="bi bi-gear"></i> الإعدادات
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="user-info">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div style="flex:1;min-width:0;">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-role">تسجيل الخروج</div>
+                </div>
+                <i class="bi bi-box-arrow-left" style="color:var(--text-muted);font-size:0.9rem;"></i>
+            </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" id="sidebarToggle" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="topbar-title">
+                    {% block page_title %}
+                    <h1>نظام الكهرباء</h1>
+                    <p>نظام إدارة الفوترة والقراءات</p>
+                    {% endblock %}
+                </div>
+            </div>
+            <div class="topbar-right">
+                {% if user.is_authenticated %}
+                <span style="font-size:0.85rem;color:var(--text-dim);font-weight:500;">
+                    <i class="bi bi-person-circle" style="margin-left:4px;"></i> {{ user.username }}
+                </span>
+                <a href="{% url 'logout' %}" class="topbar-btn" title="تسجيل الخروج">
+                    <i class="bi bi-box-arrow-left"></i>
+                </a>
+                {% endif %}
+                <div class="dropdown" style="display:inline-block;">
+                    <button class="lang-btn" data-toggle="dropdown">
+                        {% if LANGUAGE_CODE == 'ar' %}AR{% else %}EN{% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-left" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);min-width:100px;">
+                        <a class="dropdown-item" href="{% url 'set_language' 'ar' %}" style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
+                            <i class="bi bi-check-lg" style="color:{% if LANGUAGE_CODE == 'ar' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i> العربية
+                        </a>
+                        <a class="dropdown-item" href="{% url 'set_language' 'en' %}" style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
+                            <i class="bi bi-check-lg" style="color:{% if LANGUAGE_CODE == 'en' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i> English
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            {% if messages %}
+            <div class="messages mb-4 animate-fade-in">
+                {% for message in messages %}
+                <div class="alert alert-modern alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center justify-content-between" role="alert">
+                    <span>{{ message }}</span>
+                    <button type="button" class="close" data-dismiss="alert" style="color:inherit;opacity:0.7;">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var toggle = document.getElementById('sidebarToggle');
+        var sidebar = document.getElementById('adminSidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+
+        if (toggle && sidebar && overlay) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+            });
+
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            });
+        }
+    });
+    </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

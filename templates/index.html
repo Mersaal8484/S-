@@ -1,55 +1,78 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الكهرباء</title>
+    <title>نظام الكهرباء - Electricity Billing System</title>
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        body { background: #f8f9fa; }
-        .hero { background: linear-gradient(135deg, #2c3e50, #3498db); color: white; padding: 50px 0; margin-bottom: 30px; }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 </head>
-<body>
-    <div class="hero">
-        <div class="container text-center">
-            <h1><i class="bi bi-lightning-charge"></i> نظام الكهرباء</h1>
-            <p class="lead">Electricity Billing System</p>
+<body class="landing-page">
+    <nav class="landing-nav">
+        <a href="/" class="nav-brand">
+            <div class="brand-icon" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:white;">
+                <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <span>نظام الكهرباء</span>
+        </a>
+        <div style="display:flex;gap:12px;align-items:center;">
             {% if user.is_authenticated %}
-            <a href="{% url 'billing_index' %}" class="btn btn-primary btn-lg">لوحة التحكم</a>
+            <a href="{% url 'billing_index' %}" class="btn-modern btn-primary" style="text-decoration:none;">
+                <i class="bi bi-grid-1x2"></i> لوحة التحكم
+            </a>
             {% else %}
-            <a href="{% url 'login' %}" class="btn btn-light">دخول</a>
+            <a href="{% url 'login' %}" class="btn-modern btn-outline" style="text-decoration:none;">
+                <i class="bi bi-box-arrow-in-left"></i> دخول
+            </a>
             {% endif %}
         </div>
-    </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5><i class="bi bi-people"></i> إدارة العملاء</h5>
-                        <p>Manage customers, contracts, and meters</p>
-                    </div>
+    </nav>
+
+    <section class="landing-hero">
+        <h1>
+            نظام إدارة<br>
+            <span style="background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">الفوترة والقراءات</span>
+        </h1>
+        <p>نظام متكامل لإدارة المشتركين والعقود والعدادات والفواتير والمدفوعات، مع تقارير دقيقة وتحليلات شاملة</p>
+        <div class="hero-actions">
+            {% if user.is_authenticated %}
+            <a href="{% url 'billing_index' %}" class="btn-modern btn-primary btn-lg" style="text-decoration:none;">
+                <i class="bi bi-grid-1x2"></i> لوحة التحكم
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="btn-modern btn-primary btn-lg" style="text-decoration:none;">
+                <i class="bi bi-box-arrow-in-left"></i> دخول إلى النظام
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <div style="padding:0 48px 80px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1200px;margin:0 auto;">
+            <div class="glass-card" style="padding:32px;text-align:center;border-radius:20px;">
+                <div style="width:56px;height:56px;border-radius:16px;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;color:#818cf8;">
+                    <i class="bi bi-people"></i>
                 </div>
+                <h4 style="font-weight:700;margin:0 0 8px;">إدارة المشتركين</h4>
+                <p style="color:var(--text-dim);margin:0;font-size:0.9rem;">إدارة كاملة للمشتركين والعقود والعدادات</p>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5><i class="bi bi-receipt"></i> الفوترة</h5>
-                        <p>Billing periods, readings, and invoices</p>
-                    </div>
+            <div class="glass-card" style="padding:32px;text-align:center;border-radius:20px;">
+                <div style="width:56px;height:56px;border-radius:16px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;color:#34d399;">
+                    <i class="bi bi-receipt"></i>
                 </div>
+                <h4 style="font-weight:700;margin:0 0 8px;">الفوترة</h4>
+                <p style="color:var(--text-dim);margin:0;font-size:0.9rem;">فترات فوترة، قراءات، وفواتير آلية</p>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5><i class="bi bi-cash-stack"></i> التحصيل</h5>
-                        <p>Payments, collectors, and cash boxes</p>
-                    </div>
+            <div class="glass-card" style="padding:32px;text-align:center;border-radius:20px;">
+                <div style="width:56px;height:56px;border-radius:16px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;color:#fbbf24;">
+                    <i class="bi bi-cash-stack"></i>
                 </div>
+                <h4 style="font-weight:700;margin:0 0 8px;">التحصيل</h4>
+                <p style="color:var(--text-dim);margin:0;font-size:0.9rem;">مدفوعات، متحصلين، وصناديق</p>
             </div>
         </div>
     </div>

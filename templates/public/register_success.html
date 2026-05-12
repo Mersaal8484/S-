@@ -4,28 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تم التسجيل بنجاح | S-B SaaS</title>
-    {% load bootstrap4 %}
-    {% bootstrap_css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="bg-dark text-white">
     <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">تم التسجيل بنجاح!</h4>
+            <div class="col-md-7 col-lg-6">
+                <div class="text-center mb-5 mt-4">
+                    <h2 class="gradient-text font-weight-bold"><i class="bi bi-lightning-charge-fill"></i> S-B SaaS</h2>
+                </div>
+                
+                <div class="f-card p-5 text-center" style="background: var(--glass);">
+                    <div class="animate-float mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
                     </div>
-                    <div class="card-body text-center">
-                        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
-                        <h3 class="my-3">مرحباً {{ tenant.company_name }}</h3>
-                        <p>تم إنشاء حسابك بنجاح. يمكنك الدخول عبر الرابط التالي:</p>
-                        {% if domain %}
-                        <a href="http://{{ domain.domain }}" class="btn btn-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> الدخول للنظام
+                    
+                    <h2 class="font-weight-bold mb-3">تهانينا! تم إنشاء حسابك</h2>
+                    <h4 class="gradient-text mb-4">مرحباً بك، {{ tenant.company_name }}</h4>
+                    
+                    <p class="text-dim mb-5">
+                        لقد تم إعداد بيئة العمل الخاصة بك بنجاح. يمكنك الآن البدء في إدارة عملياتك عبر رابط شركتك المخصص:
+                    </p>
+
+                    {% if domain %}
+                    <div class="glass-card p-4 mb-5" style="border-color: var(--primary);">
+                        <code class="h4 text-primary" style="word-break: break-all;">http://{{ domain.domain }}:8000</code>
+                    </div>
+                    
+                    <a href="http://{{ domain.domain }}:8000/accounts/login/" class="btn-main btn-lg px-5 py-3">
+                        <i class="bi bi-box-arrow-in-right"></i> الدخول إلى النظام الآن
+                    </a>
+                    <div class="mt-4">
+                        <a href="http://{{ domain.domain }}:8000/accounts/login/" class="btn-modern btn-outline btn-lg px-5 py-3" style="text-decoration:none;display:inline-block;">
+                            <i class="bi bi-box-arrow-in-left"></i> تسجيل الدخول
                         </a>
-                        {% endif %}
-                        <hr>
-                        <p class="text-muted">بريد المدير: {{ tenant.email }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <hr class="border-secondary my-5">
+                    
+                    <div class="text-right text-dim">
+                        <p class="mb-1"><i class="bi bi-envelope"></i> بريد المسؤول: <strong>{{ tenant.email }}</strong></p>
+                        <p class="mb-0"><i class="bi bi-info-circle"></i> استخدم هذا البريد لتسجيل الدخول على <strong>http://{{ domain.domain }}:8000/accounts/login/</strong></p>
                     </div>
                 </div>
             </div>

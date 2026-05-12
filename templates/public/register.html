@@ -55,8 +55,31 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn-main btn-block btn-lg py-3">تأكيد التسجيل وبدء التجربة</button>
+                        <button type="submit" id="registerBtn" class="btn-main btn-block btn-lg py-3">
+                            <span id="btnText">تأكيد التسجيل وبدء التجربة</span>
+                            <span id="btnSpinner" style="display:none;">
+                                <span class="spinner-border spinner-border-sm ml-2" role="status"></span>
+                                جاري تهيئة النظام...
+                            </span>
+                        </button>
+                        <div id="processingMsg" class="text-center mt-3" style="display:none;">
+                            <small class="text-dim">قد تستغرق العملية دقيقة أثناء تجهيز بيئة العمل</small>
+                        </div>
                     </form>
+                    <script>
+                    document.querySelector('form').addEventListener('submit', function(e) {
+                        var btn = document.getElementById('registerBtn');
+                        var txt = document.getElementById('btnText');
+                        var spin = document.getElementById('btnSpinner');
+                        var msg = document.getElementById('processingMsg');
+                        btn.disabled = true;
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.opacity = '0.8';
+                        txt.style.display = 'none';
+                        spin.style.display = 'inline';
+                        msg.style.display = 'block';
+                    });
+                    </script>
                     
                     <div class="text-center mt-4">
                         <p class="text-dim">لديك حساب بالفعل؟ <a href="/admin/" class="text-primary">تسجيل الدخول</a></p>
