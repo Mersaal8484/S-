@@ -1,155 +1,230 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — الفواتير{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.section-label svg { width:14px; height:14px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { font-size:10px; font-weight:500; color:var(--t3); background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; -webkit-appearance:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.finput:hover:not(:focus),.fselect:hover:not(:focus),.ftextarea:hover:not(:focus) { border-color:rgba(255,255,255,0.15); }
+.fselect { cursor:pointer; }
+.info-box { background:rgba(0,212,255,0.08); border:1px solid var(--border2); border-radius:11px; padding:14px; margin:16px 0; }
+.info-box .preview-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+.info-box .preview-item { border-right:1px solid var(--border); padding-right:12px; }
+.info-box .preview-item:last-child { border-right:none; }
+.info-box .preview-label { font-size:10px; color:var(--t3); text-transform:uppercase; font-weight:600; }
+.info-box .preview-value { font-size:14px; color:var(--elec); font-weight:700; margin-top:4px; }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+@media(max-width:640px){ .fgrid-2{grid-template-columns:1fr;} .info-box .preview-grid { grid-template-columns:1fr 1fr; } .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h3>{{ title }}</h3>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إنشاء فواتير جديدة</div>
+      </div>
     </div>
-    <div class="col-md-4 text-left">
-        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to List
-        </a>
+    <a href="{% url 'invoice_list' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة للقائمة
+    </a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>فاتورة جديدة</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- الخيارات الأساسية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            الخيارات الأساسية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">العقد <span class="req">*</span></label>
+              <select name="contract" class="fselect" required id="contractSelect">
+                <option value="">اختر عقد...</option>
+                {% for contract in contracts %}
+                <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">نوع الاشتراك <span class="req">*</span></label>
+              <select name="subscription_type" class="fselect" required>
+                <option value="">اختر نوع...</option>
+                {% for st in subscription_types %}
+                <option value="{{ st.id }}">{{ st.name_ar }}{% if st.name_en %} ({{ st.name_en }}){% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- القراءات والفترات -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            القراءات والفترات
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">الفترة الحسابية <span class="opt">اختياري</span></label>
+              <select name="period" class="fselect">
+                <option value="">اختر فترة (اختياري)</option>
+                {% for period in periods %}
+                <option value="{{ period.id }}">{{ period.period_name }} ({{ period.period_code }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">قراءة العداد <span class="req">*</span></label>
+              <select name="reading" class="fselect" required id="readingSelect">
+                <option value="">اختر قراءة...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- معاينة القراءة -->
+        <div class="info-box" id="readingPreview" style="display:none;">
+          <div class="preview-grid">
+            <div class="preview-item">
+              <div class="preview-label">القراءة السابقة</div>
+              <div class="preview-value" id="previewPrevious">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">القراءة الحالية</div>
+              <div class="preview-value" id="previewCurrent">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">الاستهلاك</div>
+              <div class="preview-value" id="previewConsumption">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">التاريخ</div>
+              <div class="preview-value" id="previewDate">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- التواريخ -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            التواريخ
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">تاريخ الإصدار <span class="req">*</span></label>
+              <input type="date" name="issue_date" class="finput" value="{{ today }}" required>
+            </div>
+            <div class="field">
+              <label class="field-label">تاريخ الاستحقاق</label>
+              <input type="date" name="due_date" class="finput" value="{{ default_due }}">
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+          إنشاء الفاتورة
+        </button>
+        <a href="{% url 'invoice_list' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+      </div>
     </div>
+  </form>
 </div>
 
-<form method="post">
-    {% csrf_token %}
-    <div class="card">
-        <div class="card-header"><h5>Invoice Details</h5></div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Contract <span class="text-danger">*</span></label>
-                        <select name="contract" class="form-control" required id="contractSelect">
-                            <option value="">Select Contract</option>
-                            {% for contract in contracts %}
-                            <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Subscription Type <span class="text-danger">*</span></label>
-                        <select name="subscription_type" class="form-control" required>
-                            <option value="">Select Subscription Type</option>
-                            {% for st in subscription_types %}
-                            <option value="{{ st.id }}">{{ st.name_ar }}{% if st.name_en %} ({{ st.name_en }}){% endif %}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Billing Period</label>
-                        <select name="period" class="form-control">
-                            <option value="">Select Period (Optional)</option>
-                            {% for period in periods %}
-                            <option value="{{ period.id }}">{{ period.period_name }} ({{ period.period_code }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Meter Reading <span class="text-danger">*</span></label>
-                        <select name="reading" class="form-control" required id="readingSelect">
-                            <option value="">Select a reading</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Issue Date</label>
-                        <input type="date" name="issue_date" class="form-control" value="{{ today }}" required>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Due Date</label>
-                        <input type="date" name="due_date" class="form-control" value="{{ default_due }}">
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert alert-info mt-3" id="readingPreview" style="display:none;">
-                <h6>Reading Preview:</h6>
-                <div class="row">
-                    <div class="col-md-3">
-                        <small class="text-muted">Previous Reading</small><br>
-                        <strong id="previewPrevious">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Current Reading</small><br>
-                        <strong id="previewCurrent">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Consumption</small><br>
-                        <strong id="previewConsumption">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Date</small><br>
-                        <strong id="previewDate">-</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check"></i> Create Invoice
-            </button>
-            <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </div>
-</form>
-
 <script>
-var contractReadings = {{ contract_readings_json|safe }};
+  var contractReadings = {{ contract_readings_json| safe }};
 
-document.getElementById('contractSelect').addEventListener('change', function() {
+  document.getElementById('contractSelect').addEventListener('change', function () {
     var contractId = this.value;
     var readingSelect = document.getElementById('readingSelect');
     var preview = document.getElementById('readingPreview');
-    
-    readingSelect.innerHTML = '<option value="">Select a reading</option>';
-    preview.style.display = 'none';
-    
-    if (contractId && contractReadings[contractId]) {
-        var readings = contractReadings[contractId];
-        readings.forEach(function(reading) {
-            var option = document.createElement('option');
-            option.value = reading.id;
-            option.setAttribute('data-previous', reading.previous_reading);
-            option.setAttribute('data-current', reading.current_reading);
-            option.setAttribute('data-consumption', reading.consumption);
-            option.setAttribute('data-date', reading.reading_date);
-            option.textContent = 'Date: ' + reading.reading_date + ' | Prev: ' + reading.previous_reading + ' | Curr: ' + reading.current_reading + ' (Cons: ' + reading.consumption + ')';
-            readingSelect.appendChild(option);
-        });
-    }
-});
 
-document.getElementById('readingSelect').addEventListener('change', function() {
+    readingSelect.innerHTML = '<option value="">اختر قراءة...</option>';
+    preview.style.display = 'none';
+
+    if (contractId && contractReadings[contractId]) {
+      var readings = contractReadings[contractId];
+      readings.forEach(function (reading) {
+        var option = document.createElement('option');
+        option.value = reading.id;
+        option.setAttribute('data-previous', reading.previous_reading);
+        option.setAttribute('data-current', reading.current_reading);
+        option.setAttribute('data-consumption', reading.consumption);
+        option.setAttribute('data-date', reading.reading_date);
+        option.textContent = 'التاريخ: ' + reading.reading_date + ' | السابق: ' + reading.previous_reading + ' | الحالي: ' + reading.current_reading + ' (الاستهلاك: ' + reading.consumption + ')';
+        readingSelect.appendChild(option);
+      });
+    }
+  });
+
+  document.getElementById('readingSelect').addEventListener('change', function () {
     var option = this.options[this.selectedIndex];
     var preview = document.getElementById('readingPreview');
 
     if (option.value) {
-        document.getElementById('previewPrevious').textContent = option.getAttribute('data-previous');
-        document.getElementById('previewCurrent').textContent = option.getAttribute('data-current');
-        document.getElementById('previewConsumption').textContent = option.getAttribute('data-consumption');
-        document.getElementById('previewDate').textContent = option.getAttribute('data-date');
-        preview.style.display = 'block';
+      document.getElementById('previewPrevious').textContent = option.getAttribute('data-previous');
+      document.getElementById('previewCurrent').textContent = option.getAttribute('data-current');
+      document.getElementById('previewConsumption').textContent = option.getAttribute('data-consumption');
+      document.getElementById('previewDate').textContent = option.getAttribute('data-date');
+      preview.style.display = 'block';
     } else {
-        preview.style.display = 'none';
+      preview.style.display = 'none';
     }
-});
+  });
 </script>
 {% endblock %}

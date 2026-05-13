@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -28,55 +30,70 @@
         <nav class="sidebar-nav">
             <div class="sidebar-section-title">القائمة الرئيسية</div>
 
-            <a href="{% url 'billing_index' %}" class="sidebar-link {% if request.path == '/billing/' %}active{% endif %}">
+            <a href="{% url 'billing_index' %}"
+                class="sidebar-link {% if request.path == '/billing/' %}active{% endif %}">
                 <i class="bi bi-grid-1x2"></i> لوحة التحكم
             </a>
-            <a href="{% url 'customer_list' %}" class="sidebar-link {% if '/billing/customers/' in request.path %}active{% endif %}">
+            <a href="{% url 'customer_list' %}"
+                class="sidebar-link {% if '/billing/customers/' in request.path %}active{% endif %}">
                 <i class="bi bi-people"></i> المشتركين
             </a>
-            <a href="{% url 'contract_list' %}" class="sidebar-link {% if '/billing/contracts/' in request.path %}active{% endif %}">
+            <a href="{% url 'contract_list' %}"
+                class="sidebar-link {% if '/billing/contracts/' in request.path %}active{% endif %}">
                 <i class="bi bi-file-earmark-text"></i> العقود
             </a>
-            <a href="{% url 'meter_list' %}" class="sidebar-link {% if '/billing/meters/' in request.path %}active{% endif %}">
+            <a href="{% url 'meter_list' %}"
+                class="sidebar-link {% if '/billing/meters/' in request.path %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> العدادات
             </a>
 
             <div class="sidebar-section-title">الفواتير والقراءات</div>
 
-            <a href="{% url 'billing_period_list' %}" class="sidebar-link {% if '/billing/periods/' in request.path %}active{% endif %}">
+            <a href="{% url 'billing_period_list' %}"
+                class="sidebar-link {% if '/billing/periods/' in request.path %}active{% endif %}">
                 <i class="bi bi-calendar3"></i> الفترات
             </a>
-            <a href="{% url 'reading_list' %}" class="sidebar-link {% if '/billing/readings/' in request.path %}active{% endif %}">
+            <a href="{% url 'reading_list' %}"
+                class="sidebar-link {% if '/billing/readings/' in request.path %}active{% endif %}">
                 <i class="bi bi-eye"></i> القراءات
             </a>
-            <a href="{% url 'invoice_list' %}" class="sidebar-link {% if '/billing/invoices/' in request.path %}active{% endif %}">
+            <a href="{% url 'invoice_list' %}"
+                class="sidebar-link {% if '/billing/invoices/' in request.path %}active{% endif %}">
                 <i class="bi bi-receipt"></i> الفواتير
             </a>
-            <a href="{% url 'payment_list' %}" class="sidebar-link {% if '/billing/payments/' in request.path %}active{% endif %}">
+            <a href="{% url 'payment_list' %}"
+                class="sidebar-link {% if '/billing/payments/' in request.path %}active{% endif %}">
                 <i class="bi bi-cash-stack"></i> المدفوعات
             </a>
 
             <div class="sidebar-section-title">الإدارة</div>
 
-            <a href="{% url 'collector_list' %}" class="sidebar-link {% if '/billing/collectors/' in request.path %}active{% endif %}">
+            <a href="{% url 'collector_list' %}"
+                class="sidebar-link {% if '/billing/collectors/' in request.path %}active{% endif %}">
                 <i class="bi bi-person-badge"></i> المتحصلين
             </a>
-            <a href="{% url 'route_list' %}" class="sidebar-link {% if '/billing/routes/' in request.path %}active{% endif %}">
+            <a href="{% url 'route_list' %}"
+                class="sidebar-link {% if '/billing/routes/' in request.path %}active{% endif %}">
                 <i class="bi bi-signpost-2"></i> خطوط السير
             </a>
-            <a href="{% url 'sms_list' %}" class="sidebar-link {% if '/billing/sms/' in request.path and request.path != '/billing/sms/providers/' and request.path != '/billing/sms/templates/' %}active{% endif %}">
+            <a href="{% url 'sms_list' %}"
+                class="sidebar-link {% if '/billing/sms/' in request.path and request.path != '/billing/sms/providers/' and request.path != '/billing/sms/templates/' %}active{% endif %}">
                 <i class="bi bi-chat-dots"></i> الرسائل
             </a>
-            <a href="{% url 'sms_provider_list' %}" class="sidebar-link {% if '/billing/sms/providers/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms_provider_list' %}"
+                class="sidebar-link {% if '/billing/sms/providers/' in request.path %}active{% endif %}">
                 <i class="bi bi-modem"></i> مزودي الخدمة
             </a>
-            <a href="{% url 'sms_template_list' %}" class="sidebar-link {% if '/billing/sms/templates/' in request.path %}active{% endif %}">
+            <a href="{% url 'sms_template_list' %}"
+                class="sidebar-link {% if '/billing/sms/templates/' in request.path %}active{% endif %}">
                 <i class="bi bi-file-text"></i> قوالب الرسائل
             </a>
-            <a href="{% url 'ledger_list' %}" class="sidebar-link {% if '/billing/ledger/' in request.path %}active{% endif %}">
+            <a href="{% url 'ledger_list' %}"
+                class="sidebar-link {% if '/billing/ledger/' in request.path %}active{% endif %}">
                 <i class="bi bi-journal-text"></i> دفتر الأستاذ
             </a>
-            <a href="{% url 'system_settings' %}" class="sidebar-link {% if '/billing/settings/' in request.path %}active{% endif %}">
+            <a href="{% url 'system_settings' %}"
+                class="sidebar-link {% if '/billing/settings/' in request.path %}active{% endif %}">
                 <i class="bi bi-gear"></i> الإعدادات
             </a>
         </nav>
@@ -121,12 +138,19 @@
                     <button class="lang-btn" data-toggle="dropdown">
                         {% if LANGUAGE_CODE == 'ar' %}AR{% else %}EN{% endif %}
                     </button>
-                    <div class="dropdown-menu dropdown-menu-left" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);min-width:100px;">
-                        <a class="dropdown-item" href="{% url 'set_language' 'ar' %}" style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
-                            <i class="bi bi-check-lg" style="color:{% if LANGUAGE_CODE == 'ar' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i> العربية
+                    <div class="dropdown-menu dropdown-menu-left"
+                        style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);min-width:100px;">
+                        <a class="dropdown-item" href="{% url 'set_language' 'ar' %}"
+                            style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
+                            <i class="bi bi-check-lg"
+                                style="color:{% if LANGUAGE_CODE == 'ar' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i>
+                            العربية
                         </a>
-                        <a class="dropdown-item" href="{% url 'set_language' 'en' %}" style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
-                            <i class="bi bi-check-lg" style="color:{% if LANGUAGE_CODE == 'en' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i> English
+                        <a class="dropdown-item" href="{% url 'set_language' 'en' %}"
+                            style="color:var(--text-main);font-size:0.85rem;padding:8px 14px;">
+                            <i class="bi bi-check-lg"
+                                style="color:{% if LANGUAGE_CODE == 'en' %}var(--primary-light){% else %}transparent{% endif %};margin-left:8px;"></i>
+                            English
                         </a>
                     </div>
                 </div>
@@ -137,9 +161,11 @@
             {% if messages %}
             <div class="messages mb-4 animate-fade-in">
                 {% for message in messages %}
-                <div class="alert alert-modern alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center justify-content-between" role="alert">
+                <div class="alert alert-modern alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center justify-content-between"
+                    role="alert">
                     <span>{{ message }}</span>
-                    <button type="button" class="close" data-dismiss="alert" style="color:inherit;opacity:0.7;">&times;</button>
+                    <button type="button" class="close" data-dismiss="alert"
+                        style="color:inherit;opacity:0.7;">&times;</button>
                 </div>
                 {% endfor %}
             </div>
@@ -150,24 +176,25 @@
     </main>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var toggle = document.getElementById('sidebarToggle');
-        var sidebar = document.getElementById('adminSidebar');
-        var overlay = document.getElementById('sidebarOverlay');
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggle = document.getElementById('sidebarToggle');
+            var sidebar = document.getElementById('adminSidebar');
+            var overlay = document.getElementById('sidebarOverlay');
 
-        if (toggle && sidebar && overlay) {
-            toggle.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('show');
-            });
+            if (toggle && sidebar && overlay) {
+                toggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('show');
+                });
 
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('show');
-            });
-        }
-    });
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                });
+            }
+        });
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

@@ -1,92 +1,162 @@
 {% extends 'billing/base.html' %}
-{% block title %}المشتركين{% endblock %}
+{% block title %}المشتركين — نظام الفوترة{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; max-width:1200px; margin:0 auto; padding:24px 20px 0; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:24px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+.btn-add { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:12px; background:linear-gradient(135deg,var(--elec),var(--elec2)); border:none; color:var(--ink); font-size:14px; font-weight:800; text-decoration:none; transition:all .25s; box-shadow:0 4px 15px rgba(0,212,255,0.3); font-family:Cairo,sans-serif; }
+.btn-add:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,255,0.4); }
+
+.filter-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; padding:16px; margin:20px auto; max-width:1160px; }
+.filter-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.filter-field { flex:1; min-width:200px; }
+.filter-field label { display:block; font-size:11px; font-weight:700; color:var(--elec); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.finput,.fselect { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:9px; color:var(--t1); font-family:Cairo,sans-serif; padding:9px 12px; font-size:13px; outline:none; }
+.finput:focus,.fselect:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); }
+.btn-filter { padding:9px 24px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:700; cursor:pointer; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-filter:hover { background:rgba(0,212,255,0.1); border-color:var(--elec); color:var(--elec); }
+
+.table-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3); max-width:1160px; margin:0 auto 40px; }
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:14px 16px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:11px; }
+td { padding:16px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+tr:hover { background:rgba(0,212,255,0.02); }
+.cust-id { color:var(--t1); font-weight:700; font-family:monospace; }
+.cust-name { color:var(--elec); font-weight:600; text-decoration:none; }
+.cust-name:hover { text-decoration:underline; }
+.badge-status { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+.status-inactive { background:rgba(244,63,94,0.15); color:var(--danger); border:1px solid rgba(244,63,94,0.3); }
+.balance { font-family:monospace; font-weight:700; }
+.balance.pos { color:var(--danger); }
+.balance.neg { color:var(--ok); }
+.actions { display:flex; gap:8px; justify-content:flex-end; }
+.btn-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); transition:all .2s; }
+.btn-icon:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.1); }
+
+.pagination-wrapper { padding:20px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:8px; }
+.page-btn { padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); text-decoration:none; font-size:12px; font-weight:600; transition:all .2s; }
+.page-btn:hover { border-color:var(--elec); color:var(--elec); }
+.page-btn.active { background:var(--elec); color:var(--ink); border-color:var(--elec); }
+
+@media(max-width:768px){ .filter-row{flex-direction:column;} .filter-field{width:100%;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>المشتركين</h3>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'customer_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> إضافة مشترك
-        </a>
+    <div>
+      <div class="page-title">قائمة المشتركين</div>
+      <div class="page-sub">إدارة بيانات العملاء والاشتراكات</div>
     </div>
+  </div>
+  <a href="{% url 'customer_create' %}" class="btn-add">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    إضافة مشترك جديد
+  </a>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="get" class="form-inline mb-3">
-            <input type="text" name="q" class="form-control mr-2" placeholder="بحث..." value="{{ request.GET.q }}">
-            <select name="city" class="form-control mr-2">
-                <option value="">كل المدن</option>
-                {% for city in cities %}
-                <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-secondary">بحث</button>
-        </form>
-
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>رقم المشترك</th>
-                    <th>الاسم</th>
-                    <th>الهاتف</th>
-                    <th>المدينة</th>
-                    <th>الرصيد</th>
-                    <th>الحالة</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in customers %}
-                <tr>
-                    <td>{{ customer.customer_number }}</td>
-                    <td>{{ customer.full_name_ar }}</td>
-                    <td>{{ customer.mobile_phone }}</td>
-                    <td>{{ customer.city|default:"-" }}</td>
-                    <td>
-                        <span class="text-{% if customer.current_balance > 0 %}danger{% elif customer.current_balance < 0 %}success{% endif %}">
-                            {{ customer.current_balance|floatformat:2 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if customer.is_active %}
-                        <span class="badge badge-success">نشط</span>
-                        {% else %}
-                        <span class="badge badge-secondary">غير نشط</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'customer_detail' customer.id %}" class="btn btn-sm btn-info">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="{% url 'customer_update' customer.id %}" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center">لا يوجد مشتركين</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        {% if customers.has_other_pages %}
-        <nav>
-            <ul class="pagination">
-                {% if customers.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ customers.previous_page_number }}">السابق</a></li>
-                {% endif %}
-                <li class="page-item active"><span class="page-link">{{ customers.number }} / {{ customers.paginator.num_pages }}</span></li>
-                {% if customers.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ customers.next_page_number }}">التالي</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+<div class="filter-card">
+  <form method="get" class="filter-row">
+    <div class="filter-field">
+      <label>بحث بالاسم أو الرقم</label>
+      <input type="text" name="q" class="finput" placeholder="اكتب للبحث..." value="{{ request.GET.q }}">
     </div>
+    <div class="filter-field">
+      <label>المدينة</label>
+      <select name="city" class="fselect">
+        <option value="">جميع المدن</option>
+        {% for city in cities %}
+        <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn-filter">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-left:6px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      تصفية النتائج
+    </button>
+  </form>
+</div>
+
+<div class="table-card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>رقم المشترك</th>
+          <th>الاسم الكامل</th>
+          <th>رقم الجوال</th>
+          <th>المدينة</th>
+          <th>الرصيد الحالي</th>
+          <th>الحالة</th>
+          <th style="text-align:left">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+        <tr>
+          <td class="cust-id">{{ customer.customer_number }}</td>
+          <td>
+            <a href="{% url 'customer_detail' customer.id %}" class="cust-name">{{ customer.full_name_ar }}</a>
+          </td>
+          <td>{{ customer.mobile_phone }}</td>
+          <td>{{ customer.city|default:"-" }}</td>
+          <td class="balance {% if customer.current_balance > 0 %}pos{% elif customer.current_balance < 0 %}neg{% endif %}">
+            {{ customer.current_balance|floatformat:2 }}
+          </td>
+          <td>
+            {% if customer.is_active %}
+            <span class="badge-status status-active">نشط</span>
+            {% else %}
+            <span class="badge-status status-inactive">موقف</span>
+            {% endif %}
+          </td>
+          <td class="actions">
+            <a href="{% url 'customer_detail' customer.id %}" class="btn-icon" title="عرض التفاصيل">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </a>
+            <a href="{% url 'customer_update' customer.id %}" class="btn-icon" title="تعديل">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:40px; color:var(--t3)">لا يوجد مشتركين مطابقين للبحث</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if customers.has_other_pages %}
+  <div class="pagination-wrapper">
+    {% if customers.has_previous %}
+    <a href="?page={{ customers.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.city %}&city={{ request.GET.city }}{% endif %}" class="page-btn">السابق</a>
+    {% endif %}
+    
+    <span class="page-btn active">{{ customers.number }} / {{ customers.paginator.num_pages }}</span>
+    
+    {% if customers.has_next %}
+    <a href="?page={{ customers.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.city %}&city={{ request.GET.city }}{% endif %}" class="page-btn">التالي</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

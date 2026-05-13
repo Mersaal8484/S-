@@ -1,100 +1,128 @@
 {% extends 'billing/base.html' %}
-{% block title %}Contract - {{ contract.contract_number }}{% endblock %}
+{% block title %}تفاصيل العقد — {{ contract.contract_number }}{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(52,211,153,0.2),rgba(0,212,255,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--ok); box-shadow:0 0 20px rgba(52,211,153,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-edit { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); color:var(--warn); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; }
+.btn-edit:hover { background:var(--warn); color:var(--ink); }
+
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:24px; }
+.stat-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:8px; }
+.stat-label { font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:0.5px; }
+.stat-value { font-size:18px; font-weight:800; color:var(--t1); }
+.status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; width:fit-content; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.info-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+.card-header { padding:18px 24px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.02); display:flex; align-items:center; justify-content:space-between; }
+.card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); display:flex; align-items:center; gap:8px; }
+.card-header h6::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--elec); }
+.card-body { padding:0; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:12px 16px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; font-size:11px; }
+td { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+tr:last-child td { border-bottom:none; }
+tr:hover { background:rgba(0,212,255,0.02); }
+
+@media(max-width:800px){ .detail-grid{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h3>{{ contract.contract_number }}</h3>
-        <p class="text-muted">{{ contract.customer.full_name_ar }}</p>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     </div>
-    <div class="col-md-4 text-left">
-        <a href="{% url 'contract_update' contract.id %}" class="btn btn-warning">Edit</a>
+    <div>
+      <div class="page-title">عقد رقم: {{ contract.contract_number }}</div>
+      <div class="page-sub">المشترك: {{ contract.customer.full_name_ar }}</div>
     </div>
+  </div>
+  <a href="{% url 'contract_update' contract.id %}" class="btn-edit">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    تعديل العقد
+  </a>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h6>Type</h6>
-                <p>{{ contract.type.name_ar }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h6>Status</h6>
-                <span class="badge badge-{% if contract.contract_status == 'active' %}success{% else %}warning{% endif %}">
-                    {{ contract.get_contract_status_display }}
-                </span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h6>Start Date</h6>
-                <p>{{ contract.start_date }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h6>Load (kW)</h6>
-                <p>{{ contract.connection_load }}</p>
-            </div>
-        </div>
-    </div>
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">نوع الاشتراك</span>
+    <div class="stat-value">{{ contract.type.name_ar }}</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">الحالة</span>
+    <span class="status-badge {% if contract.contract_status == 'active' %}status-active{% else %}status-warn{% endif %}">
+      {{ contract.get_contract_status_display }}
+    </span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">تاريخ البدء</span>
+    <div class="stat-value">{{ contract.start_date|date:"Y-m-d" }}</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">الحمل التعاقدي (كيلوواط)</span>
+    <div class="stat-value">{{ contract.connection_load }}</div>
+  </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Meters ({{ meters.count }})</h5>
-            </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead><tr><th>Number</th><th>Type</th><th>Status</th></tr></thead>
-                    <tbody>
-                        {% for meter in meters %}
-                        <tr>
-                            <td>{{ meter.meter_number }}</td>
-                            <td>{{ meter.get_meter_type_display }}</td>
-                            <td><span class="badge badge-{% if meter.meter_status == 'active' %}success{% else %}warning{% endif %}">{{ meter.get_meter_status_display }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="3">No meters</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="detail-grid">
+  <div class="info-card">
+    <div class="card-header">
+      <h6>العدادات المرتبطة ({{ meters.count }})</h6>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Invoices ({{ invoices.count }})</h5>
-            </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead><tr><th>Number</th><th>Amount</th><th>Status</th></tr></thead>
-                    <tbody>
-                        {% for inv in invoices %}
-                        <tr>
-                            <td>{{ inv.invoice_number }}</td>
-                            <td>{{ inv.total_amount|floatformat:2 }}</td>
-                            <td><span class="badge badge-{% if inv.invoice_status == 'paid' %}success{% else %}warning{% endif %}">{{ inv.get_invoice_status_display }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="3">No invoices</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>رقم العداد</th><th>النوع</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for meter in meters %}
+          <tr>
+            <td style="font-family:monospace; font-weight:700; color:var(--t1)">{{ meter.meter_number }}</td>
+            <td>{{ meter.get_meter_type_display }}</td>
+            <td><span class="status-badge {% if meter.meter_status == 'active' %}status-active{% else %}status-warn{% endif %}">{{ meter.get_meter_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="text-align:center; padding:20px; color:var(--t3)">لا توجد عدادات مرتبطة</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
+
+  <div class="info-card">
+    <div class="card-header">
+      <h6>الفواتير الأخيرة ({{ invoices.count }})</h6>
+    </div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>رقم الفاتورة</th><th>المبلغ</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for inv in invoices %}
+          <tr>
+            <td style="font-family:monospace; font-weight:700; color:var(--t1)">{{ inv.invoice_number }}</td>
+            <td style="color:var(--elec); font-weight:800">{{ inv.total_amount|floatformat:2 }}</td>
+            <td><span class="status-badge {% if inv.invoice_status == 'paid' %}status-active{% else %}status-warn{% endif %}">{{ inv.get_invoice_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="text-align:center; padding:20px; color:var(--t3)">لا توجد فواتير سابقة</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}

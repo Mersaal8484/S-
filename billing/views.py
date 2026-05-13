@@ -109,7 +109,7 @@ def customer_create(request):
     
     return render(request, 'billing/customer_form.html', {
         'form': CustomerForm(),
-        'title': 'Add Customer'
+        'title': 'إضافة مشترك'
     })
 
 
@@ -134,7 +134,8 @@ def customer_update(request, pk):
     
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
-        if form.save():
+        if form.is_valid():
+            form.save()
             messages.success(request, 'Customer updated')
             return redirect('customer_detail', pk)
     else:
@@ -142,7 +143,7 @@ def customer_update(request, pk):
     
     return render(request, 'billing/customer_form.html', {
         'form': form,
-        'title': 'Edit Customer'
+        'title': 'تعديل بيانات المشترك'
     })
 
 
@@ -180,7 +181,7 @@ def contract_create(request):
     
     return render(request, 'billing/contract_form.html', {
         'form': ContractForm(),
-        'title': 'Add Contract'
+        'title': 'إضافة عقد'
     })
 
 
@@ -211,7 +212,7 @@ def contract_update(request, pk):
     
     return render(request, 'billing/contract_form.html', {
         'form': form,
-        'title': 'Edit Contract'
+        'title': 'تعديل العقد'
     })
 
 
@@ -249,7 +250,7 @@ def meter_create(request):
     
     return render(request, 'billing/meter_form.html', {
         'form': MeterForm(),
-        'title': 'Add Meter'
+        'title': 'إضافة عداد'
     })
 
 
@@ -267,7 +268,7 @@ def meter_edit(request, pk):
     
     return render(request, 'billing/meter_form.html', {
         'form': form,
-        'title': 'Edit Meter'
+        'title': 'تعديل العداد'
     })
 
 
@@ -293,7 +294,7 @@ def billing_period_create(request):
             messages.error(request, str(e))
     
     return render(request, 'billing/billing_period_form.html', {
-        'title': 'Add Period'
+        'title': 'إضافة فترة'
     })
 
 
@@ -314,7 +315,7 @@ def billing_period_edit(request, pk):
         return redirect('billing_period_list')
     
     return render(request, 'billing/billing_period_form.html', {
-        'title': 'Edit Period',
+        'title': 'تعديل الفترة',
         'period': period
     })
 
@@ -370,7 +371,7 @@ def reading_create(request):
     users = User.objects.filter(is_active=True)
     
     return render(request, 'billing/reading_form.html', {
-        'title': 'Submit Reading',
+        'title': 'تسجيل قراءة',
         'today': datetime.now().date().strftime('%Y-%m-%d'),
         'contracts': contracts,
         'users': users
@@ -537,7 +538,7 @@ def invoice_create(request):
     default_due = (datetime.now().date() + timedelta(days=15)).strftime('%Y-%m-%d')
 
     return render(request, 'billing/invoice_form.html', {
-        'title': 'Create Invoice',
+        'title': 'إنشاء فاتورة',
         'contracts': contracts,
         'subscription_types': subscription_types,
         'periods': periods,
@@ -661,7 +662,7 @@ def invoice_regenerate(request, pk):
         'readings': readings,
         'subscription_types': subscription_types,
         'periods': periods,
-        'title': 'Regenerate Invoice',
+        'title': 'إعادة توليد الفاتورة',
     })
 
 
@@ -772,7 +773,7 @@ def payment_create(request):
     periods = BillingPeriod.objects.filter(status__in=['reading_open', 'billing_in_progress', 'billing_completed'])
     
     return render(request, 'billing/payment_form.html', {
-        'title': 'Record Payment',
+        'title': 'تسجيل دفعة',
         'invoices': invoices,
         'contracts': contracts,
         'customers': customers,
@@ -792,8 +793,12 @@ def collector_list(request):
 
 def collector_create(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        collector = Collector.objects.create(
+        name = (request.POST.get('name') or '').strip()
+        if not name:
+            messages.error(request, 'Collector name is required')
+            return render(request, 'billing/collector_form.html', {'title': 'إضافة محصل'})
+
+        Collector.objects.create(
             name=name,
             phone=request.POST.get('phone'),
             area=request.POST.get('area'),
@@ -802,7 +807,7 @@ def collector_create(request):
         messages.success(request, 'Collector created')
         return redirect('collector_list')
     
-    return render(request, 'billing/collector_form.html', {'title': 'Add Collector'})
+    return render(request, 'billing/collector_form.html', {'title': 'إضافة محصل'})
 
 
 def route_list(request):
@@ -822,7 +827,7 @@ def route_create(request):
         messages.success(request, 'Route created')
         return redirect('route_list')
     
-    return render(request, 'billing/route_form.html', {'title': 'Add Route'})
+    return render(request, 'billing/route_form.html', {'title': 'إضافة مسار'})
 
 
 def route_detail(request, pk):
@@ -1052,7 +1057,7 @@ def subscription_type_create(request):
         )
         messages.success(request, 'Subscription type created')
         return redirect('system_settings')
-    return render(request, 'billing/subscription_type_form.html', {'title': 'Add Subscription Type'})
+    return render(request, 'billing/subscription_type_form.html', {'title': 'إضافة نوع اشتراك'})
 
 
 def subscription_type_edit(request, pk):
@@ -1065,10 +1070,11 @@ def subscription_type_edit(request, pk):
         st.save()
         messages.success(request, 'Subscription type updated')
         return redirect('system_settings')
-    return render(request, 'billing/subscription_type_form.html', {'title': 'Edit Subscription Type', 'type': st})
+    return render(request, 'billing/subscription_type_form.html', {'title': 'تعديل نوع الاشتراك', 'type': st})
 
 
 def template_create(request, type_id=None):
+    subscription_types = SubscriptionType.objects.all()
     
     if request.method == 'POST':
         type_id = request.POST.get('type') or type_id
@@ -1123,35 +1129,9 @@ def template_create(request, type_id=None):
             messages.error(request, str(e))
     
     return render(request, 'billing/template_form.html', {
-        'title': 'Add Template',
+        'title': 'إضافة نموذج',
         'subscription_types': subscription_types,
         'selected_type': type_id
-    })
-
-
-def template_edit(request, pk):
-    template = get_object_or_404(InvoiceLineTemplate, pk=pk)
-    subscription_types = SubscriptionType.objects.all()
-    
-    if request.method == 'POST':
-        try:
-            template.type_id = request.POST.get('type')
-            template.line_order = request.POST.get('line_order', template.line_order)
-            template.line_name_ar = request.POST.get('line_name_ar')
-            template.line_name_en = request.POST.get('line_name_en', '')
-            template.calculation_type = request.POST.get('calculation_type')
-            template.fixed_amount = to_decimal(request.POST.get('fixed_amount'))
-            template.percentage_rate = to_decimal(request.POST.get('percentage_rate'))
-            template.save()
-            messages.success(request, 'Template updated')
-            return redirect('system_settings')
-        except Exception as e:
-            messages.error(request, str(e))
-    
-    return render(request, 'billing/template_form.html', {
-        'title': 'Edit Template',
-        'template': template,
-        'subscription_types': subscription_types,
     })
 
 
@@ -1253,7 +1233,7 @@ def template_create_for_type(request, type_id):
             messages.error(request, str(e))
     
     return render(request, 'billing/template_form.html', {
-        'title': f'Add Template for {subscription_type.name_ar}',
+        'title': f'إضافة نموذج لـ {subscription_type.name_ar}',
         'subscription_types': subscription_types,
         'selected_type': type_id,
 })
@@ -1279,7 +1259,7 @@ def template_edit(request, pk):
             messages.error(request, str(e))
     
     return render(request, 'billing/template_form.html', {
-        'title': 'Edit Template',
+        'title': 'تعديل النموذج',
         'template': template,
         'subscription_types': subscription_types,
     })
@@ -1318,4 +1298,20 @@ def ledger_detail(request, pk):
         'ledger': ledger,
         'total_debit': total_debit,
         'total_credit': total_credit,
+    })
+
+
+def adjustment_create(request):
+    if request.method == 'POST':
+        try:
+            services.record_financial_adjustment(request.POST, request.user)
+            messages.success(request, 'تم تسجيل التسوية المالية بنجاح')
+            return redirect('ledger_list')
+        except Exception as e:
+            messages.error(request, f'خطأ: {str(e)}')
+            
+    customers = Customer.objects.filter(is_active=True)
+    return render(request, 'billing/adjustment_form.html', {
+        'title': 'تسجيل تسوية مالية',
+        'customers': customers
     })

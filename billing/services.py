@@ -14,8 +14,50 @@ from .models import (
     Customer, Contract, Meter, SubscriptionType, BillingPeriod,
     MeterReadingSubmission, MeterReading, Invoice, InvoiceLine, Payment,
     CustomerBalance, BalanceLedger, SMSQueue, SMSTemplate, InvoiceLineTemplate,
-    InvoiceLineFormulaDetail
+    InvoiceLineFormulaDetail, FinancialAdjustment
 )
+
+
+def record_financial_adjustment(data, user):
+    """Record a financial adjustment and update customer balance/ledger"""
+    customer_id = data.get('customer')
+    customer = Customer.objects.get(pk=customer_id)
+    adjustment_type = data.get('adjustment_type')
+    amount = Decimal(data.get('amount', 0))
+    reason = data.get('reason', '')
+    
+    with transaction.atomic():
+        adjustment = FinancialAdjustment.objects.create(
+            adjustment_number=generate_number('ADJ'),
+            customer=customer,
+            adjustment_type=adjustment_type,
+            amount=amount,
+            reason=reason,
+            approved_by=user,
+            approval_date=timezone.now(),
+            is_approved=True
+        )
+        
+        # Update balance
+        # Debit increases balance (indebtedness), Credit decreases it
+        debit = amount if adjustment_type == 'debit' else 0
+        credit = amount if adjustment_type == 'credit' else 0
+        
+        customer.current_balance += (Decimal(debit) - Decimal(credit))
+        customer.save()
+        
+        BalanceLedger.objects.create(
+            customer=customer,
+            transaction_type='adjustment',
+            reference_id=adjustment.id,
+            debit=debit,
+            credit=credit,
+            balance_after=customer.current_balance,
+            notes=f'Adjustment {adjustment.adjustment_number}: {reason}',
+            created_by=user
+        )
+        
+    return adjustment
 
 
 def generate_number(prefix, length=4):

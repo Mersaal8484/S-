@@ -1,96 +1,212 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — المدفوعات{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.section-label svg { width:14px; height:14px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.fgrid-3 { grid-template-columns:1fr 1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { font-size:10px; font-weight:500; color:var(--t3); background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; -webkit-appearance:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.finput:hover:not(:focus),.fselect:hover:not(:focus),.ftextarea:hover:not(:focus) { border-color:rgba(255,255,255,0.15); }
+.fselect { cursor:pointer; }
+.ftextarea { resize:vertical; min-height:80px; line-height:1.6; }
+.input-wrap { position:relative; }
+.input-wrap .input-icon { position:absolute; top:50%; transform:translateY(-50%); right:13px; color:var(--t3); pointer-events:none; width:16px; height:16px; }
+.input-wrap .finput { padding-right:40px; }
+.field-error { font-size:11px; color:var(--danger); margin-top:3px; }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+@media(max-width:640px){ .fgrid-2,.fgrid-3{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    <div class="card">
-        <div class="card-header"><h5>{{ title }}</h5></div>
-        <div class="card-body">
-            <div class="form-group">
-                <label>Payment Type</label>
-                <select name="payment_type" class="form-control" id="paymentType" onchange="toggleFields()">
-                    <option value="invoice">By Invoice</option>
-                    <option value="contract">By Contract</option>
-                    <option value="customer">By Customer</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="invoiceField">
-                <label>Invoice</label>
-                <select name="invoice" class="form-control">
-                    <option value="">Select Invoice</option>
-                    {% for invoice in invoices %}
-                    <option value="{{ invoice.id }}">{{ invoice.invoice_number }} - {{ invoice.contract.customer.full_name_ar }} ({{ invoice.remaining_amount|floatformat:2 }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="form-group" id="contractField" style="display:none">
-                <label>Contract</label>
-                <select name="contract" class="form-control">
-                    <option value="">Select Contract</option>
-                    {% for contract in contracts %}
-                    <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="form-group" id="customerField" style="display:none">
-                <label>Customer</label>
-                <select name="customer" class="form-control">
-                    <option value="">Select Customer</option>
-                    {% for customer in customers %}
-                    <option value="{{ customer.id }}">{{ customer.customer_number }} - {{ customer.full_name_ar }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Amount</label>
-                <input type="number" name="amount" class="form-control" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>Billing Period</label>
-                <select name="period" class="form-control">
-                    <option value="">Select Period (Optional)</option>
-                    {% for period in periods %}
-                    <option value="{{ period.id }}">{{ period.period_name }} ({{ period.period_code }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Payment Method</label>
-                <select name="payment_method" class="form-control">
-                    <option value="cash">Cash</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="card">Card</option>
-                    <option value="online">Online</option>
-                    <option value="cheque">Cheque</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Reference Number</label>
-                <input type="text" name="reference_number" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Notes</label>
-                <textarea name="notes" class="form-control" rows="2"></textarea>
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'payment_list' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m4.22-4.22l-4.24 4.24m6 4.22h-6m-4.24 4.24l4.24-4.24m-6-4.22h6m4.22 4.22l-4.24-4.24"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">تسجيل المدفوعات والتحصيلات</div>
+      </div>
     </div>
-</form>
+    <a href="{% url 'payment_list' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة للقائمة
+    </a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>دفعة جديدة</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- نوع الدفعة -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            نوع الدفعة
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">حسب <span class="req">*</span></label>
+              <select name="payment_type" class="fselect" id="paymentType" onchange="toggleFields()" required>
+                <option value="invoice">حسب الفاتورة</option>
+                <option value="contract">حسب العقد</option>
+                <option value="customer">حسب المشترك</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- حقول الاختيار -->
+        <div class="form-section">
+          <div id="invoiceField">
+            <div class="field">
+              <label class="field-label">الفاتورة <span class="req">*</span></label>
+              <select name="invoice" class="fselect">
+                <option value="">اختر فاتورة...</option>
+                {% for invoice in invoices %}
+                <option value="{{ invoice.id }}">{{ invoice.invoice_number }} - {{ invoice.contract.customer.full_name_ar }} ({{ invoice.remaining_amount|floatformat:2 }})</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="field" id="contractField" style="display:none">
+            <label class="field-label">العقد</label>
+            <select name="contract" class="fselect">
+              <option value="">اختر عقد...</option>
+              {% for contract in contracts %}
+              <option value="{{ contract.id }}">{{ contract.contract_number }} - {{ contract.customer.full_name_ar }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field" id="customerField" style="display:none">
+            <label class="field-label">المشترك</label>
+            <select name="customer" class="fselect">
+              <option value="">اختر مشترك...</option>
+              {% for customer in customers %}
+              <option value="{{ customer.id }}">{{ customer.customer_number }} - {{ customer.full_name_ar }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- التفاصيل المالية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            التفاصيل المالية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">المبلغ <span class="req">*</span></label>
+              <div class="input-wrap">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <input type="number" name="amount" class="finput" placeholder="0.00" step="0.01" min="0" required>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">طريقة الدفع <span class="req">*</span></label>
+              <select name="payment_method" class="fselect" required>
+                <option value="cash">نقداً</option>
+                <option value="bank_transfer">تحويل بنكي</option>
+                <option value="card">بطاقة</option>
+                <option value="online">دفع إلكتروني</option>
+                <option value="cheque">شيك</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- معلومات إضافية -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            معلومات إضافية
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">الفترة الحسابية <span class="opt">اختياري</span></label>
+              <select name="period" class="fselect">
+                <option value="">اختر فترة (اختياري)</option>
+                {% for period in periods %}
+                <option value="{{ period.id }}">{{ period.period_name }} ({{ period.period_code }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">رقم المرجع <span class="opt">اختياري</span></label>
+              <input type="text" name="reference_number" class="finput" placeholder="رقم الإيصال أو الشيك...">
+            </div>
+            <div class="field">
+              <label class="field-label">ملاحظات <span class="opt">اختياري</span></label>
+              <textarea name="notes" class="ftextarea" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ الدفعة
+        </button>
+        <a href="{% url 'payment_list' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+      </div>
+    </div>
+  </form>
+</div>
 
 <script>
-function toggleFields() {
+  function toggleFields() {
     var type = document.getElementById('paymentType').value;
     document.getElementById('invoiceField').style.display = type === 'invoice' ? 'block' : 'none';
     document.getElementById('contractField').style.display = type === 'contract' ? 'block' : 'none';
     document.getElementById('customerField').style.display = type === 'customer' ? 'block' : 'none';
-}
+  }
+  document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
 {% endblock %}

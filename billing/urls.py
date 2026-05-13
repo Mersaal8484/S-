@@ -66,6 +66,7 @@ path('sms/', views.sms_list, name='sms_list'),
     path('settings/templates/create-for-type/<int:type_id>/', views.template_create_for_type, name='template_create_for_type'),
     
     path('ledger/', views.ledger_list, name='ledger_list'),
+    path('ledger/adjust/', views.adjustment_create, name='adjustment_create'),
     path('ledger/<int:pk>/', views.ledger_detail, name='ledger_detail'),
     
     path('reports/', views.reports_dashboard, name='reports_dashboard'),

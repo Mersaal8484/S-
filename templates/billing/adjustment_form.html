@@ -1,5 +1,5 @@
 {% extends 'billing/base.html' %}
-{% block title %}قراءة العداد — قراءات العدادات{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -10,7 +10,7 @@
   --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
   --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
 }
-.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.form-page { max-width: 800px; margin: 0 auto; padding: 24px 0; }
 .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
 .page-header-left { display:flex; align-items:center; gap:14px; }
 .page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
@@ -23,25 +23,19 @@
 .form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
 .form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
 .form-card-body { padding:28px; }
-.form-section { margin-bottom:28px; }
-.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
-.fgrid { display:grid; gap:16px; }
+.fgrid { display:grid; gap:20px; }
 .fgrid-2 { grid-template-columns:1fr 1fr; }
 .field { display:flex; flex-direction:column; gap:7px; }
 .field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
 .field-label .req { color:var(--danger); font-size:14px; }
-.field-label .opt { color:var(--t3); font-size:11px; font-weight:500; }
 .finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; }
-.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
 .finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
-.ftextarea { resize:vertical; min-height:70px; line-height:1.6; }
 .form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
 .btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
 .btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
 .btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
 .btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
-.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
-@media(max-width:640px){ .fgrid-2{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+@media(max-width:640px){ .fgrid-2{grid-template-columns:1fr;} }
 </style>
 {% endblock %}
 
@@ -50,16 +44,16 @@
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 2v20M2 12h20"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
       </div>
       <div>
-        <div class="page-title">قراءة العداد</div>
-        <div class="page-sub">تسجيل قراءة جديدة للعداد</div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">تسجيل تسوية يدوية لرصيد المشترك</div>
       </div>
     </div>
-    <a href="{% url 'reading_list' %}" class="btn-back">
+    <a href="{% url 'ledger_list' %}" class="btn-back">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
-      العودة للقائمة
+      العودة لدفتر الأستاذ
     </a>
   </div>
 
@@ -68,68 +62,46 @@
     <div class="form-card">
       <div class="form-card-header">
         <span class="h-dot"></span>
-        <h6>بيانات القراءة</h6>
+        <h6>تفاصيل التسوية المالية</h6>
       </div>
       <div class="form-card-body">
-
-        <!-- معلومات الأساسية -->
-        <div class="form-section">
-          <div class="section-label">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
-            المعلومات الأساسية
+        <div class="fgrid">
+          <div class="field">
+            <label class="field-label">المشترك <span class="req">*</span></label>
+            <select name="customer" class="fselect" required>
+              <option value="">— اختر المشترك —</option>
+              {% for c in customers %}
+              <option value="{{ c.id }}">{{ c.customer_number }} - {{ c.full_name_ar }}</option>
+              {% endfor %}
+            </select>
           </div>
+
           <div class="fgrid fgrid-2">
             <div class="field">
-              <label class="field-label">رقم العداد <span class="req">*</span></label>
-              <input type="text" name="meter_number" class="finput" placeholder="أدخل رقم العداد" required>
+              <label class="field-label">نوع التسوية <span class="req">*</span></label>
+              <select name="adjustment_type" class="fselect" required>
+                <option value="debit">مدين (زيادة المديونية)</option>
+                <option value="credit">دائن (خصم من المديونية)</option>
+              </select>
             </div>
             <div class="field">
-              <label class="field-label">تاريخ القراءة <span class="opt">اختياري</span></label>
-              <input type="date" name="reading_date" class="finput" value="{{ today }}">
+              <label class="field-label">المبلغ <span class="req">*</span></label>
+              <input type="number" step="0.01" name="amount" class="finput" placeholder="0.00" required>
             </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">السبب / الملاحظات <span class="req">*</span></label>
+            <textarea name="reason" class="ftextarea" rows="3" placeholder="اشرح سبب التسوية بالتفصيل..." required></textarea>
           </div>
         </div>
-
-        <!-- القراءة والقيم -->
-        <div class="form-section">
-          <div class="section-label">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21H3V3h8V1H3a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-8h-2v8z"/><path d="M16 3h6v6m-6-6L9.5 15.5"/></svg>
-            القيم
-          </div>
-          <div class="fgrid fgrid-2">
-            <div class="field">
-              <label class="field-label">القراءة الحالية <span class="req">*</span></label>
-              <input type="number" name="current_reading" class="finput" placeholder="0.00" step="0.01" required>
-            </div>
-            <div class="field">
-              <label class="field-label">اسم القارئ <span class="opt">اختياري</span></label>
-              <input type="text" name="reader_name" class="finput" placeholder="اسم الموظف">
-            </div>
-          </div>
-        </div>
-
-        <!-- ملاحظات -->
-        <div class="form-section" style="margin-bottom:0">
-          <div class="section-label">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            ملاحظات إضافية
-          </div>
-          <div class="fgrid">
-            <div class="field">
-              <label class="field-label">الملاحظات <span class="opt">اختياري</span></label>
-              <textarea name="notes" class="ftextarea" placeholder="أي ملاحظات عن القراءة..."></textarea>
-            </div>
-          </div>
-        </div>
-
       </div>
       <div class="form-footer">
         <button type="submit" class="btn-save">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          حفظ القراءة
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
+          حفظ وتسجيل التسوية
         </button>
-        <a href="{% url 'reading_list' %}" class="btn-cancel">إلغاء</a>
-        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+        <a href="{% url 'ledger_list' %}" class="btn-cancel">إلغاء</a>
       </div>
     </div>
   </form>

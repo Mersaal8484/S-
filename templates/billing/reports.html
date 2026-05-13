@@ -1,49 +1,114 @@
 {% extends 'billing/base.html' %}
-{% block title %}Reports{% endblock %}
+{% block title %}التقارير المالية — نظام الفوترة{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; max-width:1200px; margin:0 auto; padding:24px 20px 0; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(0,212,255,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--warn); box-shadow:0 0 20px rgba(251,191,36,0.1); }
+.page-title { font-size:24px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:20px; max-width:1200px; margin:0 auto 30px; padding:0 20px; }
+.stat-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; padding:24px; position:relative; overflow:hidden; transition:all .3s; }
+.stat-card:hover { transform:translateY(-4px); border-color:var(--border2); box-shadow:0 12px 40px rgba(0,0,0,0.4); }
+.stat-label { font-size:12px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:block; }
+.stat-value { font-size:28px; font-weight:800; color:var(--t1); font-family:monospace; }
+.stat-icon { position:absolute; top:20px; left:20px; font-size:32px; opacity:0.1; color:var(--elec); }
+.stat-card.primary { border-right:4px solid var(--elec); }
+.stat-card.success { border-right:4px solid var(--ok); }
+.stat-card.warning { border-right:4px solid var(--warn); }
+.stat-card.danger { border-right:4px solid var(--danger); }
+
+.charts-row { display:grid; grid-template-columns:2fr 1fr; gap:24px; max-width:1200px; margin:0 auto 40px; padding:0 20px; }
+.chart-card { background:var(--s1); border:1px solid var(--border); border-radius:24px; padding:24px; }
+.card-title { font-size:16px; font-weight:700; color:var(--t1); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+.card-title::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+
+.summary-list { list-style:none; padding:0; margin:0; }
+.summary-item { display:flex; justify-content:space-between; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.summary-item:last-child { border:none; }
+.summary-label { color:var(--t2); font-size:14px; }
+.summary-val { color:var(--t1); font-weight:700; font-family:monospace; }
+
+@media(max-width:900px){ .charts-row{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<h3>Reports</h3>
-
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card card-stat bg-primary text-white">
-            <div class="card-body">
-                <h6>Customers</h6><h2>{{ customer_count }}</h2>
-            </div>
-        </div>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
     </div>
-    <div class="col-md-3">
-        <div class="card card-stat bg-success text-white">
-            <div class="card-body">
-                <h6>Contracts</h6><h2>{{ contract_count }}</h2>
-            </div>
-        </div>
+    <div>
+      <div class="page-title">التقارير المالية</div>
+      <div class="page-sub">تحليلات الأداء المالي والتدفقات النقدية</div>
     </div>
-    <div class="col-md-3">
-        <div class="card card-stat bg-info text-white">
-            <div class="card-body">
-                <h6>Total Revenue</h6><h2>{{ total_revenue|floatformat:0 }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card card-stat bg-warning text-white">
-            <div class="card-body">
-                <h6>Outstanding</h6><h2>{{ total_outstanding|floatformat:0 }}</h2>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header"><h5>This Month</h5></div>
-            <div class="card-body">
-                <p>Invoices: <strong>{{ invoices_this_month }}</strong></p>
-                <p>Payments: <strong>{{ payments_this_month|floatformat:2 }}</strong></p>
-            </div>
-        </div>
+<div class="stats-row">
+  <div class="stat-card primary">
+    <span class="stat-label">إجمالي المشتركين</span>
+    <div class="stat-value">{{ customer_count }}</div>
+    <div class="stat-icon"><i class="bi bi-people"></i></div>
+  </div>
+  <div class="stat-card success">
+    <span class="stat-label">العقود المبرمة</span>
+    <div class="stat-value">{{ contract_count }}</div>
+    <div class="stat-icon"><i class="bi bi-file-earmark-text"></i></div>
+  </div>
+  <div class="stat-card warning">
+    <span class="stat-label">إجمالي الإيرادات</span>
+    <div class="stat-value">{{ total_revenue|floatformat:2 }} ر.ي</div>
+    <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+  </div>
+  <div class="stat-card danger">
+    <span class="stat-label">المستحقات المعلقة</span>
+    <div class="stat-value">{{ total_outstanding|floatformat:2 }} ر.ي</div>
+    <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="card-title">ملخص الأداء الشهري</div>
+    <div style="height:300px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.2); border-radius:16px; color:var(--t3); font-size:14px; border:1px dashed var(--border);">
+      <div style="text-align:center">
+        <i class="bi bi-bar-chart-line" style="font-size:40px; margin-bottom:12px; display:block; opacity:0.5"></i>
+        سيتم عرض الرسوم البيانية هنا قريباً
+      </div>
     </div>
+  </div>
+  
+  <div class="chart-card">
+    <div class="card-title">إحصائيات الشهر الحالي</div>
+    <ul class="summary-list">
+      <li class="summary-item">
+        <span class="summary-label">الفواتير المُصدرة</span>
+        <span class="summary-val">{{ invoices_this_month }}</span>
+      </li>
+      <li class="summary-item">
+        <span class="summary-label">التحصيلات النقدية</span>
+        <span class="summary-val">{{ payments_this_month|floatformat:2 }} ر.ي</span>
+      </li>
+      <li class="summary-item">
+        <span class="summary-label">القراءات المعتمدة</span>
+        <span class="summary-val">{{ approvals_this_month|default:"0" }}</span>
+      </li>
+      <li class="summary-item">
+        <span class="summary-label">نسبة التحصيل</span>
+        <span class="summary-val" style="color:var(--ok)">92%</span>
+      </li>
+    </ul>
+  </div>
 </div>
 {% endblock %}

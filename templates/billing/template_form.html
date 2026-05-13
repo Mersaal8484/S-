@@ -1,57 +1,167 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — نماذج الفواتير{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.fgrid-3 { grid-template-columns:1fr 1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { color:var(--t3); font-size:11px; font-weight:500; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.ftextarea { resize:vertical; min-height:80px; line-height:1.6; }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+@media(max-width:640px){ .fgrid-2,.fgrid-3{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<h3>{{ title }}</h3>
-
-<form method="post" class="mt-4">
-    {% csrf_token %}
-    <div class="card">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Subscription Type</label>
-                <select name="type" class="form-control" required>
-                    {% for st in subscription_types %}
-                    <option value="{{ st.id }}" {% if template.type_id == st.id or selected_type == st.id %}selected{% endif %}>{{ st.name_ar }} - {{ st.name_en }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Line Order</label>
-                <input type="number" name="line_order" class="form-control" value="{{ template.line_order|default:0 }}">
-            </div>
-            <div class="form-group">
-                <label>Name (Arabic)</label>
-                <input type="text" name="line_name_ar" class="form-control" value="{{ template.line_name_ar|default:'' }}" required>
-            </div>
-            <div class="form-group">
-                <label>Name (English)</label>
-                <input type="text" name="line_name_en" class="form-control" value="{{ template.line_name_en|default:'' }}">
-            </div>
-            <div class="form-group">
-                <label>Calculation Type</label>
-                <select name="calculation_type" class="form-control" required>
-                    <option value="fixed" {% if template.calculation_type == 'fixed' %}selected{% endif %}>Fixed Amount</option>
-                    <option value="percentage" {% if template.calculation_type == 'percentage' %}selected{% endif %}>Percentage</option>
-                    <option value="tiered_kwh" {% if template.calculation_type == 'tiered_kwh' %}selected{% endif %}>Tiered kWh</option>
-                    <option value="single_rate_kwh" {% if template.calculation_type == 'single_rate_kwh' %}selected{% endif %}>Single Rate kWh</option>
-                    <option value="demand_charge" {% if template.calculation_type == 'demand_charge' %}selected{% endif %}>Demand Charge</option>
-                    <option value="minimum_charge" {% if template.calculation_type == 'minimum_charge' %}selected{% endif %}>Minimum Charge</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Fixed Amount</label>
-                <input type="number" name="fixed_amount" class="form-control" value="{{ template.fixed_amount|stringformat:'f' }}" step="0.01">
-            </div>
-            <div class="form-group">
-                <label>Percentage Rate (%)</label>
-                <input type="number" name="percentage_rate" class="form-control" value="{{ template.percentage_rate|stringformat:'f' }}" step="0.01">
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'system_settings' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إدارة نماذج بنود الفواتير</div>
+      </div>
     </div>
-</form>
+    <a href="{% url 'system_settings' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة
+    </a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>{% if template.id %}تعديل النموذج{% else %}نموذج جديد{% endif %}</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- الخصائص الأساسية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            الخصائص الأساسية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">نوع الاشتراك <span class="req">*</span></label>
+              <select name="type" class="fselect" required>
+                {% for st in subscription_types %}
+                <option value="{{ st.id }}" {% if template.type_id == st.id or selected_type == st.id %}selected{% endif %}>{{ st.name_ar }} - {{ st.name_en }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">ترتيب البند <span class="opt">اختياري</span></label>
+              <input type="number" name="line_order" class="finput" value="{{ template.line_order|default:0 }}" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- البيانات النصية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            البيانات النصية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">اسم البند (عربي) <span class="req">*</span></label>
+              <input type="text" name="line_name_ar" class="finput" placeholder="اسم البند" value="{{ template.line_name_ar|default:'' }}" required>
+            </div>
+            <div class="field">
+              <label class="field-label">اسم البند (إنجليزي)</label>
+              <input type="text" name="line_name_en" class="finput" placeholder="Line Name" value="{{ template.line_name_en|default:'' }}" dir="ltr">
+            </div>
+          </div>
+        </div>
+
+        <!-- طريقة الحساب -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+            طريقة الحساب
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">نوع الحساب <span class="req">*</span></label>
+              <select name="calculation_type" class="fselect" required>
+                <option value="fixed" {% if template.calculation_type == 'fixed' %}selected{% endif %}>مبلغ ثابت</option>
+                <option value="percentage" {% if template.calculation_type == 'percentage' %}selected{% endif %}>نسبة مئوية</option>
+                <option value="tiered_kwh" {% if template.calculation_type == 'tiered_kwh' %}selected{% endif %}>تسعيرة متدرجة (كيلو وات)</option>
+                <option value="single_rate_kwh" {% if template.calculation_type == 'single_rate_kwh' %}selected{% endif %}>سعر موحد (كيلو وات)</option>
+                <option value="demand_charge" {% if template.calculation_type == 'demand_charge' %}selected{% endif %}>رسوم الطلب</option>
+                <option value="minimum_charge" {% if template.calculation_type == 'minimum_charge' %}selected{% endif %}>الحد الأدنى للرسوم</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- المعاملات المالية -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+            المعاملات المالية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">المبلغ الثابت <span class="opt">اختياري</span></label>
+              <input type="number" name="fixed_amount" class="finput" value="{{ template.fixed_amount|stringformat:'f'|default:'' }}" step="0.01" min="0">
+            </div>
+            <div class="field">
+              <label class="field-label">النسبة المئوية (%) <span class="opt">اختياري</span></label>
+              <input type="number" name="percentage_rate" class="finput" value="{{ template.percentage_rate|stringformat:'f'|default:'' }}" step="0.01" min="0">
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ البيانات
+        </button>
+        <a href="{% url 'system_settings' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+      </div>
+    </div>
+  </form>
+</div>
 {% endblock %}

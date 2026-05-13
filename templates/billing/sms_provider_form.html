@@ -1,45 +1,136 @@
 {% extends 'billing/base.html' %}
-{% block title %}SMS Provider{% endblock %}
+{% block title %}موفر خدمة الرسائل — الإعدادات{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { color:var(--t3); font-size:11px; font-weight:500; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+@media(max-width:640px){ .fgrid-2{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>Add Provider</h3>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M21 15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M22 4L11 13 2 4"/></svg>
+      </div>
+      <div>
+        <div class="page-title">موفر خدمة الرسائل</div>
+        <div class="page-sub">إضافة أو تعديل موفر خدمة الرسائل النصية</div>
+      </div>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'sms_provider_list' %}" class="btn btn-secondary">Back</a>
-    </div>
-</div>
+    <a href="{% url 'sms_provider_list' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة للقائمة
+    </a>
+  </div>
 
-<form method="post">
+  <form method="post" novalidate>
     {% csrf_token %}
-    <div class="card">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Provider Name *</label>
-                <input type="text" name="provider_name" class="form-control" required>
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>بيانات موفر الخدمة</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- الخصائص الأساسية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            الخصائص الأساسية
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">اسم الموفر <span class="req">*</span></label>
+              <input type="text" name="provider_name" class="finput" placeholder="مثل: Twilio أو Nexmo" required>
             </div>
-            <div class="form-group">
-                <label>API URL *</label>
-                <input type="url" name="api_url" class="form-control" required placeholder="https://api.example.com/send">
-            </div>
-            <div class="form-group">
-                <label>API Key *</label>
-                <input type="text" name="api_key" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Sender Name</label>
-                <input type="text" name="sender_name" class="form-control" placeholder="ELEC-CO">
-            </div>
-            <div class="form-group">
-                <label>Country Code</label>
-                <input type="text" name="country_code" class="form-control" value="966">
-            </div>
+          </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'sms_provider_list' %}" class="btn btn-secondary">Cancel</a>
+
+        <!-- بيانات الـ API -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+            بيانات الـ API
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">رابط الـ API <span class="req">*</span></label>
+              <input type="url" name="api_url" class="finput" placeholder="https://api.example.com/send" required dir="ltr">
+            </div>
+            <div class="field">
+              <label class="field-label">مفتاح الـ API <span class="req">*</span></label>
+              <input type="password" name="api_key" class="finput" placeholder="مفتاح الـ API الخاص بك" required dir="ltr">
+            </div>
+          </div>
         </div>
+
+        <!-- الخصائص الإضافية -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"/></svg>
+            الخصائص الإضافية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">اسم المرسل <span class="opt">اختياري</span></label>
+              <input type="text" name="sender_name" class="finput" placeholder="مثل: ELEC-CO" value="">
+            </div>
+            <div class="field">
+              <label class="field-label">رمز الدولة <span class="opt">اختياري</span></label>
+              <input type="text" name="country_code" class="finput" placeholder="مثل: 966" value="966" dir="ltr">
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ البيانات
+        </button>
+        <a href="{% url 'sms_provider_list' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+      </div>
     </div>
-</form>
+  </form>
+</div>
 {% endblock %}

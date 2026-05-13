@@ -1,34 +1,151 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — أنواع الاشتراك{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.section-label svg { width:14px; height:14px; filter: drop-shadow(0 0 4px var(--elec)); }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { font-size:10px; font-weight:500; color:var(--t3); background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.finput:hover:not(:focus),.fselect:hover:not(:focus),.ftextarea:hover:not(:focus) { border-color:rgba(255,255,255,0.15); }
+.ftextarea { resize:vertical; min-height:80px; line-height:1.6; }
+.input-wrap { position:relative; }
+.input-wrap .input-icon { position:absolute; top:50%; transform:translateY(-50%); right:13px; color:var(--t3); pointer-events:none; width:16px; height:16px; }
+.input-wrap .finput { padding-right:40px; }
+.toggle-field { display:flex; align-items:center; justify-content:space-between; background:rgba(6,13,31,0.5); border:1px solid rgba(255,255,255,0.07); border-radius:11px; padding:12px 16px; }
+.toggle-info .tl { font-size:13px; font-weight:700; color:var(--t1); }
+.toggle-info .ts { font-size:11px; color:var(--t3); margin-top:2px; }
+.toggle-switch { position:relative; width:44px; height:24px; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; cursor:pointer; background:rgba(255,255,255,0.1); border-radius:24px; transition:.3s; border:1px solid rgba(255,255,255,0.1); }
+.toggle-slider:before { content:''; position:absolute; height:18px; width:18px; right:2px; top:2px; background:#fff; border-radius:50%; transition:.3s; box-shadow:0 2px 5px rgba(0,0,0,0.4); }
+input:checked + .toggle-slider { background:var(--elec); border-color:var(--elec); }
+input:checked + .toggle-slider:before { transform:translateX(-20px); }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+@media(max-width:640px){ .fgrid-2{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<h3>{{ title }}</h3>
-
-<form method="post" class="mt-4">
-    {% csrf_token %}
-    <div class="card">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Name (Arabic)</label>
-                <input type="text" name="name_ar" class="form-control" value="{{ type.name_ar|default:'' }}" required>
-            </div>
-            <div class="form-group">
-                <label>Name (English)</label>
-                <input type="text" name="name_en" class="form-control" value="{{ type.name_en|default:'' }}">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea name="description" class="form-control">{{ type.description|default:'' }}</textarea>
-            </div>
-            <div class="form-check">
-                <input type="checkbox" name="is_active" class="form-check-input" id="isActive" {% if type.is_active or not type %}checked{% endif %}>
-                <label class="form-check-label" for="isActive">Active</label>
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'system_settings' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إدارة أنواع الاشتراك والخدمات المتاحة</div>
+      </div>
     </div>
-</form>
+    <a href="{% url 'system_settings' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة
+    </a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>{% if type.pk %}تعديل نوع الاشتراك — {{ type.name_ar }}{% else %}إضافة نوع اشتراك جديد{% endif %}</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- المسمى والتعريف -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            المسمى والتعريف
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">الاسم (عربي) <span class="req">*</span></label>
+              <div class="input-wrap">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <input type="text" name="name_ar" class="finput" placeholder="مثال: اشتراك سكني" value="{{ type.name_ar|default:'' }}" required>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">الاسم (إنجليزي)</label>
+              <div class="input-wrap">
+                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <input type="text" name="name_en" class="finput" placeholder="Residential Subscription" value="{{ type.name_en|default:'' }}" dir="ltr">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- الوصف والحالة التشغيلية -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            التفاصيل والحالة
+          </div>
+          <div class="fgrid">
+            <div class="field">
+              <label class="field-label">وصف النوع <span class="opt">اختياري</span></label>
+              <textarea name="description" class="ftextarea" rows="2" placeholder="أدخل وصفاً موجزاً لهذا النوع من الاشتراكات...">{{ type.description|default:'' }}</textarea>
+            </div>
+          </div>
+          <div class="field" style="margin-top:16px">
+            <div class="toggle-field">
+              <div class="toggle-info">
+                <div class="tl">حالة التفعيل</div>
+                <div class="ts">عند الإيقاف لن يظهر هذا النوع في الخيارات الجديدة</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="is_active" {% if type.is_active or not type %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ التغييرات
+        </button>
+        <a href="{% url 'system_settings' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">يرجى التأكد من صحة البيانات قبل الحفظ</span>
+      </div>
+    </div>
+  </form>
+</div>
 {% endblock %}

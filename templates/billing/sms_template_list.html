@@ -1,42 +1,92 @@
 {% extends 'billing/base.html' %}
-{% block title %}SMS Templates{% endblock %}
+{% block title %}نماذج الرسائل — نظام الفوترة{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; max-width:1200px; margin:0 auto; padding:24px 20px 0; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:24px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+.btn-add { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:12px; background:linear-gradient(135deg,var(--elec),var(--elec2)); border:none; color:var(--ink); font-size:14px; font-weight:800; text-decoration:none; transition:all .25s; box-shadow:0 4px 15px rgba(0,212,255,0.3); font-family:Cairo,sans-serif; }
+.btn-add:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,255,0.4); }
+
+.table-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3); max-width:1200px; margin:20px auto 40px; }
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:14px 16px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; font-size:11px; }
+td { padding:16px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+tr:hover { background:rgba(0,212,255,0.02); }
+.tpl-title { color:var(--t1); font-weight:700; }
+.status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+.status-inactive { background:rgba(255,255,255,0.05); color:var(--t3); border:1px solid rgba(255,255,255,0.1); }
+
+.btn-edit { width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:rgba(0,212,255,0.1); color:var(--elec); border:1px solid var(--border); text-decoration:none; transition:all .2s; }
+.btn-edit:hover { background:var(--elec); color:var(--ink); transform:scale(1.1); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>SMS Templates</h3>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'sms_template_create' %}" class="btn btn-primary">Add Template</a>
+    <div>
+      <div class="page-title">نماذج الرسائل النصية</div>
+      <div class="page-sub">إدارة قوالب الرسائل التلقائية والإشعارات</div>
     </div>
+  </div>
+  <a href="{% url 'sms_template_create' %}" class="btn-add">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    إضافة نموذج جديد
+  </a>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Title</th>
-                    <th>Language</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for template in templates %}
-                <tr>
-                    <td>{{ template.get_template_type_display }}</td>
-                    <td>{{ template.title_ar }}</td>
-                    <td>{{ template.language }}</td>
-                    <td>{% if template.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td>
-                    <td><a href="{% url 'sms_template_edit' template.id %}" class="btn btn-sm btn-primary">Edit</a></td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" class="text-center">No templates</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="table-card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>نوع النموذج</th>
+          <th>عنوان النموذج (عربي)</th>
+          <th>اللغة</th>
+          <th>الحالة</th>
+          <th>اجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for template in templates %}
+        <tr>
+          <td>{{ template.get_template_type_display }}</td>
+          <td><span class="tpl-title">{{ template.title_ar }}</span></td>
+          <td>{{ template.language }}</td>
+          <td>
+            <span class="status-badge {% if template.is_active %}status-active{% else %}status-inactive{% endif %}">
+              {% if template.is_active %}نشط{% else %}غير نشط{% endif %}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'sms_template_edit' template.id %}" class="btn-edit" title="تعديل">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center; padding:40px; color:var(--t3)">لا توجد نماذج مسجلة</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

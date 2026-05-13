@@ -1,81 +1,141 @@
 {% extends 'billing/base.html' %}
-{% block title %}Contracts{% endblock %}
+{% block title %}سجل العقود — نظام الفوترة{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; max-width:1200px; margin:0 auto; padding:24px 20px 0; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:24px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+.btn-add { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:12px; background:linear-gradient(135deg,var(--elec),var(--elec2)); border:none; color:var(--ink); font-size:14px; font-weight:800; text-decoration:none; transition:all .25s; box-shadow:0 4px 15px rgba(0,212,255,0.3); font-family:Cairo,sans-serif; }
+.btn-add:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,255,0.4); }
+
+.filter-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:20px; max-width:1200px; margin:0 auto; }
+.filter-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.filter-field { flex:1; min-width:200px; }
+.filter-field label { display:block; font-size:11px; font-weight:700; color:var(--elec); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.filter-input, .filter-select { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:9px; color:var(--t1); font-family:Cairo,sans-serif; padding:9px 12px; font-size:13px; outline:none; }
+.filter-input:focus, .filter-select:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); }
+.btn-search { padding:9px 24px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--t1); font-size:13px; font-weight:700; cursor:pointer; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-search:hover { background:rgba(255,255,255,0.1); border-color:var(--elec); }
+
+.table-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3); max-width:1200px; margin:20px auto 40px; }
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:14px 16px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:11px; }
+td { padding:16px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+tr:hover { background:rgba(0,212,255,0.02); }
+.ctr-id { color:var(--t1); font-weight:700; font-family:monospace; text-decoration:none; }
+.status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+.status-warn { background:rgba(251,146,60,0.15); color:var(--warn); border:1px solid rgba(251,146,60,0.3); }
+
+.btn-view { width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:rgba(0,212,255,0.1); color:var(--elec); border:1px solid var(--border); text-decoration:none; transition:all .2s; }
+.btn-view:hover { background:var(--elec); color:var(--ink); transform:scale(1.1); }
+
+.pagination-wrapper { padding:20px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:8px; }
+.page-btn { padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); text-decoration:none; font-size:12px; font-weight:600; transition:all .2s; }
+.page-btn:hover { border-color:var(--elec); color:var(--elec); }
+.page-btn.active { background:var(--elec); color:var(--ink); border-color:var(--elec); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>Contracts</h3>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'contract_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Contract
-        </a>
+    <div>
+      <div class="page-title">إدارة العقود</div>
+      <div class="page-sub">قائمة عقود المشتركين وتفاصيل الاشتراك</div>
     </div>
+  </div>
+  <a href="{% url 'contract_create' %}" class="btn-add">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    إضافة عقد جديد
+  </a>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="get" class="form-inline mb-3">
-            <input type="text" name="q" class="form-control mr-2" placeholder="Search..." value="{{ request.GET.q }}">
-            <select name="status" class="form-control mr-2">
-                <option value="">All Status</option>
-                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
-                <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>Suspended</option>
-                <option value="expired" {% if request.GET.status == 'expired' %}selected{% endif %}>Expired</option>
-            </select>
-            <button type="submit" class="btn btn-secondary">Search</button>
-        </form>
-
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Contract Number</th>
-                    <th>Customer</th>
-                    <th>Type</th>
-                    <th>Start Date</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contract in contracts %}
-                <tr>
-                    <td>{{ contract.contract_number }}</td>
-                    <td>{{ contract.customer.full_name_ar }}</td>
-                    <td>{{ contract.type.name_ar }}</td>
-                    <td>{{ contract.start_date }}</td>
-                    <td>
-                        <span class="badge badge-{% if contract.contract_status == 'active' %}success{% else %}warning{% endif %}">
-                            {{ contract.get_contract_status_display }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{% url 'contract_detail' contract.id %}" class="btn btn-sm btn-info">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">No contracts</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        {% if contracts.has_other_pages %}
-        <nav>
-            <ul class="pagination">
-                {% if contracts.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ contracts.previous_page_number }}">Previous</a></li>
-                {% endif %}
-                <li class="page-item active"><span class="page-link">{{ contracts.number }} / {{ contracts.paginator.num_pages }}</span></li>
-                {% if contracts.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ contracts.next_page_number }}">Next</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+<div class="filter-card">
+  <form method="get" class="filter-row">
+    <div class="filter-field">
+      <label>بحث عام</label>
+      <input type="text" name="q" class="filter-input" placeholder="رقم العقد أو اسم المشترك..." value="{{ request.GET.q }}">
     </div>
+    <div class="filter-field">
+      <label>حالة العقد</label>
+      <select name="status" class="filter-select">
+        <option value="">جميع الحالات</option>
+        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>نشط</option>
+        <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>موقوف</option>
+        <option value="expired" {% if request.GET.status == 'expired' %}selected{% endif %}>منتهي</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-search">بحث</button>
+  </form>
+</div>
+
+<div class="table-card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>رقم العقد</th>
+          <th>المشترك</th>
+          <th>نوع الاشتراك</th>
+          <th>تاريخ البدء</th>
+          <th>الحالة</th>
+          <th>اجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in contracts %}
+        <tr>
+          <td><span class="ctr-id">{{ contract.contract_number }}</span></td>
+          <td style="color:var(--t1); font-weight:600">{{ contract.customer.full_name_ar }}</td>
+          <td>{{ contract.type.name_ar }}</td>
+          <td>{{ contract.start_date }}</td>
+          <td>
+            <span class="status-badge {% if contract.contract_status == 'active' %}status-active{% else %}status-warn{% endif %}">
+              {{ contract.get_contract_status_display }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'contract_detail' contract.id %}" class="btn-view" title="عرض التفاصيل">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:40px; color:var(--t3)">لا توجد عقود مسجلة تطابق البحث</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if contracts.has_other_pages %}
+  <div class="pagination-wrapper">
+    {% if contracts.has_previous %}
+    <a href="?page={{ contracts.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-btn">السابق</a>
+    {% endif %}
+    
+    <span class="page-btn active">{{ contracts.number }} / {{ contracts.paginator.num_pages }}</span>
+    
+    {% if contracts.has_next %}
+    <a href="?page={{ contracts.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-btn">التالي</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

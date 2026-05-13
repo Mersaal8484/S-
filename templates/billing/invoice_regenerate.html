@@ -1,108 +1,175 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — الفواتير{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.page-meta { font-size:13px; color:var(--t2); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.fgrid-3 { grid-template-columns:1fr 1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.fselect { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; }
+.fselect:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.preview-box { background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.2); border-radius:12px; padding:16px; margin-top:16px; display:none; }
+.preview-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+.preview-item { }
+.preview-label { font-size:10px; font-weight:800; color:var(--elec); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.preview-value { font-size:14px; font-weight:700; color:var(--t1); }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(251,147,60,0.9),rgba(249,115,22,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(251,147,60,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(251,147,60,0.4); }
+.btn-print { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); color:var(--ok); font-size:13px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-print:hover { border-color:rgba(52,211,153,0.6); background:rgba(52,211,153,0.2); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+@media(max-width:640px){ .fgrid-2,.fgrid-3{grid-template-columns:1fr;} .preview-grid{grid-template-columns:1fr 1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h3>{{ title }}: {{ invoice.invoice_number }}</h3>
-        <p class="text-muted">Customer: {{ invoice.contract.customer.full_name_ar }}</p>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إعادة إنشاء الفاتورة برقم {{ invoice.invoice_number }}</div>
+        <div class="page-meta">المشترك: {{ invoice.contract.customer.full_name_ar }}</div>
+      </div>
     </div>
-    <div class="col-md-4 text-left">
-        <a href="{% url 'invoice_print' invoice.id %}" class="btn btn-success" target="_blank">
-            <i class="bi bi-printer"></i> Print
-        </a>
-        <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
+    <div style="display:flex; gap:8px; align-items:center">
+      <a href="{% url 'invoice_print' invoice.id %}" class="btn-print" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        طباعة
+      </a>
+      <a href="{% url 'invoice_detail' invoice.id %}" class="btn-cancel">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+        العودة
+      </a>
     </div>
-</div>
+  </div>
 
-<form method="post">
+  <form method="post" novalidate>
     {% csrf_token %}
-    <div class="card">
-        <div class="card-header"><h5>Select Options for Regeneration</h5></div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Billing Period</label>
-                        <select name="period" class="form-control">
-                            <option value="">Select Period (Optional)</option>
-                            {% for period in periods %}
-                            <option value="{{ period.id }}" {% if invoice.period_id == period.id %}selected{% endif %}>
-                                {{ period.period_name }} ({{ period.period_code }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Meter Reading <span class="text-danger">*</span></label>
-                        <select name="reading" class="form-control" required id="readingSelect">
-                            <option value="">Select a reading</option>
-                            {% for reading in readings %}
-                            <option value="{{ reading.id }}"
-                                data-consumption="{{ reading.consumption }}"
-                                data-previous="{{ reading.previous_reading }}"
-                                data-current="{{ reading.current_reading }}"
-                                data-date="{{ reading.reading_date }}"
-                                {% if invoice.reading_id == reading.id %}selected{% endif %}>
-                                {{ reading.reading_date }} - Prev: {{ reading.previous_reading }} | Curr: {{ reading.current_reading }} (Consumption: {{ reading.consumption }})
-                            </option>
-                            {% empty %}
-                            <option value="" disabled>No readings available</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Subscription Type <span class="text-danger">*</span></label>
-                        <select name="subscription_type" class="form-control" required id="subscriptionTypeSelect">
-                            <option value="">Select a subscription type</option>
-                            {% for st in subscription_types %}
-                            <option value="{{ st.id }}" {% if invoice.subscription_type_id == st.id %}selected{% endif %}>
-                                {{ st.name_ar }}{% if st.name_en %} ({{ st.name_en }}){% endif %}
-                            </option>
-                            {% empty %}
-                            <option value="" disabled>No subscription types available</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>خيارات إعادة الإنشاء</h6>
+      </div>
+      <div class="form-card-body">
 
-            <div class="alert alert-info mt-3" id="readingPreview" style="display:none;">
-                <h6>Reading Preview:</h6>
-                <div class="row">
-                    <div class="col-md-3">
-                        <small class="text-muted">Previous Reading</small><br>
-                        <strong id="previewPrevious">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Current Reading</small><br>
-                        <strong id="previewCurrent">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Consumption</small><br>
-                        <strong id="previewConsumption">-</strong>
-                    </div>
-                    <div class="col-md-3">
-                        <small class="text-muted">Date</small><br>
-                        <strong id="previewDate">-</strong>
-                    </div>
-                </div>
+        <!-- الخيارات -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            الخيارات
+          </div>
+          <div class="fgrid fgrid-3">
+            <div class="field">
+              <label class="field-label">فترة الفواتير <span style="color:var(--t3); font-size:11px">(اختياري)</span></label>
+              <select name="period" class="fselect">
+                <option value="">اختر فترة...</option>
+                {% for period in periods %}
+                <option value="{{ period.id }}" {% if invoice.period_id == period.id %}selected{% endif %}>
+                  {{ period.period_name }} ({{ period.period_code }})
+                </option>
+                {% endfor %}
+              </select>
             </div>
+            <div class="field">
+              <label class="field-label">قراءة العداد <span class="req">*</span></label>
+              <select name="reading" class="fselect" required id="readingSelect">
+                <option value="">اختر قراءة...</option>
+                {% for reading in readings %}
+                <option value="{{ reading.id }}"
+                  data-consumption="{{ reading.consumption }}"
+                  data-previous="{{ reading.previous_reading }}"
+                  data-current="{{ reading.current_reading }}"
+                  data-date="{{ reading.reading_date }}"
+                  {% if invoice.reading_id == reading.id %}selected{% endif %}>
+                  {{ reading.reading_date }} - السابقة: {{ reading.previous_reading }} | الحالية: {{ reading.current_reading }} (الاستهلاك: {{ reading.consumption }})
+                </option>
+                {% empty %}
+                <option value="" disabled>لا توجد قراءات متاحة</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">نوع الاشتراك <span class="req">*</span></label>
+              <select name="subscription_type" class="fselect" required id="subscriptionTypeSelect">
+                <option value="">اختر نوع اشتراك...</option>
+                {% for st in subscription_types %}
+                <option value="{{ st.id }}" {% if invoice.subscription_type_id == st.id %}selected{% endif %}>
+                  {{ st.name_ar }}{% if st.name_en %} ({{ st.name_en }}){% endif %}
+                </option>
+                {% empty %}
+                <option value="" disabled>لا توجد أنواع اشتراك متاحة</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-warning">
-                <i class="bi bi-arrow-repeat"></i> Regenerate Invoice
-            </button>
-            <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-secondary">Cancel</a>
+
+        <!-- معاينة القراءة -->
+        <div class="preview-box" id="readingPreview">
+          <div style="font-size:12px; font-weight:700; color:var(--t1); margin-bottom:12px">معاينة القراءة</div>
+          <div class="preview-grid">
+            <div class="preview-item">
+              <div class="preview-label">القراءة السابقة</div>
+              <div class="preview-value" id="previewPrevious">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">القراءة الحالية</div>
+              <div class="preview-value" id="previewCurrent">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">الاستهلاك</div>
+              <div class="preview-value" id="previewConsumption">-</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-label">التاريخ</div>
+              <div class="preview-value" id="previewDate">-</div>
+            </div>
+          </div>
         </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64M3.51 15A9 9 0 0 0 18.36 18.36"/></svg>
+          إعادة إنشاء الفاتورة
+        </button>
+        <a href="{% url 'invoice_detail' invoice.id %}" class="btn-cancel">إلغاء</a>
+      </div>
     </div>
-</form>
+  </form>
+</div>
 
 <script>
 document.getElementById('readingSelect').addEventListener('change', function() {
@@ -120,7 +187,6 @@ document.getElementById('readingSelect').addEventListener('change', function() {
     }
 });
 
-// Trigger on load if a reading is pre-selected
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('readingSelect').dispatchEvent(new Event('change'));
 });

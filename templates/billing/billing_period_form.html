@@ -1,70 +1,173 @@
 {% extends 'billing/base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }} — الفترات{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.form-page { max-width: 860px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.form-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.form-card-header { padding:20px 28px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.form-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.form-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.form-card-body { padding:28px; }
+.form-section { margin-bottom:28px; }
+.section-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--elec); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid rgba(0,212,255,0.1); display:flex; align-items:center; gap:8px; }
+.section-label svg { width:14px; height:14px; }
+.fgrid { display:grid; gap:16px; }
+.fgrid-2 { grid-template-columns:1fr 1fr; }
+.fgrid-3 { grid-template-columns:1fr 1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { font-size:10px; font-weight:500; color:var(--t3); background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
+.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; -webkit-appearance:none; text-align:right; }
+.finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
+.finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.finput:hover:not(:focus),.fselect:hover:not(:focus),.ftextarea:hover:not(:focus) { border-color:rgba(255,255,255,0.15); }
+.fselect { cursor:pointer; }
+.ftextarea { resize:vertical; min-height:80px; line-height:1.6; }
+.input-wrap { position:relative; }
+.input-wrap .input-icon { position:absolute; top:50%; transform:translateY(-50%); right:13px; color:var(--t3); pointer-events:none; width:16px; height:16px; }
+.input-wrap .finput { padding-right:40px; }
+.field-error { font-size:11px; color:var(--danger); margin-top:3px; }
+.form-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.15); flex-wrap:wrap; }
+.btn-save { display:flex; align-items:center; gap:8px; padding:12px 28px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-save:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); }
+.btn-cancel { display:flex; align-items:center; gap:8px; padding:12px 22px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:14px; font-weight:600; text-decoration:none; font-family:Cairo,sans-serif; transition:all .2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.2); color:var(--t1); }
+.save-hint { font-size:11px; color:var(--t3); margin-right:auto; }
+.msg-alert { padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:13px; display:flex; align-items:center; gap:10px; }
+.msg-success { background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); color:#34d399; }
+.msg-error { background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.25); color:#f43f5e; }
+@media(max-width:640px){ .fgrid-2,.fgrid-3{grid-template-columns:1fr;} .form-card-body,.form-footer{padding:18px;} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>{{ title }}</h3>
+<div class="form-page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إدارة فترات الفواتير</div>
+      </div>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'billing_period_list' %}" class="btn btn-secondary">Back</a>
-    </div>
-</div>
+    <a href="{% url 'billing_period_list' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة للقائمة
+    </a>
+  </div>
 
-<form method="post">
+  <form method="post" novalidate>
     {% csrf_token %}
-    <div class="card">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Period Name *</label>
-                <input type="text" name="period_name" class="form-control" value="{{ period.period_name|default:'' }}" required>
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="h-dot"></span>
+        <h6>{% if period.pk %}تعديل الفترة — {{ period.period_name }}{% else %}إضافة فترة جديدة{% endif %}</h6>
+      </div>
+      <div class="form-card-body">
+
+        <!-- المعلومات الأساسية -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            المعلومات الأساسية
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">اسم الفترة <span class="req">*</span></label>
+              <input type="text" name="period_name" class="finput" placeholder="شهر يناير 2024" value="{{ period.period_name|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>Period Code *</label>
-                <input type="text" name="period_code" class="form-control" value="{{ period.period_code|default:'' }}" required>
+            <div class="field">
+              <label class="field-label">كود الفترة <span class="req">*</span></label>
+              <input type="text" name="period_code" class="finput" placeholder="2024-01" value="{{ period.period_code|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>Start Date *</label>
-                <input type="date" name="start_date" class="form-control" value="{{ period.start_date|date:'Y-m-d'|default:'' }}" required>
+          </div>
+        </div>
+
+        <!-- التواريخ -->
+        <div class="form-section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            التواريخ
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">تاريخ البداية <span class="req">*</span></label>
+              <input type="date" name="start_date" class="finput" value="{{ period.start_date|date:'Y-m-d'|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>End Date *</label>
-                <input type="date" name="end_date" class="form-control" value="{{ period.end_date|date:'Y-m-d'|default:'' }}" required>
+            <div class="field">
+              <label class="field-label">تاريخ النهاية <span class="req">*</span></label>
+              <input type="date" name="end_date" class="finput" value="{{ period.end_date|date:'Y-m-d'|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>Reading Start Date *</label>
-                <input type="date" name="reading_start_date" class="form-control" value="{{ period.reading_start_date|date:'Y-m-d'|default:'' }}" required>
+            <div class="field">
+              <label class="field-label">بداية فترة القراءة <span class="req">*</span></label>
+              <input type="date" name="reading_start_date" class="finput" value="{{ period.reading_start_date|date:'Y-m-d'|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>Reading End Date *</label>
-                <input type="date" name="reading_end_date" class="form-control" value="{{ period.reading_end_date|date:'Y-m-d'|default:'' }}" required>
+            <div class="field">
+              <label class="field-label">نهاية فترة القراءة <span class="req">*</span></label>
+              <input type="date" name="reading_end_date" class="finput" value="{{ period.reading_end_date|date:'Y-m-d'|default:'' }}" required>
             </div>
-            <div class="form-group">
-                <label>Billing Cycle</label>
-                <select name="billing_cycle" class="form-control">
-                    <option value="monthly" {% if period.billing_cycle == 'monthly' %}selected{% endif %}>Monthly</option>
-                    <option value="bi_monthly" {% if period.billing_cycle == 'bi_monthly' %}selected{% endif %}>Bi-Monthly</option>
-                    <option value="quarterly" {% if period.billing_cycle == 'quarterly' %}selected{% endif %}>Quarterly</option>
-                </select>
+          </div>
+        </div>
+
+        <!-- الإعدادات -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m4.22-4.22l-4.24 4.24m6 4.22h-6m-4.24 4.24l4.24-4.24m-6-4.22h6m4.22 4.22l-4.24-4.24"/></svg>
+            الإعدادات
+          </div>
+          <div class="fgrid fgrid-2">
+            <div class="field">
+              <label class="field-label">دورة الفواتير</label>
+              <select name="billing_cycle" class="fselect">
+                <option value="monthly" {% if period.billing_cycle == 'monthly' %}selected{% endif %}>شهري</option>
+                <option value="bi_monthly" {% if period.billing_cycle == 'bi_monthly' %}selected{% endif %}>كل شهرين</option>
+                <option value="quarterly" {% if period.billing_cycle == 'quarterly' %}selected{% endif %}>ربع سنوي</option>
+              </select>
             </div>
             {% if period %}
-            <div class="form-group">
-                <label>Status</label>
-                <select name="status" class="form-control">
-                    <option value="draft" {% if period.status == 'draft' %}selected{% endif %}>Draft</option>
-                    <option value="reading_open" {% if period.status == 'reading_open' %}selected{% endif %}>Reading Open</option>
-                    <option value="reading_closed" {% if period.status == 'reading_closed' %}selected{% endif %}>Reading Closed</option>
-                    <option value="billing_in_progress" {% if period.status == 'billing_in_progress' %}selected{% endif %}>Billing In Progress</option>
-                    <option value="billing_completed" {% if period.status == 'billing_completed' %}selected{% endif %}>Billing Completed</option>
-                    <option value="closed" {% if period.status == 'closed' %}selected{% endif %}>Closed</option>
-                </select>
+            <div class="field">
+              <label class="field-label">الحالة</label>
+              <select name="status" class="fselect">
+                <option value="draft" {% if period.status == 'draft' %}selected{% endif %}>مسودة</option>
+                <option value="reading_open" {% if period.status == 'reading_open' %}selected{% endif %}>القراءة مفتوحة</option>
+                <option value="reading_closed" {% if period.status == 'reading_closed' %}selected{% endif %}>القراءة مغلقة</option>
+                <option value="billing_in_progress" {% if period.status == 'billing_in_progress' %}selected{% endif %}>الفواتير قيد المعالجة</option>
+                <option value="billing_completed" {% if period.status == 'billing_completed' %}selected{% endif %}>الفواتير مكتملة</option>
+                <option value="closed" {% if period.status == 'closed' %}selected{% endif %}>مغلقة</option>
+              </select>
             </div>
             {% endif %}
+          </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'billing_period_list' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ البيانات
+        </button>
+        <a href="{% url 'billing_period_list' %}" class="btn-cancel">إلغاء</a>
+        <span class="save-hint">الحقول المطلوبة مُعلّمة بـ <span style="color:var(--danger)">*</span></span>
+      </div>
     </div>
-</form>
+  </form>
+</div>
 {% endblock %}

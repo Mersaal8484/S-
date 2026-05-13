@@ -1,40 +1,84 @@
 {% extends 'billing/base.html' %}
-{% block title %}SMS Providers{% endblock %}
+{% block title %}مزودي خدمة SMS — نظام الفوترة{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; max-width:1200px; margin:0 auto; padding:24px 20px 0; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:24px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+.btn-add { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:12px; background:linear-gradient(135deg,var(--elec),var(--elec2)); border:none; color:var(--ink); font-size:14px; font-weight:800; text-decoration:none; transition:all .25s; box-shadow:0 4px 15px rgba(0,212,255,0.3); font-family:Cairo,sans-serif; }
+.btn-add:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,212,255,0.4); }
+
+.table-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3); max-width:1200px; margin:20px auto 40px; }
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:14px 16px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; font-size:11px; }
+td { padding:16px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+tr:hover { background:rgba(0,212,255,0.02); }
+.provider-name { color:var(--t1); font-weight:700; }
+.api-url { color:var(--t3); font-family:monospace; font-size:11px; }
+.status-badge { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+.status-inactive { background:rgba(255,255,255,0.05); color:var(--t3); border:1px solid rgba(255,255,255,0.1); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h3>SMS Providers</h3>
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
     </div>
-    <div class="col-md-6 text-left">
-        <a href="{% url 'sms_provider_create' %}" class="btn btn-primary">Add Provider</a>
+    <div>
+      <div class="page-title">مزودي خدمة الرسائل</div>
+      <div class="page-sub">إدارة بوابات إرسال الرسائل النصية والربط البرمجي</div>
     </div>
+  </div>
+  <a href="{% url 'sms_provider_create' %}" class="btn-add">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    إضافة مزود جديد
+  </a>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>API URL</th>
-                    <th>Sender</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for provider in providers %}
-                <tr>
-                    <td>{{ provider.provider_name }}</td>
-                    <td>{{ provider.api_url|truncatechars:30 }}</td>
-                    <td>{{ provider.sender_name }}</td>
-                    <td>{% if provider.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" class="text-center">No providers</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="table-card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>اسم المزود</th>
+          <th>رابط API</th>
+          <th>اسم المرسل</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for provider in providers %}
+        <tr>
+          <td><span class="provider-name">{{ provider.provider_name }}</span></td>
+          <td><span class="api-url">{{ provider.api_url|truncatechars:50 }}</span></td>
+          <td>{{ provider.sender_name }}</td>
+          <td>
+            <span class="status-badge {% if provider.is_active %}status-active{% else %}status-inactive{% endif %}">
+              {% if provider.is_active %}نشط{% else %}غير نشط{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align:center; padding:40px; color:var(--t3)">لا يوجد مزودون مسجلون</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}
