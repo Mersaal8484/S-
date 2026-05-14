@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block title %}لوحة التقارير{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+  :root {
+    --primary: #0ea5e9;
+    --secondary: #8b5cf6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1e293b;
+    --light: #f1f5f9;
+  }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #f8fafc;
+  }
+
+  .reports-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  }
+
+  .reports-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .report-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s;
+    height: 100%;
+    border: 2px solid transparent;
+  }
+
+  .report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-color: var(--primary);
+  }
+
+  .report-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 1rem;
+  }
+
+  .icon-kpi { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+  .icon-consumption { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+  .icon-collection { background: linear-gradient(135deg, #10b981, #34d399); }
+  .icon-notifications { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+  .icon-invoicing { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+  .report-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+  }
+
+  .report-card p {
+    color: #64748b;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .btn-report {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .btn-report:hover {
+    transform: scale(1.05);
+    color: white;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+  }
+
+  .recent-reports {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 2rem;
+  }
+
+  .recent-reports h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--dark);
+  }
+
+  .report-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .report-item:last-child {
+    border-bottom: none;
+  }
+
+  .report-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="reports-header">
+    <h1>📊 لوحة التقارير</h1>
+    <p class="mb-0">عرض شامل لجميع التقارير والإحصائيات</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- KPI Dashboard -->
+    <div class="col-md-6 col-lg-4">
+      <div class="report-card">
+        <div class="report-icon icon-kpi">📈</div>
+        <h3>مؤشرات الأداء (KPIs)</h3>
+        <p>مؤشرات الأداء الرئيسية والإحصائيات المالية والتشغيلية</p>
+        <a href="{% url 'reports:kpi_dashboard' %}" class="btn-report">عرض التقرير</a>
+      </div>
+    </div>
+
+    <!-- Consumption Report -->
+    <div class="col-md-6 col-lg-4">
+      <div class="report-card">
+        <div class="report-icon icon-consumption">⚡</div>
+        <h3>تقرير الاستهلاك</h3>
+        <p>تقارير استهلاك الكهرباء والمياه والخدمات حسب العملاء</p>
+        <a href="{% url 'reports:consumption' %}" class="btn-report">عرض التقرير</a>
+      </div>
+    </div>
+
+    <!-- Collection Report -->
+    <div class="col-md-6 col-lg-4">
+      <div class="report-card">
+        <div class="report-icon icon-collection">💰</div>
+        <h3>تقرير المحصلين</h3>
+        <p>أداء المحصلين والمسارات وعمليات التحصيل اليومية</p>
+        <a href="{% url 'reports:collection' %}" class="btn-report">عرض التقرير</a>
+      </div>
+    </div>
+
+    <!-- Notifications Report -->
+    <div class="col-md-6 col-lg-4">
+      <div class="report-card">
+        <div class="report-icon icon-notifications">📱</div>
+        <h3>تقرير الإشعارات</h3>
+        <p>تقارير الرسائل القصيرة SMS والإشعارات المرسلة</p>
+        <a href="{% url 'reports:notifications' %}" class="btn-report">عرض التقرير</a>
+      </div>
+    </div>
+
+    <!-- Invoicing Report -->
+    <div class="col-md-6 col-lg-4">
+      <div class="report-card">
+        <div class="report-icon icon-invoicing">🧾</div>
+        <h3>تقرير الفواتير</h3>
+        <p>تقارير الفواتير والمدفوعات والمستحقات</p>
+        <a href="{% url 'reports:invoicing' %}" class="btn-report">عرض التقرير</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Reports Section -->
+  <div class="recent-reports">
+    <h3>📋 التقارير الأخيرة</h3>
+    {% if recent_reports %}
+      {% for report in recent_reports %}
+      <div class="report-item">
+        <div>
+          <strong>{{ report.report.name }}</strong>
+       <br>
+          <small class="text-muted">تم التنفيذ بواسطة: {{ report.executed_by.username }} - {{ report.created_at|date:"Y-m-d H:i" }}</small>
+        </div>
+        <span class="report-badge badge-success">✓ مكتمل</span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-center text-muted py-4">لا توجد تقارير محفوظة بعد</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

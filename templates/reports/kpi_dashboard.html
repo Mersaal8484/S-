@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مؤشرات الأداء KPIs{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+  body { font-family: 'Cairo', sans-serif; background: #f8fafc; }
+
+  .kpi-header {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .kpi-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+
+  .filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
+
+  .kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 4px solid;
+    transition: all 0.3s;
+  }
+
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+
+  .kpi-card.financial { border-color: #10b981; }
+  .kpi-card.customers { border-color: #0ea5e9; }
+  .kpi-card.contracts { border-color: #f59e0b; }
+  .kpi-card.collection { border-color: #8b5cf6; }
+  .kpi-card.notifications { border-color: #ef4444; }
+
+  .kpi-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .kpi-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .kpi-subvalue {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 2rem;
+  }
+
+  .chart-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="kpi-header">
+    <h1>📈 مؤشرات الأداء الرئيسية (KPIs)</h1>
+    <p class="mb-0">نظرة شاملة على الأداء المالي والتشغيلي</p>
+  </div>
+
+  <!-- Date Filters -->
+  <div class="filter-card">
+    <form method="get" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 عرض</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Financial KPIs -->
+  <h4 class="mb-3">💰 المؤشرات المالية</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="kpi-card financial">
+        <div class="kpi-icon">💵</div>
+        <div class="kpi-label">إجمالي الإيرادات</div>
+        <div class="kpi-value">{{ total_revenue|floatformat:0 }}</div>
+        <div class="kpi-subvalue">ريال سعودي</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card financial">
+        <div class="kpi-icon">📄</div>
+        <div class="kpi-label">عدد الفواتير</div>
+        <div class="kpi-value">{{ total_invoices }}</div>
+        <div class="kpi-subvalue">فاتورة</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card financial">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-label">الفواتير المدفوعة</div>
+        <div class="kpi-value">{{ paid_invoices }}</div>
+        <div class="kpi-subvalue">نسبة الدفع: {{ payment_rate }}%</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card financial">
+        <div class="kpi-icon">💸</div>
+        <div class="kpi-label">المبلغ المحصل</div>
+        <div class="kpi-value">{{ total_collected|floatformat:0 }}</div>
+        <div class="kpi-subvalue">معدل التحصيل: {{ collection_rate }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer KPIs -->
+  <h4 class="mb-3">👥 مؤشرات العملاء</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="kpi-card customers">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-label">إجمالي العملاء</div>
+        <div class="kpi-value">{{ total_customers }}</div>
+        <div class="kpi-subvalue">عميل نشط</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card customers">
+        <div class="kpi-icon">✨</div>
+        <div class="kpi-label">عملاء جدد</div>
+        <div class="kpi-value">{{ new_customers }}</div>
+        <div class="kpi-subvalue">خلال الفترة المحددة</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card customers">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">العقود النشطة</div>
+        <div class="kpi-value">{{ active_contracts }}</div>
+        <div class="kpi-subvalue">منتهية قريباً: {{ expiring_soon }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications KPIs -->
+  <h4 class="mb-3">📱 مؤشرات الإشعارات</h4>
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="kpi-card notifications">
+        <div class="kpi-icon">📨</div>
+        <div class="kpi-label">رسائل SMS المرسلة</div>
+        <div class="kpi-value">{{ sms_sent }}</div>
+        <div class="kpi-subvalue">رسالة</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card notifications">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-label">نجاح الإرسال</div>
+        <div class="kpi-value">{{ sms_success }}</div>
+        <div class="kpi-subvalue">معدل النجاح: {{ sms_success_rate }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Trend Chart -->
+  <div class="chart-card">
+    <h3>📊 اتجاه الإيرادات (آخر 7 أيام)</h3>
+    <canvas id="revenueChart" height="80"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('revenueChart');
+const dailyRevenue = {{ daily_revenue|safe }};
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: dailyRevenue.map(d => d.date),
+    datasets: [{
+      label: 'الإيرادات اليومية (ريال)',
+      data: dailyRevenue.map(d => d.revenue),
+      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(139, 92, 246, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#8b5cf6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, labels: { font: { family: 'Cairo', size: 13 } } },
+      tooltip: {
+        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+        titleFont: { family: 'Cairo', size: 14 },
+        bodyFont: { family: 'Cairo', size: 13 },
+        padding: 12
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { family: 'Cairo', size: 12 } },
+        grid: { color: 'rgba(0,0,0,0.05)' }
+      },
+      x: {
+        ticks: { font: { family: 'Cairo', size: 12 } },
+        grid: { display: false }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

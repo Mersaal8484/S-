@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تقرير الاستهلاك{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+  body { font-family: 'Cairo', sans-serif; background: #f8fafc; }
+
+  .report-header {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .report-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+
+  .filter-card, .stats-card, .data-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-radius: 10px;
+    border: 2px solid #bae6fd;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0369a1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  table { width: 100%; }
+  thead { background: #f1f5f9; }
+  th { padding: 1rem; font-weight: 700; text-align: right; color: #334155; }
+  td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; text-align: right; }
+  tr:hover { background: #f8fafc; }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-electricity { background: #fef3c7; color: #92400e; }
+  .badge-water { background: #dbeafe; color: #1e40af; }
+  .badge-other { background: #e0e7ff; color: #3730a3; }
+
+  .chart-container { margin-top: 2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="report-header">
+    <h1>⚡ تقرير الاستهلاك</h1>
+    <p class="mb-0">تقرير شامل لاستهلاك الكهرباء والمياه والخدمات</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">نوع الخدمة</label>
+        <select name="service_type" class="form-select">
+          <option value="">الكل</option>
+          <option value="electricity" {% if service_type == 'electricity' %}selected{% endif %}>كهرباء</option>
+          <option value="water" {% if service_type == 'water' %}selected{% endif %}>مياه</option>
+          <option value="other" {% if service_type == 'other' %}selected{% endif %}>أخرى</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 عرض التقرير</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-card">
+    <h4 class="mb-4">📊 ملخص الاستهلاك</h4>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_consumption|floatformat:0 }}</div>
+          <div class="stat-label">إجمالي الاستهلاك</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_readings }}</div>
+          <div class="stat-label">عدد القراءات</div>
+     </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ avg_consumption|floatformat:2 }}</div>
+          <div class="stat-label">متوسط الاستهلاك</div>
+        </div>
+      </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_customers_with_readings }}</div>
+          <div class="stat-label">عدد العملاء</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consumption by Service Type -->
+  {% if by_service %}
+  <div class="data-card">
+    <h4 class="mb-3">📈 الاستهلاك حسب نوع الخدمة</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>نوع الخدمة</th>
+          <th>عدد القراءات</th>
+          <th>إجمالي الاستهلاك</th>
+          <th>متوسط الاستهلاك</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_service %}
+        <tr>
+          <td>
+            {% if item.contract__service_type == 'electricity' %}
+              <span class="badge badge-electricity">⚡ كهرباء</span>
+            {% elif item.contract__service_type == 'water' %}
+              <span class="badge badge-water">💧 مياه</span>
+            {% else %}
+              <span class="badge badge-other">📦 أخرى</span>
+            {% endif %}
+          </td>
+          <td>{{ item.count }}</td>
+          <td><strong>{{ item.total|floatformat:0 }}</strong></td>
+          <td>{{ item.avg|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Top Consumers -->
+  {% if top_consumers %}
+  <div class="data-card">
+    <h4 class="mb-3">🏆 أعلى 10 مستهلكين</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>العميل</th>
+          <th>عدد القراءات</th>
+          <th>إجمالي الاستهلاك</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for consumer in top_consumers %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ consumer.contract__customer__name }}</strong></td>
+          <td>{{ consumer.count }}</td>
+          <td><strong style="color: #8b5cf6;">{{ consumer.total_consumption|floatformat:0 }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Recent Readings -->
+  {% if recent_readings %}
+  <div class="data-card">
+    <h4 class="mb-3">📋 آخر القراءات</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>العميل</th>
+          <th>نوع الخدمة</th>
+          <th>القراءة السابقة</th>
+          <th>القراءة الحالية</th>
+          <th>الاستهلاك</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reading in recent_readings %}
+        <tr>
+          <td>{{ reading.reading_date|date:"Y-m-d" }}</td>
+          <td>{{ reading.contract.customer.name }}</td>
+          <td>
+            {% if reading.contract.service_type == 'electricity' %}
+              <span class="badge badge-electricity">⚡ كهرباء</span>
+            {% elif reading.contract.service_type == 'water' %}
+              <span class="badge badge-water">💧 مياه</span>
+            {% else %}
+              <span class="badge badge-other">📦 أخرى</span>
+            {% endif %}
+          </td>
+          <td>{{ reading.previous_reading|floatformat:0 }}</td>
+          <td>{{ reading.current_reading|floatformat:0 }}</td>
+          <td><strong>{{ reading.consumption|floatformat:0 }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if not recent_readings %}
+  <div class="data-card">
+    <p class="text-center text-muted py-5">لا توجد بيانات استهلاك للفترة المحددة</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

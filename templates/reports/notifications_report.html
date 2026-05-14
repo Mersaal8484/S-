@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تقرير الإشعارات{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+  body { font-family: 'Cairo', sans-serif; background: #f8fafc; }
+
+  .report-header {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .report-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+
+  .filter-card, .stats-card, .data-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border-radius: 10px;
+    border: 2px solid #fca5a5;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #991b1b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  table { width: 100%; }
+  thead { background: #f1f5f9; }
+  th { padding: 1rem; font-weight: 700; text-align: right; color: #334155; }
+  td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; text-align: right; }
+  tr:hover { background: #f8fafc; }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-sms { background: #fef3c7; color: #92400e; }
+  .badge-email { background: #dbeafe; color: #1e40af; }
+  .badge-whatsapp { background: #d1fae5; color: #065f46; }
+  .badge-push { background: #e0e7ff; color: #3730a3; }
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-failed { background: #fee2e2; color: #991b1b; }
+  .badge-pending { background: #fef3c7; color: #92400e; }
+
+  .progress {
+    height: 25px;
+    border-radius: 10px;
+    background: #e2e8f0;
+  }
+
+  .progress-bar {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 2rem;
+  }
+
+  .chart-card h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="report-header">
+    <h1>📱 تقرير الإشعارات و SMS</h1>
+    <p class="mb-0">تقرير شامل للرسائل القصيرة والإشعارات المرسلة</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+      </div>
+  <div class="col-md-3">
+        <label class="form-label">نوع القناة</label>
+        <select name="channel" class="form-select">
+          <option value="">الكل</option>
+          <option value="sms" {% if channel == 'sms' %}selected{% endif %}>SMS</option>
+          <option value="email" {% if channel == 'email' %}selected{% endif %}>Email</option>
+          <option value="whatsapp" {% if channel == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+          <option value="push" {% if channel == 'push' %}selected{% endif %}>Push</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 عرض التقرير</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SMS Summary Stats -->
+  <div class="stats-card">
+    <h4 class="mb-4">📊 ملخص الرسائل القصيرة (SMS)</h4>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_sms }}</div>
+          <div class="stat-label">إجمالي الرسائل</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ sms_sent }}</div>
+          <div class="stat-label">تم الإرسال بنجاح</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ sms_failed }}</div>
+          <div class="stat-label">فشل الإرسال</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ sms_success_rate|floatformat:1 }}%</div>
+          <div class="stat-label">معدل النجاح</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Summary -->
+  <div class="stats-card">
+    <h4 class="mb-4">🔔 ملخص الإشعارات (جميع القنوات)</h4>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_notifications }}</div>
+          <div class="stat-label">إجمالي الإشعارات</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-box">
+          <div class="stat-value">{{ notifications_sent }}</div>
+          <div class="stat-label">تم الإرسال</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-box">
+          <div class="stat-value">{{ notifications_failed }}</div>
+          <div class="stat-label">فشل الإرسال</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- By Channel -->
+  {% if by_channel %}
+  <div class="data-card">
+    <h4 class="mb-3">📡 الإشعارات حسب القناة</h4>
+    <table class="table">
+      <thead>
+        <tr>
+        <th>القناة</th>
+          <th>إجمالي</th>
+          <th>نجح</th>
+          <th>فشل</th>
+          <th>معدل النجاح</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_channel %}
+        <tr>
+          <td>
+            {% if item.channel == 'sms' %}
+              <span class="badge badge-sms">📱 SMS</span>
+            {% elif item.channel == 'email' %}
+              <span class="badge badge-email">📧 Email</span>
+            {% elif item.channel == 'whatsapp' %}
+              <span class="badge badge-whatsapp">💬 WhatsApp</span>
+            {% elif item.channel == 'push' %}
+              <span class="badge badge-push">🔔 Push</span>
+            {% else %}
+              <span class="badge badge-sms">{{ item.channel }}</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ item.total }}</strong></td>
+          <td style="color: #10b981;">{{ item.sent }}</td>
+          <td style="color: #ef4444;">{{ item.failed }}</td>
+          <td>
+            {% widthratio item.sent item.total 100 as success_rate %}
+            <div class="progress">
+              <div class="progress-bar" style="width: {{ success_rate }}%">
+                {{ success_rate }}%
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- By Provider -->
+  {% if by_provider %}
+  <div class="data-card">
+    <h4 class="mb-3">🏢 الرسائل حسب المزود (Provider)</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>المزود</th>
+          <th>إجمالي</th>
+          <th>نجح</th>
+          <th>فشل</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_provider %}
+        <tr>
+          <td><strong>{{ item.provider__name|default:"غير محدد" }}</strong></td>
+          <td>{{ item.total }}</td>
+          <td style="color: #10b981;">{{ item.sent }}</td>
+          <td style="color: #ef4444;">{{ item.failed }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Daily SMS Trend Chart -->
+  {% if daily_sms %}
+  <div class="chart-card">
+    <h4>📈 اتجاه الرسائل اليومية (آخر 7 أيام)</h4>
+    <canvas id="smsChart" height="80"></canvas>
+  </div>
+  {% endif %}
+
+  <!-- Recent SMS -->
+  {% if recent_sms %}
+  <div class="data-card">
+    <h4 class="mb-3">📋 آخر الرسائل المرسلة (SMS)</h4>
+    <div style="max-height: 500px; overflow-y: auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>رقم الهاتف</th>
+            <th>المزود</th>
+            <th>الحالة</th>
+            <th>الرسالة</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sms in recent_sms %}
+          <tr>
+            <td>{{ sms.created_at|date:"Y-m-d H:i" }}</td>
+            <td><strong>{{ sms.phone_number }}</strong></td>
+       <td>{{ sms.provider.name|default:"—" }}</td>
+            <td>
+              {% if sms.status == 'sent' %}
+                <span class="badge badge-success">✓ تم الإرسال</span>
+              {% elif sms.status == 'failed' %}
+                <span class="badge badge-failed">✗ فشل</span>
+              {% else %}
+                <span class="badge badge-pending">⏳ قيد المعالجة</span>
+              {% endif %}
+            </td>
+            <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ sms.message|truncatewords:10 }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not recent_sms and not by_channel %}
+  <div class="data-card">
+    <p class="text-center text-muted py-5">لا توجد إشعارات للفترة المحددة</p>
+  </div>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+{% if daily_sms %}
+const ctx = document.getElementById('smsChart');
+const dailySms = {{ daily_sms|safe }};
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: dailySms.map(d => d.date),
+    datasets: [{
+      label: 'رسائل SMS يومية',
+      data: dailySms.map(d => d.count),
+      backgroundColor: 'rgba(239, 68, 68, 0.8)',
+      borderColor: '#ef4444',
+      borderWidth: 2,
+      borderRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, labels: { font: { family: 'Cairo', size: 13 } } },
+      tooltip: {
+        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+        titleFont: { family: 'Cairo', size: 14 },
+        bodyFont: { family: 'Cairo', size: 13 },
+        padding: 12
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { font: { family: 'Cairo', size: 12 } },
+        grid: { color: 'rgba(0,0,0,0.05)' }
+      },
+      x: {
+        ticks: { font: { family: 'Cairo', size: 12 } },
+        grid: { display: false }
+      }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

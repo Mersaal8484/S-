@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تقرير المحصلين{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+  body { font-family: 'Cairo', sans-serif; background: #f8fafc; }
+
+  .report-header {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .report-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+
+  .filter-card, .stats-card, .data-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-radius: 10px;
+    border: 2px solid #6ee7b7;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #047857;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  table { width: 100%; }
+  thead { background: #f1f5f9; }
+  th { padding: 1rem; font-weight: 700; text-align: right; color: #334155; }
+  td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; text-align: right; }
+  tr:hover { background: #f8fafc; }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  .badge-danger { background: #fee2e2; color: #991b1b; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+
+  .progress {
+    height: 25px;
+    border-radius: 10px;
+    background: #e2e8f0;
+  }
+
+  .progress-bar {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="report-header">
+    <h1>💰 تقرير المحصلين</h1>
+  <p class="mb-0">تقرير شامل لأداء المحصلين وعمليات التحصيل</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">المحصل</label>
+        <select name="collector" class="form-select">
+          <option value="">الكل</option>
+          {% for c in all_collectors %}
+          <option value="{{ c.id }}" {% if collector == c.id|stringformat:"s" %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 عرض التقرير</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-card">
+    <h4 class="mb-4">📊 ملخص التحصيل</h4>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_collected|floatformat:0 }}</div>
+          <div class="stat-label">إجمالي المبلغ المحصل (ريال)</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_payments }}</div>
+          <div class="stat-label">عدد الدفعات</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_routes }}</div>
+          <div class="stat-label">عدد المسارات</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ avg_per_collector|floatformat:0 }}</div>
+          <div class="stat-label">متوسط التحصيل لكل محصل</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Collectors Performance -->
+  {% if by_collector %}
+  <div class="data-card">
+    <h4 class="mb-3">👥 أداء المحصلين</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>اسم المحصل</th>
+          <th>عدد الدفعات</th>
+          <th>المبلغ المحصل</th>
+          <th>معدل النجاح</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_collector %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ item.collector__name|default:"غير محدد" }}</strong></td>
+          <td>{{ item.count }}</td>
+          <td><strong style="color: #10b981;">{{ item.total|floatformat:0 }} ريال</strong></td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar" style="width: {{ item.success_rate }}%">
+                {{ item.success_rate|floatformat:0 }}%
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Payment Methods Breakdown -->
+  {% if by_payment_method %}
+  <div class="data-card">
+    <h4 class="mb-3">💳 التحصيل حسب طريقة الدفع</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>طريقة الدفع</th>
+          <th>عدد الدفعات</th>
+          <th>إجمالي المبلغ</th>
+          <th>النسبة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_payment_method %}
+        <tr>
+          <td>
+            {% if item.payment_method == 'cash' %}
+              <span class="badge badge-success">💵 نقدي</span>
+            {% elif item.payment_method == 'bank_transfer' %}
+              <span class="badge badge-info">🏦 تحويل بنكي</span>
+            {% elif item.payment_method == 'credit_card' %}
+              <span class="badge badge-warning">💳 بطاقة ائتمان</span>
+            {% else %}
+              <span class="badge badge-info">{{ item.payment_method }}</span>
+            {% endif %}
+          </td>
+          <td>{{ item.count }}</td>
+          <td><strong>{{ item.total|floatformat:0 }} ريال</strong></td>
+          <td>
+            {% widthratio item.total total_collected 100 as percentage %}
+            {{ percentage }}%
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Routes Performance -->
+  {% if by_route %}
+  <div class="data-card">
+    <h4 class="mb-3">🗺️ أداء المسارات</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>المسار</th>
+          <th>عدد الدفعات</th>
+          <th>المبلغ المحصل</th>
+        </tr>
+      </thead>
+      <tbody>
+     {% for item in by_route %}
+        <tr>
+          <td><strong>{{ item.route__name }}</strong></td>
+          <td>{{ item.count }}</td>
+          <td><strong style="color: #10b981;">{{ item.total|floatformat:0 }} ريال</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Recent Payments -->
+  {% if recent_payments %}
+  <div class="data-card">
+    <h4 class="mb-3">📋 آخر الدفعات المحصلة</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>العميل</th>
+          <th>المحصل</th>
+          <th>المبلغ</th>
+          <th>الطريقة</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in recent_payments %}
+        <tr>
+          <td>{{ payment.payment_date|date:"Y-m-d H:i" }}</td>
+          <td>{{ payment.invoice.customer.name }}</td>
+          <td>{{ payment.collector.name|default:"—" }}</td>
+          <td><strong>{{ payment.amount|floatformat:2 }} ريال</strong></td>
+          <td>
+            {% if payment.payment_method == 'cash' %}
+              <span class="badge badge-success">💵 نقدي</span>
+            {% elif payment.payment_method == 'bank_transfer' %}
+              <span class="badge badge-info">🏦 تحويل</span>
+            {% else %}
+              <span class="badge badge-warning">{{ payment.payment_method }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge badge-success">✓ مكتمل</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if not recent_payments %}
+  <div class="data-card">
+    <p class="text-center text-muted py-5">لا توجد دفعات للفترة المحددة</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

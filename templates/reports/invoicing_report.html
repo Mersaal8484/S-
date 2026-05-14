@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تقرير الفواتير{% endblock %}
+
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #f8fafc;
+  }
+
+  .report-header {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .report-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-card,
+  .stats-card,
+  .data-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    border-radius: 10px;
+    border: 2px solid #93c5fd;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e40af;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  thead {
+    background: #f1f5f9;
+  }
+
+  th {
+    padding: 1rem;
+    font-weight: 700;
+    text-align: right;
+    color: #334155;
+  }
+
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+  }
+
+  tr:hover {
+    background: #f8fafc;
+  }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-paid {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-partial {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .badge-overdue {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .progress {
+    height: 25px;
+    border-radius: 10px;
+    background: #e2e8f0;
+  }
+
+  .progress-bar {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-top: 2rem;
+  }
+
+  .chart-card h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="report-header">
+    <h1>💰 تقرير الفواتير والدفعات</h1>
+    <p class="mb-0">تقرير شامل للفواتير والمدفوعات والمستحقات</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">حالة الدفع</label>
+        <select name="status" class="form-select">
+          <option value="">الكل</option>
+          <option value="paid" {% if status=='paid' %}selected{% endif %}>مدفوع</option>
+          <option value="pending" {% if status=='pending' %}selected{% endif %}>معلق</option>
+          <option value="partial" {% if status=='partial' %}selected{% endif %}>جزئي</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">🔍 عرض التقرير</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-card">
+    <h4 class="mb-4">📊 ملخص الفواتير</h4>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_invoices }}</div>
+          <div class="stat-label">إجمالي الفواتير</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ total_amount|floatformat:2 }} ر.ي</div>
+          <div class="stat-label">إجمالي المبلغ</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ paid_amount|floatformat:2 }} ر.ي</div>
+          <div class="stat-label">المبلغ المدفوع</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-value">{{ outstanding|floatformat:2 }} ر.ي</div>
+          <div class="stat-label">المستحقات</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue Stats -->
+  <div class="stats-card">
+    <h4 class="mb-4">⚠️ الفواتير المتأخرة</h4>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="stat-box">
+          <div class="stat-value">{{ overdue_count }}</div>
+          <div class="stat-label">عدد الفواتير المتأخرة</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="stat-box">
+          <div class="stat-value">{{ overdue_amount|floatformat:2 }} ر.ي</div>
+          <div class="stat-label">مبلغ الفواتير المتأخرة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- By Status -->
+  {% if by_status %}
+  <div class="data-card">
+    <h4 class="mb-3">📋 الفواتير حسب الحالة</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>الحالة</th>
+          <th>عدد الفواتير</th>
+          <th>إجمالي المبلغ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for status_item in by_status %}
+        <tr>
+          <td>
+            <span class="badge badge-{{ status_item.payment_status }}">
+              {% if status_item.payment_status == 'paid' %}مدفوع{% elif status_item.payment_status == 'pending' %}معلق{% elif status_item.payment_status == 'partial' %}جزئي{% else %}{{ status_item.payment_status }}{% endif %}
+            </span>
+          </td>
+          <td>{{ status_item.count }}</td>
+          <td>{{ status_item.total|floatformat:2 }} ر.ي</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Top Customers -->
+  {% if top_customers %}
+  <div class="data-card">
+    <h4 class="mb-3">🏆 أفضل العملاء بالمبلغ</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>اسم العميل</th>
+          <th>عدد الفواتير</th>
+          <th>إجمالي المبلغ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in top_customers %}
+        <tr>
+          <td>{{ customer.customer__name }}</td>
+          <td>{{ customer.total_invoices }}</td>
+          <td>{{ customer.total_amount|floatformat:2 }} ر.ي</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Invoices List -->
+  {% if invoices %}
+  <div class="data-card">
+    <h4 class="mb-3">📄 قائمة الفواتير</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>رقم الفاتورة</th>
+          <th>العميل</th>
+          <th>تاريخ الإصدار</th>
+          <th>تاريخ الاستحقاق</th>
+          <th>المبلغ الإجمالي</th>
+          <th>حالة الدفع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+        <tr>
+          <td>{{ invoice.invoice_number }}</td>
+          <td>{{ invoice.customer.name }}</td>
+          <td>{{ invoice.issue_date|date:'Y-m-d' }}</td>
+          <td>{{ invoice.due_date|date:'Y-m-d' }}</td>
+          <td>{{ invoice.total|floatformat:2 }} ر.ي</td>
+          <td>
+            <span class="badge badge-{{ invoice.payment_status }}">
+              {% if invoice.payment_status == 'paid' %}مدفوع{% elif invoice.payment_status == 'pending' %}معلق{% elif invoice.payment_status == 'partial' %}جزئي{% else %}{{ invoice.payment_status }}{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
