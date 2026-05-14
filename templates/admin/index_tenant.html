@@ -168,7 +168,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <!-- BACK + CRUMB -->
   <div class="backbar">
-    <button class="back-btn" onclick="sendPrompt('ارجع للوحة التحكم الرئيسية')">
+    <button class="back-btn" onclick="sendPrompt('العودة للقائمة الرئيسية')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       رجوع
     </button>
@@ -226,17 +226,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
       تسجيل دفعة
     </a>
-    <a href="{% url 'invoice_list' %}" class="ab-btn ab-primary" style="text-decoration:none">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.27-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      إرسال تذكير
+    <a href="{% url 'reading_create' %}" class="ab-btn ab-primary" style="text-decoration:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      إدخال قراءة
     </a>
-    <a href="{% url 'customer_list' %}" class="ab-btn ab-warn" style="text-decoration:none">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      تعديل البيانات
+    <a href="{% url 'customer_create' %}" class="ab-btn ab-warn" style="text-decoration:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      مشترك جديد
     </a>
-    <a href="{% url 'customer_list' %}" class="ab-btn ab-danger" style="text-decoration:none">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
-      تعليق الحساب
+    <a href="{% url 'reading_list' %}" class="ab-btn ab-danger" style="text-decoration:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      القراءات المعلقة {% if tstats.pending_readings %}({{ tstats.pending_readings|length }}){% endif %}
     </a>
   </div>
 
@@ -267,7 +267,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
           <div class="cons-row">
             <div class="cons-head"><span class="cons-lbl">💰 الفواتير المحصّلة</span><span class="cons-val">{{ tstats.paid_invoices }} فاتورة مدفوعة</span></div>
             <div class="cons-track"><div class="cons-fill" style="background:linear-gradient(90deg,#a78bfa,#ec4899);width:0%" id="cf2"></div></div>
-            <div class="cons-sub">{% if tstats.total_invoices > 0 %}معدل التحصيل {{ tstats.paid_invoices|floatformat:0 }}%{% endif %}</div>
+            <div class="cons-sub">{% if tstats.invoice_count > 0 %}معدل التحصيل {{ tstats.paid_invoices|floatformat:0 }}%{% endif %}</div>
           </div>
           <div class="cons-row">
             <div class="cons-head"><span class="cons-lbl">⚠️ الفواتير المعلقة</span><span class="cons-val" style="color:var(--warn)">{{ tstats.pending_invoices }} فاتورة</span></div>
@@ -302,9 +302,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="panel">
           <div class="ph"><div class="pt">مؤشرات سريعة</div></div>
           <div class="meter-minis">
-            <div class="mm"><div class="mm-ico">👥</div><div class="mm-val">{{ tstats.user_count }}</div><div class="mm-lbl">مستخدم نشط</div></div>
-            <div class="mm"><div class="mm-ico">🌐</div><div class="mm-val">{{ request.tenant.domain_set.all|length }}</div><div class="mm-lbl">نطاق مفعّل</div></div>
-            <div class="mm"><div class="mm-ico">📄</div><div class="mm-val">{{ tstats.total_invoices }}</div><div class="mm-lbl">إجمالي الفواتير</div></div>
+            <div class="mm"><div class="mm-ico">👥</div><div class="mm-val">{{ tstats.customer_count }}</div><div class="mm-lbl">مشترك</div></div>
+            <div class="mm"><div class="mm-ico">📋</div><div class="mm-val">{{ tstats.contract_count }}</div><div class="mm-lbl">عقد نشط</div></div>
+            <div class="mm"><div class="mm-ico">⚡</div><div class="mm-val">{{ tstats.meter_count }}</div><div class="mm-lbl">عداد نشط</div></div>
+            <div class="mm"><div class="mm-ico">📄</div><div class="mm-val">{{ tstats.invoice_count }}</div><div class="mm-lbl">إجمالي الفواتير</div></div>
+            {% if tstats.pending_readings %}
+            <div class="mm"><div class="mm-ico">⏳</div><div class="mm-val" style="color:var(--warn)">{{ tstats.pending_readings|length }}</div><div class="mm-lbl">قراءة معلقة</div></div>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -337,7 +341,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tp" id="t-invoices">
     <div class="panel">
       <div class="ph">
-        <div><div class="pt">سجل الفواتير</div><div class="ps">{{ tstats.total_invoices }} فاتورة إجمالاً</div></div>
+        <div><div class="pt">سجل الفواتير</div><div class="ps">{{ tstats.invoice_count }} فاتورة إجمالاً</div></div>
         <div class="pa" style="display:flex;gap:8px;margin-right:auto">
           <span class="b bg">{{ tstats.paid_invoices }} مدفوعة</span>
           <span class="b by">{{ tstats.pending_invoices }} معلقة</span>
@@ -349,7 +353,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <tbody>
           {% for inv in tstats.recent_invoices %}
           <tr>
-            <td><span class="inv-num">{{ inv.id }}</span></td>
+            <td><span class="inv-num">{{ inv.invoice_number }}</span></td>
             <td style="font-weight:800;color:var(--ok)">${{ inv.total_amount }}</td>
             <td>{% if inv.invoice_status == 'paid' %}<span class="b bg">● مدفوعة</span>{% elif inv.invoice_status == 'overdue' %}<span class="b br">● متأخرة</span>{% else %}<span class="b by">◑ {{ inv.invoice_status }}</span>{% endif %}</td>
             <td style="color:var(--t3);font-size:11px">{{ inv.created_at|date }}</td>
@@ -452,18 +456,24 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <script>
 function sendPrompt(msg){
-  var url = "{% url 'admin:index' %}";
-  if (msg.includes('ارجع')||msg.includes('العودة')||msg.includes('لوحة التحكم')) url = "{% url 'admin:index' %}";
-  else if (msg.includes('فاتورة')) url = "{% url 'invoice_create' %}";
+  var url = "{% url 'billing_index' %}";
+  if (msg.includes('العودة') || msg.includes('الرئيسية') || msg.includes('ارجع')) {
+    {% if request.user.is_superuser %}
+      url = "{% url 'admin:tenants_tenant_changelist' %}";
+    {% else %}
+      url = "{% url 'billing_index' %}";
+    {% endif %}
+  }
+  else if (msg.includes('فاتورة جديدة') || msg.includes('إنشاء فاتورة')) url = "{% url 'invoice_create' %}";
+  else if (msg.includes('فاتورة') || msg.includes('الفواتير')) url = "{% url 'invoice_list' %}";
   else if (msg.includes('دفعة')) url = "{% url 'payment_create' %}";
-  else if (msg.includes('تذكير')) url = "{% url 'invoice_list' %}";
-  else if (msg.includes('عدّل')||msg.includes('تعديل')) url = "{% url 'customer_list' %}";
-  else if (msg.includes('تعليق')) url = "{% url 'customer_list' %}";
-  else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_add' %}";
+  else if (msg.includes('قراءة') || msg.includes('عداد')) url = "{% url 'reading_create' %}";
+  else if (msg.includes('مشترك جديد') || msg.includes('إضافة مشترك')) url = "{% url 'customer_create' %}";
+  else if (msg.includes('مشترك') || msg.includes('المشتركين')) url = "{% url 'customer_list' %}";
+  else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_changelist' %}";
   else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
-  else if (msg.includes('Stripe')) url = "{% url 'system_settings' %}";
-  else if (msg.includes('تنزيل')) url = "{% url 'invoice_list' %}";
-  else if (msg.includes('تفاصيل')) url = "{% url 'customer_list' %}";
+  else if (msg.includes('إعداد') || msg.includes('الإعدادات')) url = "{% url 'system_settings' %}";
+  else if (msg.includes('تنزيل') || msg.includes('تقرير')) url = "{% url 'reports_dashboard' %}";
   window.location.href = url;
 }
 function switchTab(id,btn){
@@ -485,19 +495,31 @@ function cu(id,target,suffix=''){
   },16);
 }
 setTimeout(()=>{
-  cu('h1',{{ tstats.total_payments|floatformat:0 }});cu('h2',{{ tstats.paid_invoices }});cu('h3',{{ tstats.user_count }});cu('h4',{{ tstats.pending_invoices }});
+  cu('h1',{{ tstats.total_payments|floatformat:0 }});
+  cu('h2',{{ tstats.paid_invoices }});
+  cu('h3',{{ tstats.user_count }});
+  cu('h4',{{ tstats.pending_invoices|add:tstats.overdue_invoices }});
+  const invTotal=Math.max({{ tstats.invoice_count|default:1 }},1);
+  const pct1=Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100),100);
+  const pct2=Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100),100);
+  const pct3=Math.min(Math.round(({{ tstats.pending_invoices }}+{{ tstats.overdue_invoices }})/invTotal*100),100);
   setTimeout(()=>{
-    document.getElementById('cf1').style.width='78%';
-    document.getElementById('cf2').style.width='93%';
-    document.getElementById('cf3').style.width='22%';
+    const cf1=document.getElementById('cf1');
+    const cf2=document.getElementById('cf2');
+    const cf3=document.getElementById('cf3');
+    if(cf1)cf1.style.width=pct1+'%';
+    if(cf2)cf2.style.width=pct2+'%';
+    if(cf3)cf3.style.width=pct3+'%';
   },400);
 },200);
-const months=['ديسمبر','يناير','فبراير','مارس','أبريل','مايو'];
-const vals=[240,260,195,270,250,285];
+
+const months = {{ tstats.months_labels_json|safe }};
+const vals = {{ tstats.consumption_vals_json|safe }};
+
 const svg2=document.getElementById('tenChart');
 const W=460,H=130,p={t:10,b:25,l:10,r:10};
 const dw=W-p.l-p.r,dh=H-p.t-p.b;
-const mx=Math.max(...vals)+30;
+const mx=Math.max(...vals, 1)+30;
 const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
 const lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
 lg.setAttribute('id','cg1');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','0');lg.setAttribute('y2','1');
@@ -522,42 +544,22 @@ months.forEach((m,i)=>{
   t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=m;
   svg2.appendChild(t);
 });
-const invoicesData=[];
-{% for inv in tstats.recent_invoices %}
-invoicesData.push({num:'INV-{{ inv.id }}',amt:'${{ inv.total_amount }}',status:'{{ inv.invoice_status }}'});
-{% endfor %}
-if(invoicesData.length===0){
-  invoicesData.push({num:'INV-001',amt:'$0',status:'paid'});
-}
-{% if tstats.recent_invoices %}
-const tb=document.getElementById('invoiceBody');
-if(tb){
-  invoicesData.forEach(iv=>{
-    const tr=document.createElement('tr');
-    const badge=iv.status==='paid'?'<span class="b bg">● مدفوعة</span>':'<span class="b by">◑ {{ inv.invoice_status }}</span>';
-    tr.innerHTML=`<td><span class="inv-num">${iv.num}</span></td><td style="font-weight:800;color:var(--ok)">${iv.amt}</td><td>${badge}</td>`;
-    tb.appendChild(tr);
-  });
-}
-{% endif %}
-const events=[
+
+const stripeEvents = [
   {icon:'💳',type:'payment_intent.succeeded',id:'evt_001',amt:'+$1,490',amtColor:'#34d399',time:'اليوم'},
   {icon:'🔄',type:'customer.subscription.updated',id:'evt_002',amt:'تحديث',amtColor:'var(--energy)',time:'أمس'},
   {icon:'💳',type:'payment_intent.succeeded',id:'evt_003',amt:'+$1,490',amtColor:'#34d399',time:'هذا الأسبوع'},
 ];
 const ec=document.getElementById('stripeEvents');
 if(ec){
-  events.forEach(e=>{
+  stripeEvents.forEach(e=>{
     const d=document.createElement('div');
     d.className='stripe-event';
     d.innerHTML=`<div class="se-ico" style="background:rgba(0,212,255,0.08)">${e.icon}</div><div style="flex:1"><div class="se-type">${e.type}</div><div class="se-id">${e.id}</div></div><div class="se-amt" style="color:${e.amtColor}">${e.amt}</div><div class="se-time">${e.time}</div>`;
     ec.appendChild(d);
   });
 }
-const acts=[
-  {icon:'💳',ico_bg:'rgba(52,211,153,0.12)',title:'الحساب نشط',sub:'النظام يعمل بكفاءة',time:'{{ "now"|date:"Y-m-d" }}'},
-  {icon:'📄',ico_bg:'rgba(0,212,255,0.1)',title:'آخر نشاط',sub:'تم تسجيل الدخول',time:'اليوم'},
-];
+const acts = {{ tstats.recent_activities_json|safe }};
 const tl=document.getElementById('timeline');
 if(tl){
   acts.forEach(a=>{
@@ -590,13 +592,11 @@ function buildGauge(){
 (function(){
   const sv=document.getElementById('consChart');
   if(!sv)return;
-  const months2=['ديسمبر','يناير','فبراير','مارس','أبريل','مايو'];
-  const vals2=[240,260,195,270,250,285];
   const W=400,H=150,p2={t:15,b:25,l:10,r:10};
   const dw=W-p2.l-p2.r,dh=H-p2.t-p2.b;
-  const mx=Math.max(...vals2)+30;
-  const pts=vals2.map((v,i)=>{
-    const x=p2.l+i*(dw/(months2.length-1));
+  const mx=Math.max(...vals, 1)+30;
+  const pts=vals.map((v,i)=>{
+    const x=p2.l+i*(dw/(months.length-1));
     const y=p2.t+dh*(1-v/mx);
     return x+','+y;
   }).join(' ');
@@ -605,8 +605,8 @@ function buildGauge(){
   poly.setAttribute('stroke','#00d4ff');poly.setAttribute('stroke-width','2.5');
   poly.setAttribute('stroke-linejoin','round');poly.setAttribute('stroke-linecap','round');
   sv.appendChild(poly);
-  vals2.forEach((v,i)=>{
-    const x=p2.l+i*(dw/(months2.length-1));
+  vals.forEach((v,i)=>{
+    const x=p2.l+i*(dw/(months.length-1));
     const y=p2.t+dh*(1-v/mx);
     const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
     c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','5');
@@ -614,7 +614,7 @@ function buildGauge(){
     sv.appendChild(c);
     const t=document.createElementNS('http://www.w3.org/2000/svg','text');
     t.setAttribute('x',x);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
-    t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=months2[i];
+    t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=months[i];
     sv.appendChild(t);
   });
 })();

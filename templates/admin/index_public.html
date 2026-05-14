@@ -273,7 +273,7 @@ body::-webkit-scrollbar{width:0}
       </div>
       <div class="ib rel ndot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
       <div class="ib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg></div>
-      <a href="{% url 'admin:tenants_tenant_changelist' %}" style="background:linear-gradient(135deg,#00d4ff,#a78bfa);border:none;color:#07091a;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap;text-decoration:none">+ تصدير تقرير</a>
+      <a href="{% url 'admin:tenants_tenant_changelist' %}" style="background:linear-gradient(135deg,#00d4ff,#a78bfa);border:none;color:#07091a;padding:8px 20px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap;text-decoration:none">عرض كافة المستأجرين</a>
     </div>
   </div>
 
@@ -363,7 +363,10 @@ body::-webkit-scrollbar{width:0}
       <div class="panel">
         <div class="ph">
           <div><div class="pt">آخر المستأجرين</div><div class="ps">{{ stats.total_tenants }} مستأجر</div></div>
-          <a href="{% url 'admin:tenants_tenant_add' %}" style="margin-right:auto;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--elec);padding:5px 13px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;text-decoration:none;display:inline-flex">+ جديد</a>
+          <div class="pact">
+            <a href="{% url 'admin:tenants_tenant_changelist' %}" class="pill">عرض الكل</a>
+            <a href="{% url 'admin:tenants_tenant_add' %}" class="pill on">+ مستأجر جديد</a>
+          </div>
         </div>
         <table class="tbl">
           <thead><tr><th>الشركة</th><th>الخطة</th><th>الحالة</th><th>تاريخ التسجيل</th></tr></thead>
@@ -422,11 +425,11 @@ body::-webkit-scrollbar{width:0}
         <div class="ph"><div><div class="pt">إجراءات سريعة</div><div class="ps">اختصارات النظام</div></div></div>
         <div class="qa">
           <a href="{% url 'admin:tenants_tenant_add' %}" class="qa-c"><div class="qa-i">🏢</div><div class="qa-l">مستأجر جديد</div></a>
-          <a href="{% url 'admin:tenants_tenant_add' %}" class="qa-c"><div class="qa-i">📄</div><div class="qa-l">مستأجر جديد</div></a>
           <a href="{% url 'admin:tenants_domain_add' %}" class="qa-c"><div class="qa-i">🌐</div><div class="qa-l">نطاق جديد</div></a>
           <a href="{% url 'admin:tenants_plan_add' %}" class="qa-c"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></a>
           <a href="{% url 'admin:tenants_tenant_changelist' %}" class="qa-c"><div class="qa-i">📊</div><div class="qa-l">المستأجرون</div></a>
-          <a href="{% url 'admin:index' %}" class="qa-c"><div class="qa-i">🔑</div><div class="qa-l">الإعدادات</div></a>
+          <a href="{% url 'admin:tenants_tenantsubscription_changelist' %}" class="qa-c"><div class="qa-i">💳</div><div class="qa-l">المدفوعات</div></a>
+          <a href="{% url 'admin:index' %}" class="qa-c"><div class="qa-i">🔑</div><div class="qa-l">إعدادات Django</div></a>
         </div>
         <div style="padding:0 14px 14px">
           <div style="font-size:10px;color:var(--t3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">صحة النظام</div>
@@ -442,12 +445,14 @@ body::-webkit-scrollbar{width:0}
 <script>
 function sendPrompt(msg){
   var url = "{% url 'admin:index' %}";
-  if (msg.includes('مستأجر')) url = "{% url 'admin:tenants_tenant_add' %}";
+  if (msg.includes('مستأجر جديد')) url = "{% url 'admin:tenants_tenant_add' %}";
+  else if (msg.includes('مستأجر')) url = "{% url 'admin:tenants_tenant_changelist' %}";
   else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
-  else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_add' %}";
-  else if (msg.includes('تحليل')|| msg.includes('إيراد')|| msg.includes('أرباح')|| msg.includes('تحليلات')) url = "{% url 'admin:tenants_tenant_changelist' %}";
-  else if (msg.includes('معلق') || msg.includes('فاتورة') || msg.includes('كهرباء') || msg.includes('مياه') || msg.includes('استهلاك')) url = "{% url 'admin:tenants_tenant_changelist' %}";
-  else if (msg.includes('دفعة') || msg.includes('API') || msg.includes('Stripe') || msg.includes('مفاتيح')) url = "{% url 'admin:index' %}";
+  else if (msg.includes('خطة جديدة')) url = "{% url 'admin:tenants_plan_add' %}";
+  else if (msg.includes('خطة') || msg.includes('خطط')) url = "{% url 'admin:tenants_plan_changelist' %}";
+  else if (msg.includes('مدفوعات') || msg.includes('Stripe') || msg.includes('دفعة')) url = "{% url 'admin:tenants_tenantsubscription_changelist' %}";
+  else if (msg.includes('تحليل') || msg.includes('إيراد') || msg.includes('تحليلات') || msg.includes('أرباح')) url = "{% url 'admin:tenants_tenantsubscription_changelist' %}";
+  else if (msg.includes('فاتورة') || msg.includes('كهرباء') || msg.includes('مياه') || msg.includes('استهلاك') || msg.includes('معلق')) url = "{% url 'admin:tenants_tenant_changelist' %}";
   window.location.href = url;
 }
 function setNav(el){
