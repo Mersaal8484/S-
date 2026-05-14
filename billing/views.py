@@ -37,43 +37,6 @@ from .services import generate_number
 from . import services
 
 
-def index(request):
-    """Main dashboard"""
-    customer_count = Customer.objects.count()
-    contract_count = Contract.objects.filter(contract_status='active').count()
-    invoice_count = Invoice.objects.count()
-    payment_count = Payment.objects.count()
-    
-    total_revenue = Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    # Calculate outstanding (cannot use property in aggregate, so use expression)
-    outstanding_invoices = Invoice.objects.filter(
-        invoice_status__in=['issued', 'partially_paid', 'overdue']
-    )
-    total_outstanding = sum(
-        float(inv.total_amount) - float(inv.paid_amount) 
-        for inv in outstanding_invoices
-    )
-    
-    recent_invoices = Invoice.objects.select_related('contract__customer').order_by('-created_at')[:10]
-    recent_payments = Payment.objects.select_related('customer').order_by('-payment_date')[:10]
-    pending_readings = MeterReadingSubmission.objects.filter(
-        approval_status='pending'
-    ).select_related('meter__contract', 'customer')[:10]
-    
-    return render(request, 'billing/index.html', {
-        'customer_count': customer_count,
-        'contract_count': contract_count,
-        'invoice_count': invoice_count,
-        'payment_count': payment_count,
-        'total_revenue': total_revenue,
-        'total_outstanding': total_outstanding,
-        'recent_invoices': recent_invoices,
-        'recent_payments': recent_payments,
-        'pending_readings': pending_readings,
-    })
-
-
 def customer_list(request):
     customers = Customer.objects.all().order_by('customer_number')
     query = request.GET.get('q')
@@ -83,15 +46,15 @@ def customer_list(request):
             Q(full_name_ar__icontains=query) |
             Q(mobile_phone__icontains=query)
         )
-    
+
     city = request.GET.get('city')
     if city:
         customers = customers.filter(city=city)
-    
+
     cities = Customer.objects.values_list('city', flat=True).distinct().exclude(city__isnull=True).exclude(city='')
     paginator = Paginator(customers, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/customer_list.html', {
         'customers': paginator.get_page(page),
         'cities': cities,
@@ -106,7 +69,7 @@ def customer_create(request):
             return redirect('customer_detail', customer.id)
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/customer_form.html', {
         'form': CustomerForm(),
         'title': 'إضافة مشترك'
@@ -119,7 +82,7 @@ def customer_detail(request, pk):
     invoices = Invoice.objects.filter(contract__customer=customer).order_by('-created_at')[:10]
     payments = Payment.objects.filter(customer=customer).order_by('-payment_date')[:10]
     ledger = BalanceLedger.objects.filter(customer=customer).order_by('-transaction_date')[:20]
-    
+
     return render(request, 'billing/customer_detail.html', {
         'customer': customer,
         'contracts': contracts,
@@ -131,7 +94,7 @@ def customer_detail(request, pk):
 
 def customer_update(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    
+
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
         if form.is_valid():
@@ -140,7 +103,7 @@ def customer_update(request, pk):
             return redirect('customer_detail', pk)
     else:
         form = CustomerForm(instance=customer)
-    
+
     return render(request, 'billing/customer_form.html', {
         'form': form,
         'title': 'تعديل بيانات المشترك'
@@ -155,14 +118,14 @@ def contract_list(request):
             Q(contract_number__icontains=query) |
             Q(customer__full_name_ar__icontains=query)
         )
-    
+
     status = request.GET.get('status')
     if status:
         contracts = contracts.filter(contract_status=status)
-    
+
     paginator = Paginator(contracts, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/contract_list.html', {
         'contracts': paginator.get_page(page),
     })
@@ -178,7 +141,7 @@ def contract_create(request):
             return redirect('contract_detail', contract.id)
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/contract_form.html', {
         'form': ContractForm(),
         'title': 'إضافة عقد'
@@ -190,7 +153,7 @@ def contract_detail(request, pk):
     meters = contract.meters.all()
     invoices = contract.invoices.order_by('-created_at')[:10]
     readings = MeterReadingSubmission.objects.filter(contract=contract).order_by('-created_at')[:10]
-    
+
     return render(request, 'billing/contract_detail.html', {
         'contract': contract,
         'meters': meters,
@@ -201,7 +164,7 @@ def contract_detail(request, pk):
 
 def contract_update(request, pk):
     contract = get_object_or_404(Contract, pk=pk)
-    
+
     if request.method == 'POST':
         form = ContractForm(request.POST, instance=contract)
         if form.save():
@@ -209,7 +172,7 @@ def contract_update(request, pk):
             return redirect('contract_detail', pk)
     else:
         form = ContractForm(instance=contract)
-    
+
     return render(request, 'billing/contract_form.html', {
         'form': form,
         'title': 'تعديل العقد'
@@ -224,14 +187,14 @@ def meter_list(request):
             Q(meter_number__icontains=query) |
             Q(contract__contract_number__icontains=query)
         )
-    
+
     status = request.GET.get('status')
     if status:
         meters = meters.filter(meter_status=status)
-    
+
     paginator = Paginator(meters, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/meter_list.html', {
         'meters': paginator.get_page(page),
     })
@@ -247,7 +210,7 @@ def meter_create(request):
             return redirect('meter_list')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/meter_form.html', {
         'form': MeterForm(),
         'title': 'إضافة عداد'
@@ -256,7 +219,7 @@ def meter_create(request):
 
 def meter_edit(request, pk):
     meter = get_object_or_404(Meter, pk=pk)
-    
+
     if request.method == 'POST':
         form = MeterForm(request.POST, instance=meter)
         if form.is_valid():
@@ -265,7 +228,7 @@ def meter_edit(request, pk):
             return redirect('meter_list')
     else:
         form = MeterForm(instance=meter)
-    
+
     return render(request, 'billing/meter_form.html', {
         'form': form,
         'title': 'تعديل العداد'
@@ -292,7 +255,7 @@ def billing_period_create(request):
             return redirect('billing_period_list')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/billing_period_form.html', {
         'title': 'إضافة فترة'
     })
@@ -300,7 +263,7 @@ def billing_period_create(request):
 
 def billing_period_edit(request, pk):
     period = get_object_or_404(BillingPeriod, pk=pk)
-    
+
     if request.method == 'POST':
         period.period_name = request.POST.get('period_name')
         period.period_code = request.POST.get('period_code')
@@ -313,7 +276,7 @@ def billing_period_edit(request, pk):
         period.save()
         messages.success(request, 'Period updated')
         return redirect('billing_period_list')
-    
+
     return render(request, 'billing/billing_period_form.html', {
         'title': 'تعديل الفترة',
         'period': period
@@ -324,22 +287,22 @@ def reading_list(request):
     readings = MeterReadingSubmission.objects.select_related(
         'meter__contract__customer', 'customer'
     ).order_by('-created_at')
-    
+
     query = request.GET.get('q')
     if query:
         readings = readings.filter(
             Q(meter__meter_number__icontains=query) |
             Q(customer__full_name_ar__icontains=query)
         )
-    
+
     status = request.GET.get('status')
     if status:
         readings = readings.filter(approval_status=status)
-    
+
     paginator = Paginator(readings, 25)
     page = request.GET.get('page')
     periods = BillingPeriod.objects.order_by('-start_date')[:10]
-    
+
     return render(request, 'billing/reading_list.html', {
         'readings': paginator.get_page(page),
         'periods': periods,
@@ -354,7 +317,7 @@ def reading_create(request):
         if not meter:
             messages.error(request, 'No active meter for this contract')
             return redirect('reading_create')
-        
+
         try:
             submission = services.submit_meter_reading(meter, {
                 'current_reading': Decimal(request.POST.get('current_reading')),
@@ -366,10 +329,10 @@ def reading_create(request):
             return redirect('reading_list')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     contracts = Contract.objects.filter(contract_status='active').select_related('customer')
     users = User.objects.filter(is_active=True)
-    
+
     return render(request, 'billing/reading_form.html', {
         'title': 'تسجيل قراءة',
         'today': datetime.now().date().strftime('%Y-%m-%d'),
@@ -381,7 +344,7 @@ def reading_create(request):
 @login_required
 def reading_approve(request, pk):
     reading = get_object_or_404(MeterReadingSubmission, pk=pk)
-    
+
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'approve':
@@ -397,9 +360,9 @@ def reading_approve(request, pk):
             reading.reviewed_at = timezone.now()
             reading.save()
             messages.success(request, 'Reading rejected')
-        
+
         return redirect('reading_list')
-    
+
     return render(request, 'billing/reading_approve.html', {'reading': reading})
 
 
@@ -411,10 +374,10 @@ def invoice_list(request):
             Q(invoice_number__icontains=query) |
             Q(contract__customer__full_name_ar__icontains=query)
         )
-    
+
     paginator = Paginator(invoices, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/invoice_list.html', {
         'invoices': paginator.get_page(page),
     })
@@ -564,7 +527,7 @@ def invoice_detail(request, pk):
     lines = invoice.lines.all()
     payments = invoice.payments.all()
     penalties = invoice.penalties.all()
-    
+
     return render(request, 'billing/invoice_detail.html', {
         'invoice': invoice,
         'lines': lines,
@@ -691,10 +654,10 @@ def invoice_regenerate(request, pk):
 def invoice_print(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     customer = invoice.contract.customer
-    
+
     previous_balance = float(invoice.previous_indebtedness)
     total_due = float(invoice.final_amount)
-    
+
     return render(request, 'billing/invoice_print.html', {
         'invoice': invoice,
         'previous_balance': previous_balance,
@@ -710,14 +673,14 @@ def payment_list(request):
             Q(payment_number__icontains=query) |
             Q(customer__full_name_ar__icontains=query)
         )
-    
+
     method = request.GET.get('method')
     if method:
         payments = payments.filter(payment_method=method)
-    
+
     paginator = Paginator(payments, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/payment_list.html', {
         'payments': paginator.get_page(page),
     })
@@ -730,7 +693,7 @@ def payment_create(request):
         contract_id = request.POST.get('contract')
         period_id = request.POST.get('period')
         period = get_object_or_404(BillingPeriod, pk=period_id) if period_id else None
-        
+
         try:
             if invoice_id:
                 invoice = get_object_or_404(Invoice, pk=invoice_id)
@@ -785,15 +748,15 @@ def payment_create(request):
             return redirect('payment_list')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     invoices = Invoice.objects.filter(
         invoice_status__in=['issued', 'partially_paid', 'overdue']
     ).select_related('contract__customer')
-    
+
     contracts = Contract.objects.filter(contract_status='active')
     customers = Customer.objects.filter(is_active=True)
     periods = BillingPeriod.objects.filter(status__in=['reading_open', 'billing_in_progress', 'billing_completed'])
-    
+
     return render(request, 'billing/payment_form.html', {
         'title': 'تسجيل دفعة',
         'invoices': invoices,
@@ -834,7 +797,7 @@ def collector_create(request):
         )
         messages.success(request, 'Collector created')
         return redirect('collector_list')
-    
+
     return render(request, 'billing/collector_form.html', {'title': 'إضافة محصل'})
 
 
@@ -854,7 +817,7 @@ def route_create(request):
         )
         messages.success(request, 'Route created')
         return redirect('route_list')
-    
+
     return render(request, 'billing/route_form.html', {'title': 'إضافة مسار'})
 
 
@@ -866,7 +829,7 @@ def route_detail(request, pk):
     ).exclude(
         id__in=route_contracts.values('contract_id')
     ).select_related('customer')
-    
+
     return render(request, 'billing/route_detail.html', {
         'route': route,
         'route_contracts': route_contracts,
@@ -880,14 +843,14 @@ def route_add_contract(request, route_id):
         contract_id = request.POST.get('contract')
         contract = get_object_or_404(Contract, pk=contract_id)
         stop_order = request.POST.get('stop_order', 0)
-        
+
         RouteContract.objects.create(
             route=route,
             contract=contract,
             stop_order=stop_order or route.contracts.count() + 1
         )
         messages.success(request, 'Contract added to route')
-    
+
     return redirect('route_detail', pk=route_id)
 
 
@@ -904,10 +867,10 @@ def sms_list(request):
     status = request.GET.get('status')
     if status:
         messages = messages.filter(status=status)
-    
+
     paginator = Paginator(messages, 25)
     page = request.GET.get('page')
-    
+
     return render(request, 'billing/sms_list.html', {
         'messages': paginator.get_page(page),
     })
@@ -920,7 +883,7 @@ def sms_create(request):
         message = request.POST.get('message')
         template_id = request.POST.get('template')
         template = SMSTemplate.objects.filter(pk=template_id).first() if template_id else None
-        
+
         SMSQueue.objects.create(
             customer=customer,
             mobile_number=customer.mobile_phone,
@@ -930,7 +893,7 @@ def sms_create(request):
         )
         messages.success(request, 'SMS queued')
         return redirect('sms_list')
-    
+
     customers = Customer.objects.filter(is_active=True)
     templates = SMSTemplate.objects.filter(is_active=True)
     return render(request, 'billing/sms_form.html', {'customers': customers, 'templates': templates})
@@ -953,7 +916,7 @@ def sms_provider_create(request):
         )
         messages.success(request, 'Provider created')
         return redirect('sms_provider_list')
-    
+
     return render(request, 'billing/sms_provider_form.html')
 
 
@@ -973,13 +936,13 @@ def sms_template_create(request):
         )
         messages.success(request, 'Template created')
         return redirect('sms_template_list')
-    
+
     return render(request, 'billing/sms_template_form.html')
 
 
 def sms_template_edit(request, pk):
     template = get_object_or_404(SMSTemplate, pk=pk)
-    
+
     if request.method == 'POST':
         template.template_type = request.POST.get('template_type')
         template.title_ar = request.POST.get('title_ar')
@@ -989,35 +952,11 @@ def sms_template_edit(request, pk):
         template.save()
         messages.success(request, 'Template updated')
         return redirect('sms_template_list')
-    
+
     return render(request, 'billing/sms_template_form.html', {'template': template})
 
 
-def reports_dashboard(request):
-    customer_count = Customer.objects.count()
-    contract_count = Contract.objects.filter(contract_status='active').count()
-    total_revenue = Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    outstanding_invoices = Invoice.objects.filter(
-        invoice_status__in=['issued', 'partially_paid', 'overdue']
-    )
-    total_outstanding = sum(
-        float(inv.total_amount) - float(inv.paid_amount)
-        for inv in outstanding_invoices
-    )
-    
-    month_start = datetime.now().date().replace(day=1)
-    invoices_this_month = Invoice.objects.filter(issue_date__gte=month_start).count()
-    payments_this_month = Payment.objects.filter(payment_date__gte=month_start).aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    return render(request, 'billing/reports.html', {
-        'customer_count': customer_count,
-        'contract_count': contract_count,
-        'total_revenue': total_revenue,
-        'total_outstanding': total_outstanding,
-        'invoices_this_month': invoices_this_month,
-        'payments_this_month': payments_this_month,
-    })
+
 
 
 def close_period(request, pk):
@@ -1036,9 +975,9 @@ def system_settings(request):
     settings_obj = SystemSettings.objects.first()
     if not settings_obj:
         settings_obj = SystemSettings.objects.create()
-    
+
     subscription_types = SubscriptionType.objects.all()
-    
+
     # Group templates by subscription type
     templates_by_type = {}
     for st in subscription_types:
@@ -1053,14 +992,14 @@ def system_settings(request):
                 'code': getattr(st, 'code', None),
             },
             'templates': list(templates.values(
-                'id', 'line_order', 'line_name_ar', 'line_name_en', 
+                'id', 'line_order', 'line_name_ar', 'line_name_en',
                 'calculation_type', 'is_taxable'
             ))
         }
-    
+
     # Convert to JSON for JavaScript
     templates_by_type_json = json.dumps(templates_by_type)
-    
+
     if request.method == 'POST':
         settings_obj.company_name = request.POST.get('company_name', '')
         settings_obj.company_address = request.POST.get('company_address', '')
@@ -1070,7 +1009,7 @@ def system_settings(request):
         settings_obj.save()
         messages.success(request, 'Settings saved')
         return redirect('system_settings')
-    
+
     return render(request, 'billing/settings.html', {
         'settings': settings_obj,
         'subscription_types': subscription_types,
@@ -1107,7 +1046,7 @@ def subscription_type_edit(request, pk):
 
 def template_create(request, type_id=None):
     subscription_types = SubscriptionType.objects.all()
-    
+
     if request.method == 'POST':
         type_id = request.POST.get('type') or type_id
         try:
@@ -1120,7 +1059,7 @@ def template_create(request, type_id=None):
                 fixed_amount=to_decimal(request.POST.get('fixed_amount')),
                 percentage_rate=to_decimal(request.POST.get('percentage_rate'))
             )
-            
+
             # Create formula details for tiered kwh
             if template.calculation_type == 'tiered_kwh':
                 # Create default tiers
@@ -1154,12 +1093,12 @@ def template_create(request, type_id=None):
                     rate_or_amount=request.POST.get('percentage_rate', 0),
                     is_rate_per_kwh=False
                 )
-            
+
             messages.success(request, 'Template created')
             return redirect('system_settings')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/template_form.html', {
         'title': 'إضافة نموذج',
         'subscription_types': subscription_types,
@@ -1184,14 +1123,14 @@ def template_delete(request, pk):
 def template_detail(request, pk):
     template = get_object_or_404(InvoiceLineTemplate, pk=pk)
     details = template.formula_details.all()
-    
+
     if request.method == 'POST':
         # Add new formula detail
         min_val = request.POST.get('min_value')
         max_val = request.POST.get('max_value')
         rate = request.POST.get('rate_or_amount')
         is_rate = request.POST.get('is_rate_per_kwh') == 'on'
-        
+
         if min_val and rate:
             InvoiceLineFormulaDetail.objects.create(
                 template=template,
@@ -1202,7 +1141,7 @@ def template_detail(request, pk):
             )
             messages.success(request, 'Formula added')
             return redirect('template_detail', pk=pk)
-    
+
     return render(request, 'billing/template_detail.html', {
         'template': template,
         'details': details
@@ -1213,7 +1152,7 @@ def template_create_for_type(request, type_id):
     """Create template for specific subscription type"""
     subscription_type = get_object_or_404(SubscriptionType, pk=type_id)
     subscription_types = SubscriptionType.objects.all()
-    
+
     if request.method == 'POST':
         try:
             template = InvoiceLineTemplate.objects.create(
@@ -1225,7 +1164,7 @@ def template_create_for_type(request, type_id):
                 fixed_amount=to_decimal(request.POST.get('fixed_amount')),
                 percentage_rate=to_decimal(request.POST.get('percentage_rate'))
             )
-            
+
             # Create formula details for tiered kWh
             if template.calculation_type == 'tiered_kwh':
                 tiers = [
@@ -1258,12 +1197,12 @@ def template_create_for_type(request, type_id):
                     rate_or_amount=request.POST.get('percentage_rate', 0),
                     is_rate_per_kwh=False
                 )
-            
+
             messages.success(request, 'Template created')
             return redirect('system_settings')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/template_form.html', {
         'title': f'إضافة نموذج لـ {subscription_type.name_ar}',
         'subscription_types': subscription_types,
@@ -1274,7 +1213,7 @@ def template_create_for_type(request, type_id):
 def template_edit(request, pk):
     template = get_object_or_404(InvoiceLineTemplate, pk=pk)
     subscription_types = SubscriptionType.objects.all()
-    
+
     if request.method == 'POST':
         try:
             template.type_id = request.POST.get('type')
@@ -1289,7 +1228,7 @@ def template_edit(request, pk):
             return redirect('system_settings')
         except Exception as e:
             messages.error(request, str(e))
-    
+
     return render(request, 'billing/template_form.html', {
         'title': 'تعديل النموذج',
         'template': template,
@@ -1302,16 +1241,16 @@ def ledger_list(request):
     customer_id = request.GET.get('customer')
     if customer_id:
         ledger = ledger.filter(customer_id=customer_id)
-    
+
     transaction_type = request.GET.get('type')
     if transaction_type:
         ledger = ledger.filter(transaction_type=transaction_type)
-    
+
     paginator = Paginator(ledger, 25)
     page = request.GET.get('page')
-    
+
     customers = Customer.objects.all()
-    
+
     return render(request, 'billing/ledger_list.html', {
         'ledger': paginator.get_page(page),
         'customers': customers
@@ -1321,10 +1260,10 @@ def ledger_list(request):
 def ledger_detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     ledger = BalanceLedger.objects.filter(customer=customer).order_by('-transaction_date')
-    
+
     total_debit = ledger.aggregate(Sum('debit'))['debit__sum'] or 0
     total_credit = ledger.aggregate(Sum('credit'))['credit__sum'] or 0
-    
+
     return render(request, 'billing/ledger_detail.html', {
         'customer': customer,
         'ledger': ledger,
@@ -1341,9 +1280,75 @@ def adjustment_create(request):
             return redirect('ledger_list')
         except Exception as e:
             messages.error(request, f'خطأ: {str(e)}')
-            
     customers = Customer.objects.filter(is_active=True)
     return render(request, 'billing/adjustment_form.html', {
         'title': 'تسجيل تسوية مالية',
         'customers': customers
+    })
+
+
+@login_required
+def consumption_adjustment(request):
+    """View to adjust meter readings"""
+    if request.method == 'POST':
+        meter_id = request.POST.get('meter')
+        new_reading = Decimal(request.POST.get('new_reading', '0'))
+        reason = request.POST.get('reason')
+
+        meter = get_object_or_404(Meter, pk=meter_id)
+
+        with transaction.atomic():
+            old_reading = meter.last_approved_reading or meter.initial_reading
+            meter.last_approved_reading = new_reading
+            meter.save()
+
+            # Record as an approved submission for history
+            MeterReadingSubmission.objects.create(
+                meter=meter,
+                contract=meter.contract,
+                customer=meter.contract.customer,
+                previous_reading=old_reading,
+                submitted_reading=new_reading,
+                approved_reading=new_reading,
+                approval_status='approved',
+                reading_source='estimated',
+                reader_notes=f"تعديل استهلاك: {reason}",
+                reviewed_by=request.user,
+                reviewed_at=timezone.now()
+            )
+
+        messages.success(request, 'تم تعديل قراءة العداد بنجاح')
+        return redirect('meter_list')
+
+    meters = Meter.objects.select_related('contract__customer').filter(meter_status='active')
+    return render(request, 'billing/consumption_adjustment.html', {
+        'meters': meters
+    })
+
+
+@login_required
+def billing_reports_view(request):
+    """Detailed financial and operational reports dashboard for billing"""
+    # Summary stats
+    stats = {
+        'total_revenue': Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0,
+        'total_outstanding': sum(float(inv.total_amount) - float(inv.paid_amount) for inv in Invoice.objects.filter(invoice_status__in=['issued', 'partially_paid', 'overdue'])),
+        'active_contracts': Contract.objects.filter(contract_status='active').count(),
+        'pending_readings': MeterReadingSubmission.objects.filter(approval_status='pending').count(),
+    }
+
+    # Revenue by month (last 6 months)
+    revenue_history = []
+    for i in range(6):
+        date = timezone.now() - timedelta(days=30*i)
+        month_revenue = Payment.objects.filter(payment_date__year=date.year, payment_date__month=date.month).aggregate(Sum('amount'))['amount__sum'] or 0
+        revenue_history.append({
+            'month': date.strftime('%b'),
+            'amount': month_revenue
+        })
+    revenue_history.reverse()
+
+    return render(request, 'billing/reports.html', {
+        'stats': stats,
+        'revenue_history': revenue_history
     })

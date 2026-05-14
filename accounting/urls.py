@@ -58,9 +58,12 @@ urlpatterns = [
     path('products/<int:pk>/delete/', views.product_delete, name='product_delete'),
 
     # Reports
+    path('reports/', views.accounting_reports_view, name='accounting_reports'),
     path('ledger/', views.ledger, name='ledger'),
     path('trial-balance/', views.trial_balance, name='trial_balance'),
     path('balance-sheet/', views.balance_sheet, name='balance_sheet'),
     path('income-statement/', views.income_statement, name='income_statement'),
+    path('journal-analysis/', views.journal_analysis, name='journal_analysis'),
     path('analysis-accounts/', views.analysis_accounts, name='analysis_accounts'),
+    path('adjustments/', views.financial_adjustments, name='financial_adjustments'),
 ]

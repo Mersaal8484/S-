@@ -452,7 +452,7 @@ def invoice_create(request):
     customers = Customer.objects.filter(is_active=True)
     products = Product.objects.filter(is_active=True)
     return render(request, 'accounting/invoice_form.html', {
-        'title': 'Create Invoice',
+        'title': 'إنشاء فاتورة',
         'customers': customers,
         'products': products,
     })
@@ -694,7 +694,7 @@ def customer_create(request):
         form = CustomerForm()
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Create Customer',
+        'title': 'إنشاء مشترك',
     })
 
 
@@ -954,4 +954,98 @@ def analysis_accounts(request):
     accounts = Account.objects.filter(parent__isnull=False).select_related('parent')
     return render(request, 'accounting/analysis_accounts.html', {
         'accounts': accounts,
+    })
+
+
+# ---- New Premium Reports & Adjustments ----
+
+@login_required
+def accounting_reports_view(request):
+    """Central hub for financial reports"""
+    return render(request, 'accounting/reports_dashboard.html')
+
+
+@login_required
+def journal_analysis(request):
+    """Grouped analysis of journal entries"""
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    entries = JournalLine.objects.select_related('journal_entry', 'account')
+    if start_date:
+        entries = entries.filter(journal_entry__date__gte=start_date)
+    if end_date:
+        entries = entries.filter(journal_entry__date__lte=end_date)
+    
+    # Grouping by account type for analysis
+    analysis = entries.values('account__account_type').annotate(
+        total_debit=Sum('debit'),
+        total_credit=Sum('credit')
+    )
+    
+    # Daily summary
+    daily = entries.values('journal_entry__date').annotate(
+        total=Sum('debit')
+    ).order_by('-journal_entry__date')[:30]
+
+    return render(request, 'accounting/journal_analysis.html', {
+        'analysis': analysis,
+        'daily': daily,
+        'start_date': start_date,
+        'end_date': end_date,
+    })
+
+
+@login_required
+def financial_adjustments(request):
+    """View to list and create manual adjustments"""
+    if request.method == 'POST':
+        # Create a journal entry as an adjustment
+        account_id = request.POST.get('account')
+        amount = Decimal(request.POST.get('amount', '0'))
+        adj_type = request.POST.get('adj_type') # debit or credit
+        reason = request.POST.get('reason')
+        
+        with transaction.atomic():
+            entry = JournalEntry.objects.create(
+                date=timezone.now().date(),
+                reference="ADJ-" + timezone.now().strftime('%Y%m%d%H%M'),
+                description=f"Adjustment: {reason}",
+                is_posted=True,
+                posted_at=timezone.now()
+            )
+            
+            # Logic for adjustment: usually affects an account and a counter-account (like Retained Earnings or a suspense account)
+            # For simplicity, we'll just allow direct entry
+            debit = amount if adj_type == 'debit' else 0
+            credit = amount if adj_type == 'credit' else 0
+            
+            JournalLine.objects.create(
+                journal_entry=entry,
+                account_id=account_id,
+                debit=debit,
+                credit=credit,
+                description=reason
+            )
+            
+            # Auto-balance with a default adjustment/suspense account
+            suspense_account = Account.objects.filter(code='ADJ-SUS').first()
+            if not suspense_account:
+                # Create if not exists or use a generic equity account
+                suspense_account = Account.objects.filter(account_type='equity').first()
+                
+            JournalLine.objects.create(
+                journal_entry=entry,
+                account=suspense_account,
+                debit=credit, # Reverse of the primary adj
+                credit=debit,
+                description=f"Offset for ADJ: {reason}"
+            )
+            
+        messages.success(request, 'تم تسجيل التسوية المالية بنجاح')
+        return redirect('journal_entry_list')
+
+    accounts = Account.objects.filter(is_active=True)
+    return render(request, 'accounting/financial_adjustments.html', {
+        'accounts': accounts
     })

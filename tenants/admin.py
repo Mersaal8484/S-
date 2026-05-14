@@ -8,7 +8,7 @@ from .models import Plan, Tenant, Domain, TenantSubscription
 class TenantSubscriptionInline(admin.TabularInline):
     model = TenantSubscription
     extra = 0
-    readonly_fields = ['action', 'plan_from', 'plan_to', 'amount', 'currency', 'payment_status', 'stripe_invoice_id', 'created_at']
+    readonly_fields = ['action', 'plan_from', 'plan_to', 'amount', 'currency', 'payment_status', 'transaction_id', 'payment_gateway', 'created_at']
     can_delete = False
     max_num = 0
     ordering = ['-created_at']
@@ -34,7 +34,7 @@ class TenantAdmin(admin.ModelAdmin):
     list_display = ['company_name', 'schema_name', 'plan', 'subscription_status', 'is_active', 'created_on', 'total_paid', 'dashboard_link']
     list_filter = ['subscription_status', 'is_active', 'plan', 'country']
     search_fields = ['company_name', 'schema_name', 'email']
-    readonly_fields = ['schema_name', 'created_on', 'stripe_customer_id', 'stripe_subscription_id', 'subscription_history']
+    readonly_fields = ['schema_name', 'created_on', 'subscription_history']
     list_per_page = 25
     inlines = [TenantSubscriptionInline]
     actions = ['upgrade_to_pro', 'upgrade_to_enterprise', 'activate_tenant', 'deactivate_tenant']
@@ -48,10 +48,6 @@ class TenantAdmin(admin.ModelAdmin):
         }),
         ('سجل الاشتراكات', {
             'fields': ('subscription_history',),
-            'classes': ('collapse',)
-        }),
-        ('Stripe', {
-            'fields': ('stripe_customer_id', 'stripe_subscription_id'),
             'classes': ('collapse',)
         }),
         ('الحالة', {
@@ -70,12 +66,13 @@ class TenantAdmin(admin.ModelAdmin):
         logs = TenantSubscription.objects.filter(tenant=obj)[:20]
         if not logs:
             return format_html('<span style="color:#4a7a95">لا يوجد سجل اشتراكات</span>')
-        html = '<table style="width:100%;font-size:12px"><tr style="background:rgba(0,212,255,0.1)"><th>التاريخ</th><th>الإجراء</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th></tr>'
+        html = '<table style="width:100%;font-size:12px"><tr style="background:rgba(0,212,255,0.1)"><th>التاريخ</th><th>الإجراء</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>بوابة الدفع</th></tr>'
         for log in logs:
             status_color = '#34d399' if log.payment_status == 'succeeded' else ('#f43f5e' if log.payment_status == 'failed' else '#fb923c')
             plan_name = log.plan_to.name if log.plan_to else '-'
             amount = f'{log.amount:,.2f} {log.currency}' if log.amount else '-'
-            html += f'<tr><td>{log.created_at.date()}</td><td>{log.get_action_display()}</td><td>{plan_name}</td><td>{amount}</td><td style="color:{status_color}">{log.get_payment_status_display()}</td></tr>'
+            gateway = log.payment_gateway or '-'
+            html += f'<tr><td>{log.created_at.date()}</td><td>{log.get_action_display()}</td><td>{plan_name}</td><td>{amount}</td><td style="color:{status_color}">{log.get_payment_status_display()}</td><td>{gateway}</td></tr>'
         html += '</table>'
         return format_html(html)
     subscription_history.short_description = 'سجل الاشتراكات'
@@ -154,11 +151,12 @@ class DomainAdmin(admin.ModelAdmin):
 
 @admin.register(TenantSubscription)
 class TenantSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['tenant', 'get_action_display', 'plan_to', 'amount', 'currency', 'payment_status', 'created_at']
-    list_filter = ['action', 'payment_status', 'created_at']
-    search_fields = ['tenant__company_name']
+    list_display = ['tenant', 'get_action_display', 'plan_to', 'amount', 'currency', 'payment_status', 'payment_gateway', 'created_at']
+    list_filter = ['action', 'payment_status', 'payment_gateway', 'created_at']
+    search_fields = ['tenant__company_name', 'transaction_id']
     date_hierarchy = 'created_at'
     list_per_page = 30
+    readonly_fields = ['tenant', 'action', 'plan_from', 'plan_to', 'amount', 'currency', 'payment_status', 'transaction_id', 'payment_gateway', 'created_at']
 
 
 # Add dashboard link to admin index

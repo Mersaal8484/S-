@@ -398,6 +398,7 @@ def record_payment(invoice, amount, data):
             period=invoice.period,
             amount=amount,
             payment_method=data.get('payment_method', 'cash'),
+            source_type=data.get('source_type', 'cash'),
             reference_number=data.get('reference_number', ''),
             bank_name=data.get('bank_name', ''),
             notes=data.get('notes', '')

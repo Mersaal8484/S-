@@ -1,54 +1,123 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Trial Balance - elem{% endblock %}
+{% block title %}ميزان المراجعة - نظام S-B{% endblock %}
+
+{% block page_title %}
+<h1>ميزان المراجعة</h1>
+<p>مراجعة أرصدة الحسابات المدينة والدائنة</p>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h1>Trial Balance</h1>
-        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
-    </div>
+<style>
+    .filter-panel {
+        background: rgba(17, 28, 66, 0.5);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    .report-table-card {
+        background: var(--card-bg, #0d1230);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .table-premium {
+        width: 100%;
+        color: #e0f4ff;
+        border-collapse: collapse;
+    }
+    .table-premium th {
+        background: rgba(0, 212, 255, 0.05);
+        padding: 16px;
+        font-weight: 800;
+        text-align: right;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        color: #00d4ff;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .table-premium td {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 14px;
+    }
+    .table-premium tr:hover td {
+        background: rgba(0, 212, 255, 0.02);
+    }
+    .val-debit { color: #34d399; font-weight: 700; }
+    .val-credit { color: #f43f5e; font-weight: 700; }
+    .total-row {
+        background: rgba(0, 212, 255, 0.08);
+        font-weight: 900;
+        font-size: 16px !important;
+    }
+    .total-row td { border: none !important; }
+</style>
+
+<div class="filter-panel">
+    <form method="get" class="row align-items-end g-3">
+        <div class="col-md-4">
+            <label class="form-label text-muted small fw-bold">من تاريخ</label>
+            <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control form-control-dark">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label text-muted small fw-bold">إلى تاريخ</label>
+            <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control form-control-dark">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100 fw-bold">تحديث التقرير <i class="bi bi-arrow-clockwise ms-2"></i></button>
+        </div>
+    </form>
 </div>
 
-<form method="get" class="form-inline mb-4">
-    <div class="form-group mr-2">
-        <label>Start Date:</label>
-        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control ml-2">
-    </div>
-    <div class="form-group mr-2">
-        <label>End Date:</label>
-        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control ml-2">
-    </div>
-    <button type="submit" class="btn btn-primary">Filter</button>
-</form>
-
-<div class="table-responsive">
-    <table class="table table-bordered">
-        <thead class="thead-dark">
+<div class="report-table-card">
+    <table class="table-premium">
+        <thead>
             <tr>
-                <th>Account</th>
-                <th>Type</th>
-                <th class="text-right">Debit</th>
-                <th class="text-right">Credit</th>
+                <th>كود الحساب</th>
+                <th>اسم الحساب</th>
+                <th>نوع الحساب</th>
+                <th class="text-center">مدين</th>
+                <th class="text-center">دائن</th>
             </tr>
         </thead>
         <tbody>
             {% for item in data %}
             <tr>
-                <td>{{ item.account.code }} - {{ item.account.name }}</td>
-                <td>{{ item.account.get_account_type_display }}</td>
-                <td class="text-right">{% if item.balance > 0 %}{{ item.balance }}{% endif %}</td>
-                <td class="text-right">{% if item.balance < 0 %}{{ item.balance|abs }}{% endif %}</td>
+                <td><code style="color: #00d4ff;">{{ item.account.code }}</code></td>
+                <td class="fw-bold">{{ item.account.name }}</td>
+                <td><span class="badge badge-outline-primary" style="font-size: 10px; border: 1px solid rgba(0,212,255,0.3); color: #00d4ff; padding: 4px 8px; border-radius: 6px;">{{ item.account.get_account_type_display }}</span></td>
+                <td class="text-center val-debit">
+                    {% if item.balance > 0 %}{{ item.balance|floatformat:2 }}{% else %}-{% endif %}
+                </td>
+                <td class="text-center val-credit">
+                    {% if item.balance < 0 %}{{ item.balance|abs|floatformat:2 }}{% else %}-{% endif %}
+                </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center">No data</td></tr>
-            {% endfor %}
-            <tr class="font-weight-bold">
-                <td colspan="2" class="text-right">Totals:</td>
-                <td class="text-right">{{ total_debit }}</td>
-                <td class="text-right">{{ total_credit }}</td>
+            <tr>
+                <td colspan="5" class="text-center py-5 text-muted">لا توجد بيانات لهذه الفترة</td>
             </tr>
+            {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="3" class="text-end pe-4">الإجماليات الكلية</td>
+                <td class="text-center val-debit" style="border-top: 2px solid #34d399 !important;">{{ total_debit|floatformat:2 }}</td>
+                <td class="text-center val-credit" style="border-top: 2px solid #f43f5e !important;">{{ total_credit|floatformat:2 }}</td>
+            </tr>
+        </tfoot>
     </table>
+</div>
+
+<div class="mt-4 d-flex justify-content-between align-items-center">
+    <div class="text-muted small">تم توليد هذا التقرير في: {% now "Y-m-d H:i" %}</div>
+    <div>
+        <button class="btn btn-outline-light btn-sm me-2" onclick="window.print()"><i class="bi bi-printer me-2"></i> طباعة</button>
+        <button class="btn btn-outline-light btn-sm"><i class="bi bi-file-earmark-excel me-2"></i> تصدير Excel</button>
+    </div>
 </div>
 {% endblock %}

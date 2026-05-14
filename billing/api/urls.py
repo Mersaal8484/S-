@@ -19,4 +19,6 @@ urlpatterns = [
     path('readings/pending/', views.ReadingViewSet.as_view({'get': 'pending'}), name='readings-pending'),
     path('ewallet/webhook/<str:provider_code>/',
          views.EWalletWebhookView.as_view(), name='ewallet-webhook'),
+    path('payments/webhook/<str:provider_code>/',
+         views.PaymentGatewayWebhookView.as_view(), name='payment-gateway-webhook'),
 ]

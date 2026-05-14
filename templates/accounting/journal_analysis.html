@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تحليل اليوميات - نظام S-B{% endblock %}
+
+{% block page_title %}
+<h1>تحليل اليوميات</h1>
+<p>تحليل إحصائي وتفصيلي لقيود اليومية</p>
+{% endblock %}
+
+{% block content %}
+<style>
+    .stat-box {
+        background: rgba(17, 28, 66, 0.4);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-val { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .stat-lbl { font-size: 11px; color: #94c8e0; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+</style>
+
+<div class="filter-panel mb-4">
+    <form method="get" class="row align-items-end g-3">
+        <div class="col-md-4">
+            <label class="form-label text-muted small fw-bold">من تاريخ</label>
+            <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control form-control-dark">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label text-muted small fw-bold">إلى تاريخ</label>
+            <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control form-control-dark">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100 fw-bold">تطبيق الفلتر</button>
+        </div>
+    </form>
+</div>
+
+<div class="analysis-grid">
+    {% for item in analysis %}
+    <div class="stat-box">
+        <div class="stat-val text-info">{{ item.total_debit|floatformat:2 }}</div>
+        <div class="stat-lbl">{{ item.account__account_type }} (مدين)</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="report-table-card h-100">
+            <div class="p-3 border-bottom border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="m-0 text-info fw-bold">ملخص يومي للنشاط</h5>
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <table class="table-premium">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th class="text-center">إجمالي الحركة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily %}
+                    <tr>
+                        <td class="fw-bold">{{ day.journal_entry__date }}</td>
+                        <td class="text-center text-success fw-bold">{{ day.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center py-4">لا توجد حركات مسجلة</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="col-md-5">
+        <div class="report-table-card h-100">
+            <div class="p-3 border-bottom border-secondary">
+                <h5 class="m-0 text-info fw-bold">توزيع أنواع الحسابات</h5>
+            </div>
+            <div class="p-4">
+                {% for item in analysis %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span>{{ item.account__account_type|title }}</span>
+                        <span class="text-info">{{ item.total_debit|floatformat:0 }} ر.ي</span>
+                    </div>
+                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                        <div class="progress-bar bg-info" style="width: 70%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

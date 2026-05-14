@@ -16,8 +16,6 @@ class Plan(models.Model):
     max_customers = models.IntegerField(default=1000)
     max_meters = models.IntegerField(default=5000)
     max_users = models.IntegerField(default=10)
-    stripe_price_id_monthly = models.CharField(max_length=100, blank=True)
-    stripe_price_id_yearly = models.CharField(max_length=100, blank=True)
     features = models.JSONField(default=dict)  # {'sms': True, 'ewallet': True, 'api': True}
     is_active = models.BooleanField(default=True)
 
@@ -33,8 +31,6 @@ class Tenant(TenantMixin):
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField()
     plan = models.ForeignKey(Plan, on_delete=models.PROTECT, null=True)
-    stripe_customer_id = models.CharField(max_length=100, blank=True)
-    stripe_subscription_id = models.CharField(max_length=100, blank=True)
     subscription_status = models.CharField(
         max_length=20,
         choices=[
@@ -84,8 +80,8 @@ class TenantSubscription(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     currency = models.CharField(max_length=3, default='SAR')
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.SUCCEEDED)
-    stripe_invoice_id = models.CharField(max_length=100, blank=True)
-    stripe_subscription_id = models.CharField(max_length=100, blank=True)
+    payment_gateway = models.CharField(max_length=50, blank=True, help_text='بوابة الدفع المستخدمة')
+    transaction_id = models.CharField(max_length=200, blank=True, help_text='رقم العملية من بوابة الدفع')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

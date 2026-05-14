@@ -26,8 +26,10 @@ from .serializers import (
     EWalletTransactionSerializer
 )
 from .permissions import TenantUserPermission, IsFieldReader, IsCollector, IsTenantAdmin
-from core.ewallet_service import get_gateway
+from core.ewallet_service import get_gateway as get_ewallet_gateway
+from core.payment_gateway_service import get_gateway as get_payment_gateway
 from core.barcode_service import meter_barcode_png, meter_qr_png
+from integrations.models import IntegrationConfig
 from django.http import HttpResponse
 
 
@@ -159,7 +161,7 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
         ewallet_id = request.data.get('ewallet_id')
         ewallet = get_object_or_404(CustomerEWallet, pk=ewallet_id, customer=invoice.contract.customer)
 
-        gateway = get_gateway(ewallet.provider)
+        gateway = get_ewallet_gateway(ewallet.provider)
         ref = f"INV-{invoice.invoice_number}"
         result = gateway.initiate(ewallet.wallet_number, invoice.remaining_amount, ref)
 
@@ -181,6 +183,52 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
             'status': result['status'],
             'redirect_url': result.get('redirect_url', ''),
             'transaction_id': result['transaction_id'],
+        })
+
+    @action(detail=True, methods=['post'])
+    def pay_gateway(self, request, pk=None):
+        invoice = self.get_object()
+        provider_code = request.data.get('provider_code', '').strip().lower()
+        config_id = request.data.get('config_id')
+
+        if not provider_code and not config_id:
+            return Response(
+                {'detail': 'provider_code or config_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        config = None
+        if config_id:
+            config = get_object_or_404(IntegrationConfig, pk=config_id, is_active=True)
+            if provider_code and config.integration.provider_code.lower() != provider_code:
+                return Response(
+                    {'detail': 'config_id does not match provider_code.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            config = IntegrationConfig.objects.filter(
+                integration__provider_code__iexact=provider_code,
+                is_active=True,
+                is_default=True,
+            ).first()
+            if not config:
+                return Response(
+                    {'detail': f'No active integration configuration found for {provider_code}.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        gateway = get_payment_gateway(config)
+        ref = f"INV-{invoice.invoice_number}"
+        try:
+            result = gateway.initiate(invoice, invoice.remaining_amount, ref)
+        except Exception as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'status': result.get('status', 'pending'),
+            'redirect_url': result.get('redirect_url', ''),
+            'transaction_id': result.get('transaction_id', ''),
+            'provider': config.integration.provider_code,
         })
 
 
@@ -271,6 +319,51 @@ class RouteExecutionSubmitView(APIView):
 
         return Response(RouteExecutionSerializer(execution).data,
                         status=status.HTTP_201_CREATED)
+
+
+class PaymentGatewayWebhookView(APIView):
+    permission_classes = []
+
+    def post(self, request, provider_code):
+        payload = request.data
+        transaction_id = (
+            payload.get('id')
+            or payload.get('payment_reference')
+            or payload.get('merchantRefNumber')
+            or payload.get('transaction_id')
+        )
+        provider_code = provider_code.lower()
+
+        config = IntegrationConfig.objects.filter(
+            integration__provider_code__iexact=provider_code,
+            is_active=True,
+            is_default=True,
+        ).first()
+        if not config:
+            return Response({'detail': 'Unsupported payment provider.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        gateway = get_payment_gateway(config)
+        result = gateway.verify(transaction_id=transaction_id, payload=payload)
+        if result['status'] != 'paid':
+            return Response({'status': 'pending'})
+
+        reference = payload.get('merchantRefNumber') or payload.get('merchant_order_id') or payload.get('order', {}).get('merchant_order_id')
+        if not reference:
+            return Response({'detail': 'Invoice reference not found in webhook.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        invoice_number = reference.replace('INV-', '')
+        invoice = get_object_or_404(Invoice, invoice_number=invoice_number)
+        if invoice.invoice_status == 'paid':
+            return Response({'status': 'already_paid'})
+
+        amount = result.get('amount') or invoice.remaining_amount
+        from billing.services import record_payment
+        record_payment(invoice, amount, {
+            'payment_method': 'online',
+            'reference_number': transaction_id,
+            'notes': f'{provider_code} webhook',
+        })
+        return Response({'status': 'ok'})
 
 
 class EWalletWebhookView(APIView):

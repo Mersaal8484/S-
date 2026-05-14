@@ -1,34 +1,68 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}{{ title }} - elem{% endblock %}
 
-{% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h1>{{ title }}</h1>
-        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
-    </div>
-</div>
+{% block extra_head %}
+<style>
+    .form-page { max-width: 940px; margin: 0 auto; padding: 28px 18px; }
+    .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:28px; }
+    .page-title { font-size:2rem; font-weight:800; color:#eef2ff; }
+    .btn-back { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#dbeafe; text-decoration:none; font-weight:700; }
+    .page-sub { color:#a5b4fc; font-size:0.95rem; }
+    .form-card { background:rgba(15,23,42,0.95); border:1px solid rgba(148,163,184,0.12); border-radius:24px; box-shadow:0 20px 60px rgba(15,23,42,0.35); overflow:hidden; }
+    .form-card-header { padding:28px 30px; border-bottom:1px solid rgba(148,163,184,0.12); display:flex; align-items:center; gap:12px; }
+    .form-card-header .h-dot { width:10px; height:10px; border-radius:50%; background:#7c3aed; box-shadow:0 0 12px rgba(124,58,237,0.5); }
+    .form-card-header h6 { margin:0; font-size:1rem; color:#e0e7ff; font-weight:700; }
+    .form-card-body { padding:30px; display:grid; gap:24px; }
+    .form-grid { display:grid; gap:20px; }
+    .form-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .form-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .field { display:flex; flex-direction:column; gap:8px; }
+    .field label { font-size:0.85rem; font-weight:700; color:#c7d2fe; }
+    .field input, .field select, .field textarea { width:100%; border:1px solid rgba(148,163,184,0.18); border-radius:12px; background:rgba(15,23,42,0.8); color:#f8fafc; padding:12px 14px; font-size:0.94rem; }
+    .field textarea { min-height:120px; resize:vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline:none; border-color:#818cf8; box-shadow:0 0 0 4px rgba(129,140,248,0.12); }
+    .form-footer { padding:24px 30px 30px; border-top:1px solid rgba(148,163,184,0.12); display:flex; justify-content:flex-end; gap:12px; background:rgba(15,23,42,0.88); }
+    .btn-save { padding:12px 24px; border-radius:14px; border:none; background:linear-gradient(135deg,#6366f1,#60a5fa); color:#fff; font-weight:800; cursor:pointer; }
+    .btn-save:hover { opacity:0.95; }
+    @media(max-width:860px){ .form-grid-2, .form-grid-3 { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
+{% block content %}
+<div class="form-page">
+    <div class="page-header">
+        <div>
+            <div class="page-title">{{ title }}</div>
+            <div class="page-sub">املأ البيانات الأساسية ثم اضغط حفظ</div>
+        </div>
+        <a href="javascript:history.back()" class="btn-back">العودة</a>
+    </div>
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <span class="h-dot"></span>
+            <h6>بيانات {{ title|lower }}</h6>
+        </div>
+        <div class="form-card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-grid form-grid-2">
                     {% for field in form %}
-                    <div class="form-group mb-3">
-                        <label class="form-label">{{ field.label }}</label>
+                    <div class="field">
+                        <label>{{ field.label }}</label>
                         {{ field.errors }}
                         {{ field }}
                         {% if field.help_text %}
-                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        <small style="color:#94a3b8;">{{ field.help_text }}</small>
                         {% endif %}
                     </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary mt-3">Save</button>
-                </form>
-            </div>
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="btn-save">حفظ</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

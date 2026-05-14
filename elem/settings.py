@@ -16,7 +16,7 @@ SHARED_APPS = [
     'django_tenants',
     'tenants',
     'core',
-    'djstripe',
+    'integrations.apps.IntegrationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,8 +37,8 @@ TENANT_APPS = [
     'billing.apps.BillingConfig',
     'contract_management.apps.ContractManagementConfig',
     'accounting.apps.AccountingConfig',
-    'integrations.apps.IntegrationsConfig',
     'notifications.apps.NotificationsConfig',
+    'reports.apps.ReportsConfig',
     'rest_framework',
     'corsheaders',
     'django_filters',
@@ -140,12 +140,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'tenants:landing'
-
-# Stripe
-STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
-STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
-STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
-DJSTRIPE_FOREIGN_KEY_TO_FIELD = 'id'
 
 # REST Framework
 REST_FRAMEWORK = {

@@ -6,7 +6,10 @@ from django.db import IntegrityError, connection
 from django_tenants.utils import schema_context
 from django.contrib.auth.models import User
 
-from .models import Plan, Tenant, Domain
+from .models import Plan, Tenant, Domain, TenantSubscription
+from django.db.models import Count, Sum, Avg, Q, F
+from datetime import timedelta
+from decimal import Decimal
 
 
 def landing_page(request):
@@ -42,7 +45,7 @@ def register(request):
             if not clean_name or len(clean_name) < 2:
                 # Use email prefix if company name is all Arabic/special chars
                 clean_name = re.sub(r'[^a-z0-9_]', '', email.split('@')[0].lower()).strip('_')
-            
+
             schema_name = clean_name[:63]
             if not schema_name or schema_name[0].isdigit():
                 schema_name = 't' + schema_name if schema_name else 'company'
@@ -102,7 +105,7 @@ def register_success(request, tenant_id):
 
 
 def upgrade_checkout(request, tenant_id):
-    """Create Stripe Checkout Session for plan upgrade"""
+    """Direct plan upgrade (no payment gateway for now)"""
     tenant = get_object_or_404(Tenant, pk=tenant_id)
     plan_id = request.GET.get('plan')
     plan = get_object_or_404(Plan, pk=plan_id)
@@ -112,56 +115,28 @@ def upgrade_checkout(request, tenant_id):
         return redirect('tenants:register_success', tenant_id=tenant.id)
 
     billing_cycle = request.GET.get('cycle', 'monthly')
-    price_field = 'stripe_price_id_monthly' if billing_cycle == 'monthly' else 'stripe_price_id_yearly'
-    stripe_price_id = getattr(plan, price_field, '')
+    amount = plan.price_monthly if billing_cycle == 'monthly' else plan.price_yearly
 
-    if not stripe_price_id or not settings.STRIPE_SECRET_KEY:
-        # Direct admin upgrade (no Stripe configured)
-        old_plan = tenant.plan
-        tenant.plan = plan
-        tenant.save()
-        from .models import TenantSubscription
-        TenantSubscription.objects.create(
-            tenant=tenant, action='upgraded',
-            plan_from=old_plan, plan_to=plan,
-            notes='ترقية بدون Stripe'
-        )
-        messages.success(request, f'تم ترقية حسابك إلى {plan.name}')
-        return redirect('tenants:register_success', tenant_id=tenant.id)
+    # Direct upgrade - في المستقبل سيتم التكامل مع بوابة دفع محلية
+    old_plan = tenant.plan
+    tenant.plan = plan
+    tenant.subscription_status = 'active'
+    tenant.save()
 
-    try:
-        import stripe
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+    from .models import TenantSubscription
+    TenantSubscription.objects.create(
+        tenant=tenant,
+        action='upgraded',
+        plan_from=old_plan,
+        plan_to=plan,
+        amount=amount,
+        currency='SAR',
+        payment_status='succeeded',
+        notes=f'ترقية مباشرة - {billing_cycle}'
+    )
 
-        if not tenant.stripe_customer_id:
-            customer = stripe.Customer.create(
-                email=tenant.email,
-                name=tenant.company_name,
-                metadata={'tenant_id': tenant.id}
-            )
-            tenant.stripe_customer_id = customer.id
-            tenant.save()
-
-        session = stripe.checkout.Session.create(
-            customer=tenant.stripe_customer_id,
-            mode='subscription',
-            line_items=[{'price': stripe_price_id, 'quantity': 1}],
-            metadata={
-                'tenant_id': tenant.id,
-                'plan_from': str(tenant.plan.id) if tenant.plan else '',
-                'plan_to': str(plan.id),
-            },
-            success_url=request.build_absolute_uri(
-                reverse('tenants:upgrade_success', args=[tenant.id])
-            ),
-            cancel_url=request.build_absolute_uri(
-                reverse('tenants:register_success', args=[tenant.id])
-            ),
-        )
-        return redirect(session.url)
-    except Exception as e:
-        messages.error(request, f'فشل إنشاء جلسة الدفع: {e}')
-        return redirect('tenants:register_success', tenant_id=tenant.id)
+    messages.success(request, f'تم ترقية حسابك إلى {plan.name} بنجاح!')
+    return redirect('tenants:register_success', tenant_id=tenant.id)
 
 
 def upgrade_success(request, tenant_id):
@@ -169,3 +144,112 @@ def upgrade_success(request, tenant_id):
     tenant = get_object_or_404(Tenant, pk=tenant_id)
     messages.success(request, 'تمت الترقية بنجاح ✅')
     return redirect('tenants:register_success', tenant_id=tenant.id)
+
+
+def super_admin_dashboard(request):
+    """Super Admin Dashboard with Advanced Live Statistics"""
+    if not request.user.is_staff:
+        messages.error(request, 'غير مصرح لك بالوصول')
+        return redirect('/')
+
+    # ═══ TENANT STATISTICS ═══
+    total_tenants = Tenant.objects.count()
+    active_tenants = Tenant.objects.filter(is_active=True).count()
+    inactive_tenants = total_tenants - active_tenants
+
+    # New tenants last 30 days
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    new_tenants_30d = Tenant.objects.filter(created_at__gte=thirty_days_ago).count()
+
+    # ═══ PLAN DISTRIBUTION ═══
+    plan_stats = Tenant.objects.values('plan__name').annotate(
+        count=Count('id'),
+        revenue=Sum(F('plan__price_monthly'))
+    ).order_by('-count')
+
+    # ═══ REVENUE CALCULATIONS ═══
+    # MRR - Monthly Recurring Revenue
+    mrr = Tenant.objects.filter(is_active=True).aggregate(
+        total=Sum('plan__price_monthly')
+    )['total'] or Decimal('0')
+
+    # ARR - Annual Recurring Revenue
+    arr = mrr * 12
+
+    # Total revenue from subscriptions
+    total_revenue = TenantSubscription.objects.filter(
+        payment_status='succeeded'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # ═══ SUBSCRIPTION STATUS ═══
+    subscription_status = Tenant.objects.values('subscription_status').annotate(
+        count=Count('id')
+    )
+
+    # ═══ GROWTH METRICS ═══
+    # Last 12 months growth
+    monthly_growth = []
+    for i in range(11, -1, -1):
+        start = timezone.now() - timedelta(days=30*i)
+        end = start + timedelta(days=30)
+        count = Tenant.objects.filter(created_at__gte=start, created_at__lt=end).count()
+        monthly_growth.append({
+            'month': start.strftime('%b'),
+            'count': count
+        })
+
+    # ═══ RECENT ACTIVITY ═══
+    recent_tenants = Tenant.objects.select_related('plan').order_by('-created_at')[:10]
+    recent_subscriptions = TenantSubscription.objects.select_related(
+        'tenant', 'plan_from', 'plan_to'
+    ).order_by('-created_at')[:10]
+
+    # ═══ TOP PERFORMERS ═══
+    top_tenants_by_plan = Tenant.objects.filter(is_active=True).select_related('plan').order_by(
+        '-plan__tier', '-created_at'
+    )[:5]
+
+    # ═══ HEALTH METRICS ═══
+    # Churn Rate (last 30 days)
+    churned_tenants = Tenant.objects.filter(
+        is_active=False,
+        updated_at__gte=thirty_days_ago
+    ).count()
+    churn_rate = (churned_tenants / total_tenants * 100) if total_tenants > 0 else 0
+
+    # Average tenant lifetime (days)
+    avg_lifetime = Tenant.objects.filter(is_active=True).annotate(
+        lifetime=timezone.now() - F('created_at')
+    ).aggregate(avg=Avg('lifetime'))['avg']
+    avg_lifetime_days = avg_lifetime.days if avg_lifetime else 0
+
+    context = {
+        # Counts
+        'total_tenants': total_tenants,
+        'active_tenants': active_tenants,
+        'inactive_tenants': inactive_tenants,
+        'new_tenants_30d': new_tenants_30d,
+
+        # Revenue
+        'mrr': mrr,
+        'arr': arr,
+        'total_revenue': total_revenue,
+
+        # Plans
+        'plan_stats': plan_stats,
+        'subscription_status': subscription_status,
+
+        # Growth
+        'monthly_growth': monthly_growth,
+
+        # Recent
+        'recent_tenants': recent_tenants,
+        'recent_subscriptions': recent_subscriptions,
+        'top_tenants': top_tenants_by_plan,
+
+        # Health
+        'churn_rate': round(churn_rate, 2),
+        'avg_lifetime_days': avg_lifetime_days,
+    }
+
+    return render(request, 'admin/super_admin_dashboard.html', context)

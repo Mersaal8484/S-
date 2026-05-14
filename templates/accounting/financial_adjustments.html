@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تسويات مالية - نظام S-B{% endblock %}
+
+{% block page_title %}
+<h1>التسويات المالية</h1>
+<p>إجراء تعديلات يدوية على الحسابات وقيود الإهلاك</p>
+{% endblock %}
+
+{% block content %}
+<style>
+    .adj-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(17, 28, 66, 0.4);
+        border: 1px solid rgba(167, 139, 250, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+    }
+    .form-group-custom { margin-bottom: 20px; }
+    .form-label-custom { color: #a78bfa; font-weight: 700; margin-bottom: 8px; display: block; font-size: 14px; }
+    .btn-adj {
+        background: linear-gradient(135deg, #a78bfa, #00d4ff);
+        border: none;
+        color: #000;
+        font-weight: 800;
+        padding: 12px;
+        border-radius: 12px;
+        width: 100%;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="adj-container">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group-custom">
+            <label class="form-label-custom">الحساب المستهدف</label>
+            <select name="account" class="form-control form-control-dark" required>
+                <option value="">اختر الحساب...</option>
+                {% for acc in accounts %}
+                <option value="{{ acc.id }}">{{ acc.code }} - {{ acc.name }} ({{ acc.get_account_type_display }})</option>
+                {% endfor %}
+            </select>
+            <small class="text-muted">الحساب الذي سيتم إجراء التسوية عليه.</small>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group-custom">
+                    <label class="form-label-custom">نوع التسوية</label>
+                    <select name="adj_type" class="form-control form-control-dark" required>
+                        <option value="debit">مدين (زيادة أصل/مصروف أو نقص التزام)</option>
+                        <option value="credit">دائن (زيادة إيراد/التزام أو نقص أصل)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group-custom">
+                    <label class="form-label-custom">المبلغ</label>
+                    <input type="number" name="amount" step="0.01" class="form-control form-control-dark" placeholder="0.00" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group-custom">
+            <label class="form-label-custom">سبب التسوية</label>
+            <textarea name="reason" class="form-control form-control-dark" rows="3" placeholder="مثال: تسوية إهلاك الأصول الثابتة لشهر مايو..." required></textarea>
+        </div>
+
+        <div class="alert alert-info py-2" style="background: rgba(0,212,255,0.05); border-color: rgba(0,212,255,0.1); color: #94c8e0; font-size: 12px;">
+            <i class="bi bi-info-circle me-2"></i>
+            سيقوم النظام تلقائياً بإنشاء قيد يومية متوازن مقابل حساب "التسويات المعلقة" لضمان توازن الدفاتر.
+        </div>
+
+        <button type="submit" class="btn btn-adj">تسجيل التسوية الآن <i class="bi bi-check2-circle ms-2"></i></button>
+    </form>
+</div>
+{% endblock %}

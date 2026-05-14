@@ -1,62 +1,109 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Income Statement - elem{% endblock %}
+{% block title %}الأرباح والخسائر - نظام S-B{% endblock %}
+
+{% block page_title %}
+<h1>قائمة الأرباح والخسائر</h1>
+<p>تحليل الإيرادات والمصروفات وصافي الدخل</p>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h1>Income Statement</h1>
-        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
-    </div>
-</div>
+<style>
+    .pl-container { max-width: 900px; margin: 0 auto; }
+    .pl-section {
+        background: rgba(17, 28, 66, 0.4);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        border-radius: 16px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+    .pl-header {
+        padding: 16px 20px;
+        background: rgba(0, 212, 255, 0.05);
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .pl-header h5 { margin: 0; font-weight: 800; color: #00d4ff; }
+    .pl-table { width: 100%; border-collapse: collapse; }
+    .pl-table td { padding: 12px 20px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .pl-table tr:last-child td { border: none; }
+    .pl-val { text-align: left; font-weight: 700; font-family: monospace; }
+    .pl-total-row { background: rgba(0, 212, 255, 0.02); font-weight: 800; }
+    
+    .net-income-box {
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(0, 212, 255, 0.05));
+        border: 2px solid rgba(52, 211, 153, 0.3);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        margin-top: 40px;
+        box-shadow: 0 10px 30px rgba(52, 211, 153, 0.1);
+    }
+    .net-val { font-size: 42px; font-weight: 900; color: #34d399; letter-spacing: -1px; }
+    .net-loss { color: #f43f5e !important; }
+    .net-loss-box { border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.05); }
+</style>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5>Revenue</h5>
-            </div>
-            <table class="table">
-                {% for item in revenue_data %}
-                <tr>
-                    <td>{{ item.account.code }} - {{ item.account.name }}</td>
-                    <td class="text-right">{{ item.balance }}</td>
-                </tr>
-                {% endfor %}
-                <tr class="font-weight-bold">
-                    <td>Total Revenue</td>
-                    <td class="text-right">{{ total_revenue }}</td>
-                </tr>
-            </table>
+<div class="pl-container">
+    <!-- Revenue Section -->
+    <div class="pl-section">
+        <div class="pl-header">
+            <h5>الإيرادات (Revenue)</h5>
+            <i class="bi bi-arrow-up-circle text-success"></i>
         </div>
+        <table class="pl-table">
+            {% for item in revenue_data %}
+            <tr>
+                <td>{{ item.account.name }}</td>
+                <td class="pl-val">{{ item.balance|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="text-center text-muted">لا توجد إيرادات مسجلة</td></tr>
+            {% endfor %}
+            <tr class="pl-total-row">
+                <td class="text-info">إجمالي الإيرادات</td>
+                <td class="pl-val text-info">{{ total_revenue|floatformat:2 }}</td>
+            </tr>
+        </table>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-danger text-white">
-                <h5>Expenses</h5>
-            </div>
-            <table class="table">
-                {% for item in expense_data %}
-                <tr>
-                    <td>{{ item.account.code }} - {{ item.account.name }}</td>
-                    <td class="text-right">{{ item.balance }}</td>
-                </tr>
-                {% endfor %}
-                <tr class="font-weight-bold">
-                    <td>Total Expenses</td>
-                    <td class="text-right">{{ total_expense }}</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h4>Net Income: {{ net_income }}</h4>
-            </div>
+    <!-- Expense Section -->
+    <div class="pl-section">
+        <div class="pl-header">
+            <h5>المصروفات (Expenses)</h5>
+            <i class="bi bi-arrow-down-circle text-danger"></i>
+        </div>
+        <table class="pl-table">
+            {% for item in expense_data %}
+            <tr>
+                <td>{{ item.account.name }}</td>
+                <td class="pl-val text-danger">({{ item.balance|floatformat:2 }})</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="text-center text-muted">لا توجد مصروفات مسجلة</td></tr>
+            {% endfor %}
+            <tr class="pl-total-row">
+                <td class="text-danger">إجمالي المصروفات</td>
+                <td class="pl-val text-danger">({{ total_expense|floatformat:2 }})</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Net Income -->
+    <div class="net-income-box {% if net_income < 0 %}net-loss-box{% endif %}">
+        <div class="stat-lbl mb-2">صافي الربح / الخسارة</div>
+        <div class="net-val {% if net_income < 0 %}net-loss{% endif %}">
+            {% if net_income < 0 %}-{% endif %}{{ net_income|abs|floatformat:2 }} ر.ي
+        </div>
+        <div class="mt-3">
+            {% if net_income > 0 %}
+            <span class="badge bg-success-soft text-success p-2 px-3"><i class="bi bi-emoji-smile me-2"></i> أداء مالي إيجابي</span>
+            {% else %}
+            <span class="badge bg-danger-soft text-danger p-2 px-3"><i class="bi bi-emoji-frown me-2"></i> يتطلب مراجعة المصروفات</span>
+            {% endif %}
         </div>
     </div>
 </div>

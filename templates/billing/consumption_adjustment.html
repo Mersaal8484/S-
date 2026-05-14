@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تسوية قراءات الاستهلاك - نظام S-B{% endblock %}
+
+{% block page_title %}
+<h1>تسوية قراءات الاستهلاك</h1>
+<p>تصحيح قراءات العدادات وتسوية الفروقات في الاستهلاك</p>
+{% endblock %}
+
+{% block content %}
+<style>
+    .adj-form-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(17, 28, 66, 0.4);
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+    }
+    .meter-info-box {
+        background: rgba(0, 212, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-right: 4px solid #00d4ff;
+    }
+</style>
+
+<div class="adj-form-card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label class="form-label text-info fw-bold">اختر العداد</label>
+            <select name="meter" class="form-control form-control-dark select2" required id="meterSelect">
+                <option value="">اختر العداد...</option>
+                {% for meter in meters %}
+                <option value="{{ meter.id }}" data-last="{{ meter.last_approved_reading|default:meter.initial_reading }}" data-customer="{{ meter.contract.customer.full_name_ar }}">
+                    {{ meter.meter_number }} - {{ meter.contract.customer.full_name_ar }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="meterDetails" style="display: none;">
+            <div class="meter-info-box">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="small text-muted">المشترك:</div>
+                        <div class="fw-bold text-white" id="customerName">-</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">القراءة الحالية المعتمدة:</div>
+                        <div class="fw-bold text-warning" id="lastReading">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <label class="form-label text-info fw-bold">القراءة الجديدة المصححة</label>
+                    <input type="number" name="new_reading" step="0.01" class="form-control form-control-dark" placeholder="أدخل القراءة الصحيحة هنا" required>
+                    <small class="text-muted">سيتم اعتماد هذه القراءة كأساس للاستهلاك القادم.</small>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-info fw-bold">سبب التسوية / التصحيح</label>
+                <textarea name="reason" class="form-control form-control-dark" rows="3" placeholder="أدخل تفاصيل سبب التعديل..." required></textarea>
+            </div>
+
+            <div class="alert alert-warning py-2 small" style="background: rgba(255, 193, 7, 0.05); border-color: rgba(255, 193, 7, 0.2); color: #ffc107;">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                تنبيه: هذا الإجراء سيغير القراءة المعتمدة للعداد وسيؤثر على حسابات الاستهلاك للفواتير القادمة.
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-3 mt-3">
+                <i class="bi bi-check-circle me-2"></i> اعتماد القراءة المصححة
+            </button>
+        </div>
+    </form>
+</div>
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('meterSelect').addEventListener('change', function() {
+        var selected = this.options[this.selectedIndex];
+        if (this.value) {
+            document.getElementById('meterDetails').style.display = 'block';
+            document.getElementById('customerName').textContent = selected.getAttribute('data-customer');
+            document.getElementById('lastReading').textContent = selected.getAttribute('data-last');
+        } else {
+            document.getElementById('meterDetails').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
