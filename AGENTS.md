@@ -1,78 +1,64 @@
-# Django Project
+# S-B SaaS Project
 
 ## Commands
 
 - Run server: `.\venv\Scripts\python.exe manage.py runserver`
 - Create migrations: `.\venv\Scripts\python.exe manage.py makemigrations`
 - Apply migrations: `.\venv\Scripts\python.exe manage.py migrate`
+- Migrate schemas: `.\venv\Scripts\python.exe manage.py migrate_schemas --shared`
 - Create app: `.\venv\Scripts\python.exe manage.py startapp <app_name>`
 - Superuser: `.\venv\Scripts\python.exe manage.py createsuperuser`
-- Seed accounts: `.\venv\Scripts\python.exe manage.py seed_accounts`
+- Seed plans: `.\venv\Scripts\python.exe manage.py seed_plans`
 - Seed integrations: `.\venv\Scripts\python.exe manage.py seed_integrations`
-
-## Project Structure
-
-- `settings.py`: Django settings (add apps to INSTALLED_APPS)
-- `models.py`: Define database models
-- `views.py`: View functions
-- `urls.py`: URL routing (include in main urls.py)
+- Run checks: `.\venv\Scripts\python.exe manage.py check`
+- Shell: `.\venv\Scripts\python.exe manage.py shell`
 
 ## Tech Stack
 
-- Django 6.x with django-bootstrap4
+- Django 6.x + django-tenants (PostgreSQL multi-tenant)
+- django-bootstrap4 for UI
 - Templates in `templates/` (not app-level)
-- HTMX loaded from CDN
+- DRF 3.17 + SimpleJWT for REST API
+- Celery 5.6 + Redis for async tasks
+- Stripe + dj-stripe for SaaS billing
 - Virtual environment at `venv/`
 
-## Apps
+## Apps (Public Schema)
 
-### Accounting App
-- Account, Vendor, Customer
-- JournalEntry, JournalLine
-- Bill, BillLine (AP)
-- Invoice, InvoiceLine (AR)
-- Product
+| App | Description |
+|-----|-------------|
+| `tenants` | Tenant management, Plan, Domain, Stripe webhooks |
+| `core` | Shared middleware, logging, barcode/QR, e-wallet adapters |
 
-### Notifications App
-- ChannelProvider (SMS, WhatsApp, Email, Push)
-- MessageTemplate with {variable} rendering
-- Notification with multi-channel send
+## Apps (Tenant Schema)
 
-### Integrations App
-- Integration (provider registry)
-- IntegrationConfig with flexible auth (API Key, Basic Auth, Bearer Token, OAuth2, Custom JSON)
-- IntegrationLog for API call logging
-- Seeded with 16 default providers (Stripe, PayPal, Twilio, SendGrid, etc.)
+| App | Description |
+|-----|-------------|
+| `billing` | Core billing: customers, contracts, meters, invoices, payments, SMS, routes, collectors, e-wallets |
+| `accounting` | Double-entry: Chart of Accounts, Journal Entries, AP/AR, Financial Statements |
+| `notifications` | Multi-channel: SMS, WhatsApp, Email, Push; templates, providers |
+| `integrations` | Third-party integration registry with flexible auth configs |
+| `contract_management` | Service contracts with meter readings, recurring invoices, UoM, date ranges |
+| `main` | Tenant landing page |
 
-### Contract Management App
-- Contract (meter management, recurring invoices)
-- ContractLine (invoice lines)
-- MeterReading (track readings)
-- DateRange, DateRangeType
-- Journal, UoM
+## Key URL Routes
 
-## URL Routes
+- `/` - Landing/Home
+- `/admin/` - Django admin
+- `/billing/` - Billing dashboard
+- `/accounting/` - Accounting dashboard
+- `/notifications/` - Notifications
+- `/integrations/` - Integrations
+- `/contracts/` - Contracts
+- `/api/v1/` - REST API
+- `/api/v1/auth/` - JWT auth
+- `/stripe/` - Stripe webhooks
 
-- `/` - Home
-- `/accounting/` - Accounting Dashboard
-- `/accounting/accounts/` - Chart of accounts
-- `/accounting/vendors/` - Vendors
-- `/accounting/customers/` - Customers
-- `/accounting/bills/` - Bills (AP)
-- `/accounting/invoices/` - Invoices (AR)
-- `/accounting/ledger/` - General ledger
-- `/notifications/` - Notification list
-- `/notifications/create/` - Send notification
-- `/notifications/templates/` - Message templates
-- `/notifications/providers/` - Channel providers
-- `/integrations/` - Integration list
-- `/integrations/register/` - Register integration
-- `/contracts/` - Contracts list
-- `/contracts/create/` - Create contract
+## Architecture
 
-## Notes
-
+- PostgreSQL schema-per-tenant (django-tenants)
+- `elem/urls.py` = Public schema routes
+- `elem/tenant_urls.py` = Tenant schema routes
 - Apps go in `INSTALLED_APPS` as `'app_name.apps.AppNameConfig'`
 - Templates use bootstrap4 form tags
-- Login template at `templates/registration/login.html`
 - All templates in `templates/` directory (not app-level)

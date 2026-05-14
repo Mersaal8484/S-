@@ -35,6 +35,10 @@ TENANT_APPS = [
     'django.contrib.contenttypes',
     'main.apps.MainConfig',
     'billing.apps.BillingConfig',
+    'contract_management.apps.ContractManagementConfig',
+    'accounting.apps.AccountingConfig',
+    'integrations.apps.IntegrationsConfig',
+    'notifications.apps.NotificationsConfig',
     'rest_framework',
     'corsheaders',
     'django_filters',
@@ -58,9 +62,11 @@ MIDDLEWARE = [
     'core.middleware.FeatureFlagMiddleware',
 ]
 
-ROOT_URLCONF = 'elem.urls'
+ROOT_URLCONF = 'elem.tenant_urls'
 PUBLIC_SCHEMA_URLCONF = 'elem.urls'
 TENANT_URLCONF = 'elem.tenant_urls'
+
+SHOW_PUBLIC_IF_NO_TENANT_FOUND = True
 
 TEMPLATES = [
     {

@@ -99,3 +99,73 @@ def register_success(request, tenant_id):
         'tenant': tenant,
         'domain': domain,
     })
+
+
+def upgrade_checkout(request, tenant_id):
+    """Create Stripe Checkout Session for plan upgrade"""
+    tenant = get_object_or_404(Tenant, pk=tenant_id)
+    plan_id = request.GET.get('plan')
+    plan = get_object_or_404(Plan, pk=plan_id)
+
+    if plan.tier == tenant.plan.tier:
+        messages.info(request, 'أنت بالفعل مشترك في هذه الخطة')
+        return redirect('tenants:register_success', tenant_id=tenant.id)
+
+    billing_cycle = request.GET.get('cycle', 'monthly')
+    price_field = 'stripe_price_id_monthly' if billing_cycle == 'monthly' else 'stripe_price_id_yearly'
+    stripe_price_id = getattr(plan, price_field, '')
+
+    if not stripe_price_id or not settings.STRIPE_SECRET_KEY:
+        # Direct admin upgrade (no Stripe configured)
+        old_plan = tenant.plan
+        tenant.plan = plan
+        tenant.save()
+        from .models import TenantSubscription
+        TenantSubscription.objects.create(
+            tenant=tenant, action='upgraded',
+            plan_from=old_plan, plan_to=plan,
+            notes='ترقية بدون Stripe'
+        )
+        messages.success(request, f'تم ترقية حسابك إلى {plan.name}')
+        return redirect('tenants:register_success', tenant_id=tenant.id)
+
+    try:
+        import stripe
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        if not tenant.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=tenant.email,
+                name=tenant.company_name,
+                metadata={'tenant_id': tenant.id}
+            )
+            tenant.stripe_customer_id = customer.id
+            tenant.save()
+
+        session = stripe.checkout.Session.create(
+            customer=tenant.stripe_customer_id,
+            mode='subscription',
+            line_items=[{'price': stripe_price_id, 'quantity': 1}],
+            metadata={
+                'tenant_id': tenant.id,
+                'plan_from': str(tenant.plan.id) if tenant.plan else '',
+                'plan_to': str(plan.id),
+            },
+            success_url=request.build_absolute_uri(
+                reverse('tenants:upgrade_success', args=[tenant.id])
+            ),
+            cancel_url=request.build_absolute_uri(
+                reverse('tenants:register_success', args=[tenant.id])
+            ),
+        )
+        return redirect(session.url)
+    except Exception as e:
+        messages.error(request, f'فشل إنشاء جلسة الدفع: {e}')
+        return redirect('tenants:register_success', tenant_id=tenant.id)
+
+
+def upgrade_success(request, tenant_id):
+    """Upgrade completed successfully"""
+    tenant = get_object_or_404(Tenant, pk=tenant_id)
+    messages.success(request, 'تمت الترقية بنجاح ✅')
+    return redirect('tenants:register_success', tenant_id=tenant.id)

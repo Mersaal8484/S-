@@ -17,11 +17,11 @@ header#header, nav.breadcrumbs { display: none !important; }
 {% block content %}
 {% comment %}
 التمييز الدقيق:
-- إذا كان الرابط يبدأ بـ 127.0.0.1 أو localhost مباشرة (النظام الأم)
-- غير ذلك (المستأجرين)
+- is_public_schema = True → السوبر أدمين (النظام الأم)
+- is_public_schema = False → المستأجر
 {% endcomment %}
 
-{% if request.get_host == '127.0.0.1:8000' or request.get_host == 'localhost:8000' or request.get_host == '127.0.0.1' or request.get_host == 'localhost' %}
+{% if is_public_schema %}
     <!-- النظام الأم: عرض لوحة الـ Ultra Dashboard -->
     <div style="position: fixed; inset: 0; z-index: 9999; background: #07091a; overflow-y: auto;">
         {% include "admin/index_public.html" %}

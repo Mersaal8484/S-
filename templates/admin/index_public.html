@@ -240,19 +240,12 @@ body::-webkit-scrollbar{width:0}
   <div style="overflow-y:auto;flex:1">
     <div class="nav-grp">لوحة التحكم</div>
     <div class="ni on" data-url="{% url 'admin:index' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>نظرة عامة<span class="ni-badge nb-cyan">مباشر</span></div>
-    <div class="ni" data-url="{% url 'customer_list' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>الكهرباء<span class="ni-badge nb-warn">3 تنبيه</span></div>
-    <div class="ni" data-url="{% url 'customer_list' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>المياه<span class="ni-badge nb-ok">طبيعي</span></div>
-    <div class="ni" data-url="{% url 'customer_list' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستأجرون<span class="ni-badge nb-cyan">{{ stats.active_tenants }}</span></div>
-    <div class="ni" data-url="{% url 'invoice_list' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>الفواتير</div>
-    <div class="ni" data-url="{% url 'reports_dashboard' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>التحليلات</div>
-    <div class="nav-grp">Stripe & API</div>
-    <div class="ni" data-url="{% url 'system_settings' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>الخطط<span class="ni-badge nb-cyan">{{ stats.total_plans }}</span></div>
-    <div class="ni" data-url="{% url 'payment_list' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>المدفوعات</div>
-    <div class="ni" data-url="{% url 'system_settings' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Stripe Events</div>
-    <div class="ni" data-url="{% url 'system_settings' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>مفاتيح API</div>
+    <div class="ni" data-url="{% url 'admin:tenants_tenant_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستأجرون<span class="ni-badge nb-cyan">{{ stats.active_tenants }}</span></div>
+    <div class="ni" data-url="{% url 'admin:tenants_plan_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>الخطط<span class="ni-badge nb-cyan">{{ stats.total_plans }}</span></div>
+    <div class="ni" data-url="{% url 'admin:tenants_domain_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>النطاقات</div>
     <div class="nav-grp">الإدارة</div>
-    <div class="ni" data-url="{% url 'system_settings' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>الإعدادات</div>
-    <div class="ni" data-url="{% url 'reports_dashboard' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</div>
+    <div class="ni" data-url="{% url 'admin:auth_user_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>المستخدمون</div>
+    <div class="ni" data-url="{% url 'admin:index' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>الإعدادات</div>
   </div>
   <div class="aside-foot">
     <div class="user-tile">
@@ -280,7 +273,7 @@ body::-webkit-scrollbar{width:0}
       </div>
       <div class="ib rel ndot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
       <div class="ib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg></div>
-      <a href="{% url 'reports_dashboard' %}" style="background:linear-gradient(135deg,#00d4ff,#a78bfa);border:none;color:#07091a;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap;text-decoration:none">+ تصدير تقرير</a>
+      <a href="{% url 'admin:tenants_tenant_changelist' %}" style="background:linear-gradient(135deg,#00d4ff,#a78bfa);border:none;color:#07091a;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;white-space:nowrap;text-decoration:none">+ تصدير تقرير</a>
     </div>
   </div>
 
@@ -429,11 +422,11 @@ body::-webkit-scrollbar{width:0}
         <div class="ph"><div><div class="pt">إجراءات سريعة</div><div class="ps">اختصارات النظام</div></div></div>
         <div class="qa">
           <a href="{% url 'admin:tenants_tenant_add' %}" class="qa-c"><div class="qa-i">🏢</div><div class="qa-l">مستأجر جديد</div></a>
-          <a href="{% url 'invoice_create' %}" class="qa-c"><div class="qa-i">📄</div><div class="qa-l">فاتورة جديدة</div></a>
+          <a href="{% url 'admin:tenants_tenant_add' %}" class="qa-c"><div class="qa-i">📄</div><div class="qa-l">مستأجر جديد</div></a>
           <a href="{% url 'admin:tenants_domain_add' %}" class="qa-c"><div class="qa-i">🌐</div><div class="qa-l">نطاق جديد</div></a>
           <a href="{% url 'admin:tenants_plan_add' %}" class="qa-c"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></a>
-          <a href="{% url 'reports_dashboard' %}" class="qa-c"><div class="qa-i">📊</div><div class="qa-l">تقرير مالي</div></a>
-          <a href="{% url 'system_settings' %}" class="qa-c"><div class="qa-i">🔑</div><div class="qa-l">إعدادات API</div></a>
+          <a href="{% url 'admin:tenants_tenant_changelist' %}" class="qa-c"><div class="qa-i">📊</div><div class="qa-l">المستأجرون</div></a>
+          <a href="{% url 'admin:index' %}" class="qa-c"><div class="qa-i">🔑</div><div class="qa-l">الإعدادات</div></a>
         </div>
         <div style="padding:0 14px 14px">
           <div style="font-size:10px;color:var(--t3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">صحة النظام</div>
@@ -452,12 +445,9 @@ function sendPrompt(msg){
   if (msg.includes('مستأجر')) url = "{% url 'admin:tenants_tenant_add' %}";
   else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
   else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_add' %}";
-  else if (msg.includes('تحليل')|| msg.includes('إيراد')|| msg.includes('أرباح')|| msg.includes('تحليلات')) url = "{% url 'reports_dashboard' %}";
-  else if (msg.includes('معلق')) url = "{% url 'invoice_list' %}";
-  else if (msg.includes('دفعة')) url = "{% url 'payment_create' %}";
-  else if (msg.includes('فاتورة')) url = "{% url 'invoice_create' %}";
-  else if (msg.includes('API') || msg.includes('Stripe') || msg.includes('مفاتيح')) url = "{% url 'system_settings' %}";
-  else if (msg.includes('كهرباء') || msg.includes('مياه') || msg.includes('استهلاك')) url = "{% url 'invoice_list' %}";
+  else if (msg.includes('تحليل')|| msg.includes('إيراد')|| msg.includes('أرباح')|| msg.includes('تحليلات')) url = "{% url 'admin:tenants_tenant_changelist' %}";
+  else if (msg.includes('معلق') || msg.includes('فاتورة') || msg.includes('كهرباء') || msg.includes('مياه') || msg.includes('استهلاك')) url = "{% url 'admin:tenants_tenant_changelist' %}";
+  else if (msg.includes('دفعة') || msg.includes('API') || msg.includes('Stripe') || msg.includes('مفاتيح')) url = "{% url 'admin:index' %}";
   window.location.href = url;
 }
 function setNav(el){

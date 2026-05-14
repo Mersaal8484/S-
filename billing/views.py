@@ -461,7 +461,10 @@ def invoice_create(request):
             ).order_by('line_order')
 
             for template in templates:
-                amount = services.calculate_line_amount(template, consumption or 0)
+                if template.calculation_type != 'percentage':
+                    amount = services.calculate_line_amount(template, consumption or 0)
+                else:
+                    amount = Decimal(0)
 
                 if template.calculation_type == 'single_rate_kwh':
                     quantity = consumption or Decimal(0)
@@ -497,6 +500,14 @@ def invoice_create(request):
                     line_order=template.line_order
                 )
                 total += amount
+
+            # Second pass: recalculate percentage lines
+            total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
+            for line in InvoiceLine.objects.filter(invoice=invoice, template__calculation_type='percentage').order_by('line_order'):
+                base_amount = total - line.amount
+                line.amount = base_amount * (line.template.percentage_rate or Decimal(0)) / Decimal(100)
+                line.save()
+                total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
 
             earlier_unpaid = Invoice.objects.filter(
                 contract=contract,
@@ -596,7 +607,10 @@ def invoice_regenerate(request, pk):
             ).order_by('line_order')
 
             for template in templates:
-                amount = services.calculate_line_amount(template, consumption or 0)
+                if template.calculation_type != 'percentage':
+                    amount = services.calculate_line_amount(template, consumption or 0)
+                else:
+                    amount = Decimal(0)
 
                 if template.calculation_type == 'single_rate_kwh':
                     quantity = consumption or Decimal(0)
@@ -632,6 +646,14 @@ def invoice_regenerate(request, pk):
                     line_order=template.line_order
                 )
                 total += amount
+
+            # Second pass: recalculate percentage lines
+            total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
+            for line in InvoiceLine.objects.filter(invoice=invoice, template__calculation_type='percentage').order_by('line_order'):
+                base_amount = total - line.amount
+                line.amount = base_amount * (line.template.percentage_rate or Decimal(0)) / Decimal(100)
+                line.save()
+                total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
 
             earlier_unpaid = Invoice.objects.filter(
                 contract=contract,
@@ -793,16 +815,22 @@ def collector_list(request):
 
 def collector_create(request):
     if request.method == 'POST':
-        name = (request.POST.get('name') or '').strip()
-        if not name:
+        full_name_ar = (request.POST.get('full_name_ar') or '').strip()
+        if not full_name_ar:
             messages.error(request, 'Collector name is required')
             return render(request, 'billing/collector_form.html', {'title': 'إضافة محصل'})
 
+        from datetime import date
         Collector.objects.create(
-            name=name,
-            phone=request.POST.get('phone'),
-            area=request.POST.get('area'),
-            is_active=True
+            collector_code=generate_number('COL'),
+            full_name_ar=full_name_ar,
+            full_name_en=request.POST.get('full_name_en', ''),
+            national_id=request.POST.get('national_id', ''),
+            mobile_phone=request.POST.get('mobile_phone', ''),
+            email=request.POST.get('email', ''),
+            hire_date=date.today(),
+            commission_percent=to_decimal(request.POST.get('commission_percent')),
+            notes=request.POST.get('notes', ''),
         )
         messages.success(request, 'Collector created')
         return redirect('collector_list')
@@ -890,18 +918,22 @@ def sms_create(request):
         customer_id = request.POST.get('customer')
         customer = get_object_or_404(Customer, pk=customer_id)
         message = request.POST.get('message')
+        template_id = request.POST.get('template')
+        template = SMSTemplate.objects.filter(pk=template_id).first() if template_id else None
         
         SMSQueue.objects.create(
             customer=customer,
-            phone_number=customer.mobile_phone,
-            message_body=message,
+            mobile_number=customer.mobile_phone,
+            message_content=message,
+            template=template,
             status='pending'
         )
         messages.success(request, 'SMS queued')
         return redirect('sms_list')
     
     customers = Customer.objects.filter(is_active=True)
-    return render(request, 'billing/sms_form.html', {'customers': customers})
+    templates = SMSTemplate.objects.filter(is_active=True)
+    return render(request, 'billing/sms_form.html', {'customers': customers, 'templates': templates})
 
 
 def sms_provider_list(request):

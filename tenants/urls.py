@@ -8,4 +8,6 @@ urlpatterns = [
     path('pricing/', views.pricing, name='pricing'),
     path('register/', views.register, name='register'),
     path('register/success/<int:tenant_id>/', views.register_success, name='register_success'),
+    path('upgrade/<int:tenant_id>/', views.upgrade_checkout, name='upgrade_checkout'),
+    path('upgrade/<int:tenant_id>/success/', views.upgrade_success, name='upgrade_success'),
 ]

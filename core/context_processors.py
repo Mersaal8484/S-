@@ -1,11 +1,12 @@
 from django.db import connection
 from django.conf import settings
+from django_tenants.utils import get_public_schema_name
 
 
 def dashboard_stats(request):
     ctx = {}
-    if hasattr(request, 'tenant') and request.tenant:
-        schema = connection.schema_name
+    ctx['is_public_schema'] = connection.schema_name == get_public_schema_name()
+    if not ctx['is_public_schema']:
         from django.contrib.auth.models import User
         ctx['user_count'] = User.objects.count()
         ctx['pending_count'] = 0

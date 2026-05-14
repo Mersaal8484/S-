@@ -269,10 +269,10 @@ def generate_invoice(submission):
         ).order_by('line_order')
         
         for template in templates:
-            amount = calculate_line_amount(
-                template, 
-                consumption
-            )
+            if template.calculation_type != 'percentage':
+                amount = calculate_line_amount(template, consumption)
+            else:
+                amount = Decimal(0)
             
             if template.calculation_type == 'single_rate_kwh':
                 quantity = consumption
@@ -308,6 +308,14 @@ def generate_invoice(submission):
                 line_order=template.line_order
             )
             total += amount
+        
+        # Second pass: recalculate percentage lines based on total of other lines
+        total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
+        for line in InvoiceLine.objects.filter(invoice=invoice, template__calculation_type='percentage').order_by('line_order'):
+            base_amount = total - line.amount
+            line.amount = base_amount * (line.template.percentage_rate or Decimal(0)) / Decimal(100)
+            line.save()
+            total = InvoiceLine.objects.filter(invoice=invoice).aggregate(t=Sum('amount'))['t'] or Decimal(0)
         
         invoice.total_amount = total
         invoice.previous_indebtedness = previous_indebtedness
@@ -369,7 +377,7 @@ def calculate_line_amount(template, consumption):
         return total
     
     elif template.calculation_type == 'percentage':
-        # Base amount calculation should be handled by the caller or passed in
+        # Percentage returns 0 in first pass; recalculated in second pass
         return Decimal(0)
     
     elif template.calculation_type in ('demand_charge', 'minimum_charge'):

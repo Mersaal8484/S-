@@ -46,6 +46,10 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.customer_number} - {self.full_name_ar}"
 
+    @property
+    def name(self):
+        return self.full_name_ar or self.full_name_en
+
 
 class Contract(models.Model):
     class ContractStatus(models.TextChoices):
