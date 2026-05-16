@@ -1079,3 +1079,39 @@ label {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
+
+/* Bootstrap Card Overrides for Dark Theme */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.card-body {
+  color: var(--text-main);
+}
+
+.card-title {
+  color: var(--text-main);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.card-text {
+  color: var(--text-dim);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-weight: 600;
+}

@@ -8,6 +8,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.template.defaultfilters import date as date_filter
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+import json
 
 
 def to_decimal(value):
@@ -969,8 +971,6 @@ def close_period(request, pk):
     return redirect('billing_period_list')
 
 
-import json
-
 def system_settings(request):
     settings_obj = SystemSettings.objects.first()
     if not settings_obj:
@@ -1008,6 +1008,8 @@ def system_settings(request):
         settings_obj.vat_number = request.POST.get('vat_number', '')
         settings_obj.save()
         messages.success(request, 'Settings saved')
+        if request.POST.get('next'):
+            return redirect(request.POST.get('next'))
         return redirect('system_settings')
 
     return render(request, 'billing/settings.html', {

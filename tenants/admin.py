@@ -19,10 +19,23 @@ class TenantSubscriptionInline(admin.TabularInline):
 
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
-    list_display = ['name', 'tier', 'price_monthly', 'price_yearly', 'max_customers', 'max_meters', 'tenant_count', 'is_active']
+    list_display = ['name_badge', 'tier_badge', 'price_monthly', 'price_yearly', 'max_customers', 'tenant_count', 'is_active']
     list_filter = ['tier', 'is_active']
     search_fields = ['name']
     list_per_page = 20
+
+    def name_badge(self, obj):
+        return format_html('<span style="font-weight:700;color:#00d4ff">{}</span>', obj.name)
+    name_badge.short_description = 'اسم الخطة'
+
+    def tier_badge(self, obj):
+        colors = {'basic': '#94a3b8', 'pro': '#00d4ff', 'enterprise': '#a78bfa'}
+        color = colors.get(obj.tier, '#94a3b8')
+        return format_html(
+            '<span style="background:{};color:#000;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase">{}</span>',
+            color, obj.get_tier_display()
+        )
+    tier_badge.short_description = 'المستوى'
 
     def tenant_count(self, obj):
         return obj.tenant_set.count()
@@ -31,60 +44,124 @@ class PlanAdmin(admin.ModelAdmin):
 
 @admin.register(Tenant)
 class TenantAdmin(admin.ModelAdmin):
-    list_display = ['company_name', 'schema_name', 'plan', 'subscription_status', 'is_active', 'created_on', 'total_paid', 'dashboard_link']
+    list_display = ['company_info', 'schema_name_badge', 'plan_badge', 'status_badge', 'active_toggle', 'total_paid', 'created_on', 'dashboard_link']
     list_filter = ['subscription_status', 'is_active', 'plan', 'country']
-    search_fields = ['company_name', 'schema_name', 'email']
+    search_fields = ['company_name', 'company_name_ar', 'schema_name', 'email']
     readonly_fields = ['schema_name', 'created_on', 'subscription_history']
     list_per_page = 25
     inlines = [TenantSubscriptionInline]
     actions = ['upgrade_to_pro', 'upgrade_to_enterprise', 'activate_tenant', 'deactivate_tenant']
     
     fieldsets = (
-        ('معلومات الشركة', {
-            'fields': ('company_name', 'company_name_ar', 'country', 'phone', 'email', 'schema_name')
+        ('🏢 معلومات الشركة', {
+            'fields': (('company_name', 'company_name_ar'), ('country', 'phone', 'email'), 'schema_name')
         }),
-        ('الخطة والاشتراك', {
-            'fields': ('plan', 'subscription_status', 'trial_end')
+        ('💳 الخطة والاشتراك', {
+            'fields': (('plan', 'subscription_status'), 'trial_end')
         }),
-        ('سجل الاشتراكات', {
+        ('📜 سجل العمليات', {
             'fields': ('subscription_history',),
             'classes': ('collapse',)
         }),
-        ('الحالة', {
-            'fields': ('is_active', 'created_on')
+        ('⚙️ الحالة والإعدادات', {
+            'fields': (('is_active', 'created_on'),)
         }),
     )
+
+    def company_info(self, obj):
+        name = obj.company_name_ar or obj.company_name
+        return format_html(
+            '<div style="line-height:1.2"><strong>{}</strong><br><small style="color:#64748b">{}</small></div>',
+            name, obj.email
+        )
+    company_info.short_description = 'الشركة'
+
+    def schema_name_badge(self, obj):
+        return format_html(
+            '<code style="background:rgba(0,212,255,0.1);color:#00d4ff;padding:2px 6px;border-radius:4px;font-size:11px">{}</code>',
+            obj.schema_name
+        )
+    schema_name_badge.short_description = 'المعرف (Schema)'
+
+    def plan_badge(self, obj):
+        if not obj.plan: return "-"
+        colors = {'basic': '#94a3b8', 'pro': '#00d4ff', 'enterprise': '#a78bfa'}
+        color = colors.get(obj.plan.tier, '#94a3b8')
+        return format_html(
+            '<span style="border:1px solid {};color:{};padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">{}</span>',
+            color, color, obj.plan.name
+        )
+    plan_badge.short_description = 'الخطة'
+
+    def status_badge(self, obj):
+        colors = {
+            'active': '#10b981',
+            'trialing': '#3b82f6',
+            'past_due': '#f59e0b',
+            'canceled': '#ef4444',
+        }
+        color = colors.get(obj.subscription_status, '#64748b')
+        return format_html(
+            '<span style="background:{};color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700">{}</span>',
+            color, obj.get_subscription_status_display()
+        )
+    status_badge.short_description = 'حالة الاشتراك'
+
+    def active_toggle(self, obj):
+        icon = 'check-circle' if obj.is_active else 'times-circle'
+        color = '#10b981' if obj.is_active else '#f43f5e'
+        return format_html('<i class="fas fa-{}" style="color:{};font-size:16px"></i>', icon, color)
+    active_toggle.short_description = 'نشط'
 
     def total_paid(self, obj):
         total = TenantSubscription.objects.filter(
             tenant=obj, payment_status='succeeded'
         ).aggregate(t=Sum('amount'))['t'] or 0
-        return format_html('<span style="color:#34d399;font-weight:700">{}</span>', f'{total:,.2f}')
-    total_paid.short_description = 'إجمالي المدفوعات'
+        return format_html('<span style="color:#34d399;font-weight:700">{}</span>', f'{total:,.2f} SAR')
+    total_paid.short_description = 'إجمالي الدفع'
 
     def subscription_history(self, obj):
-        logs = TenantSubscription.objects.filter(tenant=obj)[:20]
+        logs = TenantSubscription.objects.filter(tenant=obj)[:15]
         if not logs:
-            return format_html('<span style="color:#4a7a95">لا يوجد سجل اشتراكات</span>')
-        html = '<table style="width:100%;font-size:12px"><tr style="background:rgba(0,212,255,0.1)"><th>التاريخ</th><th>الإجراء</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>بوابة الدفع</th></tr>'
+            return format_html('<span style="color:#64748b">لا يوجد سجل اشتراكات</span>')
+        
+        html = '<div class="result-list-wrap"><table style="width:100%;font-size:12px;border-collapse:collapse">'
+        html += '<tr style="background:rgba(0,212,255,0.05)">'
+        html += '<th style="padding:8px">التاريخ</th><th style="padding:8px">الإجراء</th><th style="padding:8px">الخطة</th><th style="padding:8px">المبلغ</th><th style="padding:8px">الحالة</th></tr>'
+        
         for log in logs:
             status_color = '#34d399' if log.payment_status == 'succeeded' else ('#f43f5e' if log.payment_status == 'failed' else '#fb923c')
             plan_name = log.plan_to.name if log.plan_to else '-'
             amount = f'{log.amount:,.2f} {log.currency}' if log.amount else '-'
-            gateway = log.payment_gateway or '-'
-            html += f'<tr><td>{log.created_at.date()}</td><td>{log.get_action_display()}</td><td>{plan_name}</td><td>{amount}</td><td style="color:{status_color}">{log.get_payment_status_display()}</td><td>{gateway}</td></tr>'
-        html += '</table>'
+            html += f'<tr style="border-bottom:1px solid rgba(0,212,255,0.05)">'
+            html += f'<td style="padding:8px">{log.created_at.date()}</td>'
+            html += f'<td style="padding:8px">{log.get_action_display()}</td>'
+            html += f'<td style="padding:8px">{plan_name}</td>'
+            html += f'<td style="padding:8px">{amount}</td>'
+            html += f'<td style="padding:8px;color:{status_color};font-weight:600">{log.get_payment_status_display()}</td>'
+            html += '</tr>'
+        html += '</table></div>'
         return format_html(html)
-    subscription_history.short_description = 'سجل الاشتراكات'
+    subscription_history.short_description = 'سجل العمليات'
 
     def dashboard_link(self, obj):
-        """Link to tenant change page"""
         url = reverse('admin:tenants_tenant_change', args=[obj.id])
         return format_html(
-            '<a class="button" href="{}" style="background-color:#00d4ff;color:#000">📊 لوحة التحكم</a>',
+            '<a class="button" href="{}" style="background:linear-gradient(135deg,#00d4ff,#38bdf8);color:#000;border:none;padding:4px 12px;font-weight:700;font-size:11px;border-radius:6px">⚙️ إدارة</a>',
             url
         )
-    dashboard_link.short_description = 'لوحة التحكم'
+    dashboard_link.short_description = 'الإجراءات'
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['title'] = 'إدارة المستأجرين (شركات النظام)'
+        extra_context['stats'] = {
+            'total': Tenant.objects.count(),
+            'active': Tenant.objects.filter(is_active=True).count(),
+            'revenue': TenantSubscription.objects.filter(payment_status='succeeded').aggregate(Sum('amount'))['amount__sum'] or 0,
+            'recent': Tenant.objects.order_by('-created_on')[:5],
+        }
+        return super().changelist_view(request, extra_context=extra_context)
 
     def upgrade_to_pro(self, request, queryset):
         pro = Plan.objects.filter(tier='pro').first()

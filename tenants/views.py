@@ -10,7 +10,8 @@ from .models import Plan, Tenant, Domain, TenantSubscription
 from django.db.models import Count, Sum, Avg, Q, F
 from datetime import timedelta
 from decimal import Decimal
-
+import json
+from django.contrib.admin.views.decorators import staff_member_required
 
 def landing_page(request):
     """Public landing page"""
@@ -144,6 +145,45 @@ def upgrade_success(request, tenant_id):
     tenant = get_object_or_404(Tenant, pk=tenant_id)
     messages.success(request, 'تمت الترقية بنجاح ✅')
     return redirect('tenants:register_success', tenant_id=tenant.id)
+
+
+@staff_member_required
+def tenant_dashboard(request):
+    active_page = 'settings' if request.path.startswith('/admin/settings/') else request.GET.get('page', 'overview')
+
+    from billing.models import SystemSettings, SubscriptionType, InvoiceLineTemplate
+
+    settings_obj = SystemSettings.objects.first()
+    if not settings_obj:
+        settings_obj = SystemSettings.objects.create()
+
+    subscription_types = list(SubscriptionType.objects.all())
+    templates_by_type = {}
+    for st in subscription_types:
+        templates = InvoiceLineTemplate.objects.filter(type=st)
+        templates_by_type[st.id] = {
+            'type': {
+                'id': st.id,
+                'name_ar': st.name_ar,
+                'name_en': st.name_en,
+                'is_active': st.is_active,
+                'description': st.description,
+                'code': getattr(st, 'code', None),
+            },
+            'templates': list(templates.values(
+                'id', 'line_order', 'line_name_ar', 'line_name_en',
+                'calculation_type', 'is_taxable'
+            ))
+        }
+
+    context = {
+        'active_page': active_page,
+        'settings': settings_obj,
+        'subscription_types': subscription_types,
+        'templates_by_type_json': json.dumps(templates_by_type),
+    }
+
+    return render(request, 'admin/index_tenant.html', context)
 
 
 def super_admin_dashboard(request):

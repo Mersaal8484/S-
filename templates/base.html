@@ -57,9 +57,6 @@
             <a href="{% url 'reading_list' %}" class="sidebar-link {% if '/billing/readings/' in request.path %}active{% endif %}">
                 <i class="bi bi-eye"></i> القراءات
             </a>
-            <a href="{% url 'invoice_list' %}" class="sidebar-link {% if '/billing/invoices/' in request.path %}active{% endif %}">
-                <i class="bi bi-receipt"></i> الفواتير
-            </a>
             <a href="{% url 'payment_list' %}" class="sidebar-link {% if '/billing/payments/' in request.path %}active{% endif %}">
                 <i class="bi bi-cash-stack"></i> المدفوعات
             </a>
@@ -84,7 +81,7 @@
             <a href="{% url 'ledger_list' %}" class="sidebar-link {% if '/billing/ledger/' in request.path %}active{% endif %}">
                 <i class="bi bi-journal-text"></i> دفتر الأستاذ
             </a>
-            <a href="{% url 'system_settings' %}" class="sidebar-link {% if '/billing/settings/' in request.path %}active{% endif %}">
+            <a href="{% url 'tenant_dashboard' %}?page=settings" class="sidebar-link {% if request.GET.page == 'settings' %}active{% endif %}">
                 <i class="bi bi-gear"></i> الإعدادات
             </a>
 
