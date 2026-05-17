@@ -65,75 +65,227 @@ body::before{
   padding:24px;
 }
 
-/* Header */
-.header{
-  background:rgba(13,18,48,0.95);
-  backdrop-filter:blur(24px);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:24px 32px;
-  margin-bottom:24px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+/* BACK BAR */
+.backbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
 }
-.header-title{
-  display:flex;
-  align-items:center;
-  gap:14px;
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(17, 28, 66, 0.5);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--t2);
+  cursor: pointer;
+  transition: all .2s;
+  font-family: Cairo, sans-serif;
+  text-decoration: none;
 }
-.header-icon{
-  width:48px;height:48px;
-  background:linear-gradient(135deg,var(--elec),var(--energy));
-  border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;
-  font-weight:900;
-  color:#fff;
-  box-shadow:0 8px 24px rgba(0,212,255,0.3);
+
+.back-btn:hover {
+  border-color: var(--elec);
+  color: var(--elec);
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
 }
-.header-text h1{
-  font-size:28px;
-  font-weight:800;
-  color:var(--t1);
-  margin-bottom:4px;
+
+.crumb {
+  font-size: 13px;
+  color: var(--t3);
+  font-weight: 600;
 }
-.header-text p{
-  font-size:13px;
-  color:var(--t3);
+
+.crumb span {
+  color: var(--t1);
 }
-.header-actions{
-  display:flex;
-  gap:12px;
+
+.crumb-sep {
+  margin: 0 8px;
+  color: var(--elec);
+  font-weight: 900;
+  opacity: 0.5;
 }
-.btn{
-  padding:10px 18px;
-  border-radius:10px;
-  border:none;
-  font-family:'Cairo',sans-serif;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
-  text-decoration:none;
-  display:inline-block;
+
+/* HERO CARD */
+.hero {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
 }
-.btn-primary{
-  background:linear-gradient(135deg,var(--elec),var(--energy));
-  color:#fff;
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00d4ff, #a78bfa, #38bdf8);
 }
-.btn-primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 20px rgba(0,212,255,0.4);
+
+.hero-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
 }
-.btn-outline{
-  background:transparent;
-  border:1px solid var(--border2);
-  color:var(--t2);
+
+.tenant-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #00d4ff, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
 }
-.btn-outline:hover{
-  background:var(--glow);
-  color:var(--t1);
+
+.ta-badge {
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.hero-info {
+  flex: 1;
+}
+
+.t-name {
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.t-domain {
+  font-size: 13px;
+  color: var(--elec);
+  font-family: monospace;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.t-domain-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: blink 1.4s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--ok); }
+  50% { opacity: .3; }
+}
+
+.t-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--t2);
+}
+
+.hero-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-right: auto;
+}
+
+.hs {
+  text-align: center;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hs-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.hs-lbl {
+  font-size: 10px;
+  color: var(--t3);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--elec), var(--energy));
+  color: #fff;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.4);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--t2);
+}
+.btn-outline:hover {
+  background: var(--glow);
+  color: var(--t1);
 }
 
 /* Stats Grid */
@@ -301,18 +453,38 @@ tbody tr:hover{
 </div>
 
 <div class="container">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-title">
-      <div class="header-icon">SA</div>
-      <div class="header-text">
-     <h1>🚀 لوحة السوبر أدمن</h1>
-        <p>إحصائيات حية متقدمة • آخر تحديث: الآن</p>
+  <!-- BACK + CRUMB -->
+  <div class="backbar">
+    <a href="{% url 'admin:index' %}" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      رجوع
+    </a>
+    <div class="crumb">السوبر أدمن <span class="crumb-sep">›</span> <span>لوحة القيادة</span></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="tenant-avatar">SA<div class="ta-badge">👑</div></div>
+      <div class="hero-info">
+        <div class="t-name">لوحة السوبر أدمن</div>
+        <div class="t-domain">
+          <div class="t-domain-dot"></div>
+          إحصائيات حية متقدمة لجميع المنشآت
+        </div>
+        <div class="t-meta">
+          <div class="meta-pill">آخر تحديث: الآن</div>
+          <div class="meta-pill">👤 المشرف: {{ request.user.username }}</div>
+        </div>
       </div>
-    </div>
-    <div class="header-actions">
-      <a href="{% url 'admin:index' %}" class="btn btn-outline">إدارة Django</a>
-      <a href="#" class="btn btn-primary">تصدير التقرير</a>
+      <div class="hero-stats">
+        <div class="header-actions" style="margin-top:auto;margin-bottom:auto;">
+          <a href="{% url 'admin:index' %}" class="btn btn-outline">إدارة Django</a>
+          <a href="#" class="btn btn-primary">تصدير التقرير</a>
+        </div>
+      </div>
     </div>
   </div>
 

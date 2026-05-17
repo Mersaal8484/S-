@@ -1573,7 +1573,12 @@
       var url = "{% url 'tenant_dashboard' %}";
       if (msg.includes('العودة') || msg.includes('الرئيسية') || msg.includes('ارجع')) {
         {% if request.user.is_superuser %}
-        url = "{% url 'admin:tenants_tenant_changelist' %}";
+        const hostParts = window.location.host.split('.');
+        if (hostParts.length > 1 && hostParts[0] !== 'www') {
+            url = window.location.protocol + '//' + hostParts.slice(1).join('.') + '/super-admin/dashboard/';
+        } else {
+            url = '/super-admin/dashboard/';
+        }
         {% else %}
         url = "{% url 'tenant_dashboard' %}";
         {% endif %}
