@@ -1,0 +1,222 @@
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-header { display:flex; align-items:center; gap:14px; margin-bottom:32px; max-width:1400px; margin-left:auto; margin-right:auto; padding:0 20px; }
+.page-icon { width:52px; height:52px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); flex-shrink:0; }
+.page-title { font-size:28px; font-weight:800; color:var(--t1); }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:1400px; margin-left:auto; margin-right:auto; padding:0 20px; margin-bottom:24px; }
+.settings-card { background:var(--s1); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.card-header { padding:18px 24px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-size:14px; font-weight:700; color:var(--t1); display:flex; align-items:center; gap:10px; }
+.card-title svg { width:16px; height:16px; color:var(--elec); }
+.btn-add { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); color:var(--elec); font-size:12px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-add:hover { border-color:var(--elec); background:rgba(0,212,255,0.25); }
+.card-body { padding:24px; }
+.form-field { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
+.form-label { font-size:12px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:0.5px; }
+.form-input { background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:var(--t1); font-family:Cairo,sans-serif; padding:10px 14px; font-size:13px; outline:none; transition:all .2s; }
+.form-input:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.form-input::placeholder { color:var(--t3); }
+textarea.form-input { resize:vertical; min-height:70px; line-height:1.5; }
+.btn-save { display:inline-flex; align-items:center; gap:8px; padding:10px 24px; border-radius:10px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:13px; font-weight:700; cursor:pointer; font-family:Cairo,sans-serif; transition:all .25s; box-shadow:0 4px 16px rgba(0,212,255,0.25); margin-top:8px; }
+.btn-save:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,212,255,0.35); }
+.table-wrapper { overflow-x:auto; }
+.settings-table { width:100%; border-collapse:collapse; font-size:12px; }
+.settings-table th { padding:10px 12px; background:rgba(0,212,255,0.04); border-bottom:1px solid var(--border); text-align:right; color:var(--elec); font-weight:700; text-transform:uppercase; letter-spacing:0.3px; font-size:10px; }
+.settings-table td { padding:12px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--t2); }
+.settings-table tr:hover { background:rgba(0,212,255,0.03); }
+.status-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:600; }
+.badge-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.3); }
+.badge-inactive { background:rgba(107,114,128,0.15); color:var(--t3); border:1px solid rgba(107,114,128,0.3); }
+.action-buttons { display:flex; gap:6px; }
+.btn-action { padding:4px 10px; border-radius:6px; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.2); color:var(--elec); font-size:11px; font-weight:600; text-decoration:none; cursor:pointer; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-action:hover { border-color:var(--elec); background:rgba(0,212,255,0.2); }
+.btn-action.danger { background:rgba(244,63,94,0.1); border-color:rgba(244,63,94,0.2); color:var(--danger); }
+.btn-action.danger:hover { border-color:var(--danger); background:rgba(244,63,94,0.2); }
+.details-section { margin-top:24px; padding:20px; background:rgba(0,212,255,0.04); border:1px solid var(--border); border-radius:12px; }
+.details-title { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.details-title svg { width:14px; height:14px; color:var(--elec); }
+@media(max-width:900px){ .settings-grid{grid-template-columns:1fr;} .card-header{flex-direction:column; align-items:flex-start; gap:12px;} }
+@media(max-width:768px){ .settings-table{font-size:11px;} .settings-table th,.settings-table td{padding:8px;} }
+</style>
+
+<div class="page-header">
+  <div class="page-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><path d="M12 1v6m4.22-4.22l-4.24 4.24m6 4.22h-6m-4.24 4.24l4.24-4.24m-6-4.22h6m4.22 4.22l-4.24-4.24"/></svg>
+  </div>
+  <div>
+    <div class="page-title">الإعدادات</div>
+    <div class="page-sub">إدارة إعدادات النظام والشركة</div>
+  </div>
+</div>
+
+<div class="settings-grid">
+  <div class="settings-card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        بيانات الشركة
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'system_settings' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'tenant_dashboard' %}?page=settings">
+
+        <div class="form-field">
+          <label class="form-label">اسم الشركة</label>
+          <input type="text" name="company_name" class="form-input" placeholder="اسم الشركة" value="{{ settings.company_name|default:'' }}">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">العنوان</label>
+          <textarea name="company_address" class="form-input" placeholder="عنوان الشركة...">{{ settings.company_address|default:'' }}</textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">الهاتف</label>
+          <input type="text" name="phone" class="form-input" placeholder="+966..." value="{{ settings.phone|default:'' }}" dir="ltr">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input type="email" name="email" class="form-input" placeholder="info@company.com" value="{{ settings.email|default:'' }}" dir="ltr">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">رقم الضريبة</label>
+          <input type="text" name="vat_number" class="form-input" placeholder="رقم الضريبة" value="{{ settings.vat_number|default:'' }}" dir="ltr">
+        </div>
+
+        <button type="submit" class="btn-save">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          حفظ البيانات
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        أنواع الاشتراك
+      </div>
+      <a href="{% url 'subscription_type_create' %}" class="btn-add">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        إضافة نوع
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th>الاسم (عربي)</th>
+              <th>الاسم (إنجليزي)</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for st in subscription_types %}
+            <tr>
+              <td><strong>{{ st.name_ar }}</strong></td>
+              <td>{{ st.name_en }}</td>
+              <td>
+                {% if st.is_active %}
+                <span class="status-badge badge-active">نشط</span>
+                {% else %}
+                <span class="status-badge badge-inactive">غير نشط</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <a href="{% url 'subscription_type_edit' st.id %}" class="btn-action">تعديل</a>
+                  <button type="button" class="btn-action" onclick="showTypeDetails({{ st.id }})">التفاصيل</button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="type-details-container"></div>
+
+<script>
+function showTypeDetails(typeId) {
+    var container = document.getElementById('type-details-container');
+    var data = {{ templates_by_type_json|default:"null"|safe }};
+
+    if (!data || !data[typeId]) {
+        container.innerHTML = '<div style="max-width:1400px; margin:0 auto; padding:0 20px"><div style="background:rgba(251,147,60,0.1); border:1px solid rgba(251,147,60,0.2); border-radius:10px; padding:14px; color:var(--warn); font-size:12px; text-align:center">لا توجد بيانات لهذا النوع</div></div>';
+        return;
+    }
+
+    var typeData = data[typeId];
+    var type = typeData.type;
+    var templates = typeData.templates;
+
+    var html = '<div style="max-width:1400px; margin:24px auto; padding:0 20px">' +
+        '<div class="settings-card">' +
+            '<div class="card-header">' +
+                '<div class="card-title">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+                    type.name_ar + ' - ' + type.name_en +
+                '</div>' +
+            '</div>' +
+            '<div class="card-body">' +
+                '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:20px">' +
+                    '<div><div style="font-size:10px; color:var(--elec); font-weight:700; text-transform:uppercase; margin-bottom:4px">الحالة</div><div style="color:var(--t1); font-size:13px; font-weight:600">' + (type.is_active ? '<span class="status-badge badge-active">نشط</span>' : '<span class="status-badge badge-inactive">غير نشط</span>') + '</div></div>' +
+                    '<div><div style="font-size:10px; color:var(--elec); font-weight:700; text-transform:uppercase; margin-bottom:4px">الكود</div><div style="color:var(--t1); font-size:13px; font-weight:600">' + (type.code || '-') + '</div></div>' +
+                    '<div><div style="font-size:10px; color:var(--elec); font-weight:700; text-transform:uppercase; margin-bottom:4px">الوصف</div><div style="color:var(--t1); font-size:13px; font-weight:600">' + (type.description || '-') + '</div></div>' +
+                '</div>' +
+                '<div class="details-section">' +
+                    '<div class="details-title">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+                        'نماذج بنود الفاتورة' +
+                    '</div>' +
+                    '<div class="table-wrapper">' +
+                        '<table class="settings-table">' +
+                            '<thead><tr><th>#</th><th>الاسم (عربي)</th><th>الاسم (إنجليزي)</th><th>نوع الحساب</th><th>الإجراءات</th></tr></thead>' +
+                            '<tbody>';
+
+    if (templates && templates.length > 0) {
+        for (var i = 0; i < templates.length; i++) {
+            var t = templates[i];
+            html += '<tr>' +
+                '<td>' + t.line_order + '</td>' +
+                '<td><strong>' + t.line_name_ar + '</strong></td>' +
+                '<td>' + t.line_name_en + '</td>' +
+                '<td><span class="status-badge badge-active" style="background:rgba(99,102,241,0.15); color:var(--elec2); border-color:rgba(99,102,241,0.3)">' + t.calculation_type + '</span></td>' +
+                '<td><div class="action-buttons"><a href="/settings/templates/' + t.id + '/" class="btn-action">تعديل</a> <a href="/settings/templates/' + t.id + '/delete/" class="btn-action danger">حذف</a></div></td>' +
+            '</tr>';
+        }
+    } else {
+        html += '<tr><td colspan="5" style="text-align:center; color:var(--t3); padding:20px">لم تتم إضافة نماذج بعد</td></tr>';
+    }
+
+    html += '</tbody></table>' +
+            '</div>' +
+            '<a href="/settings/templates/create-for-type/' + typeId + '/" class="btn-add" style="display:inline-flex; margin-top:12px">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                'إضافة نموذج' +
+            '</a>' +
+                '</div>' +
+            '</div>' +
+        '</div></div>';
+
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>

@@ -23,10 +23,23 @@ class TenantSubscriptionInline(admin.TabularInline):
 
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
-    list_display = ['name', 'tier', 'price_monthly', 'price_yearly', 'max_customers', 'max_meters', 'tenant_count', 'is_active']
+    list_display = ['name_badge', 'tier_badge', 'price_monthly', 'price_yearly', 'max_customers', 'tenant_count', 'is_active']
     list_filter = ['tier', 'is_active']
     search_fields = ['name']
     list_per_page = 20
+
+    def name_badge(self, obj):
+        return format_html('<span style="font-weight:700;color:#00d4ff">{}</span>', obj.name)
+    name_badge.short_description = 'اسم الخطة'
+
+    def tier_badge(self, obj):
+        colors = {'basic': '#94a3b8', 'pro': '#00d4ff', 'enterprise': '#a78bfa'}
+        color = colors.get(obj.tier, '#94a3b8')
+        return format_html(
+            '<span style="background:{};color:#000;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase">{}</span>',
+            color, obj.get_tier_display()
+        )
+    tier_badge.short_description = 'المستوى'
 
     def tenant_count(self, obj):
         return obj.tenant_set.count()
@@ -52,15 +65,15 @@ class TenantAdmin(admin.ModelAdmin):
             'classes': ('wide',),
             'description': 'يتم إنشاء Schema (قاعدة بيانات) منفصل ومعزول لكل مستأجر تلقائياً'
         }),
-        ('الخطة والاشتراك', {
-            'fields': ('plan', 'subscription_status', 'trial_end')
+        ('💳 الخطة والاشتراك', {
+            'fields': (('plan', 'subscription_status'), 'trial_end')
         }),
-        ('سجل الاشتراكات', {
+        ('📜 سجل العمليات', {
             'fields': ('subscription_history',),
             'classes': ('collapse',)
         }),
-        ('الحالة', {
-            'fields': ('is_active', 'created_on')
+        ('⚙️ الحالة والإعدادات', {
+            'fields': (('is_active', 'created_on'),)
         }),
     )
 
@@ -147,11 +160,11 @@ class TenantAdmin(admin.ModelAdmin):
         total = TenantSubscription.objects.filter(
             tenant=obj, payment_status='succeeded'
         ).aggregate(t=Sum('amount'))['t'] or 0
-        return format_html('<span style="color:#34d399;font-weight:700">{}</span>', f'{total:,.2f}')
-    total_paid.short_description = 'إجمالي المدفوعات'
+        return format_html('<span style="color:#34d399;font-weight:700">{}</span>', f'{total:,.2f} SAR')
+    total_paid.short_description = 'إجمالي الدفع'
 
     def subscription_history(self, obj):
-        logs = TenantSubscription.objects.filter(tenant=obj)[:20]
+        logs = TenantSubscription.objects.filter(tenant=obj)[:15]
         if not logs:
             return mark_safe('<span style="color:#4a7a95">لا يوجد سجل اشتراكات</span>')
         html = '<table style="width:100%;font-size:12px"><tr style="background:rgba(0,212,255,0.1)"><th>التاريخ</th><th>الإجراء</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>بوابة الدفع</th></tr>'
@@ -166,13 +179,23 @@ class TenantAdmin(admin.ModelAdmin):
     subscription_history.short_description = 'سجل الاشتراكات'
 
     def dashboard_link(self, obj):
-        """Link to tenant change page"""
         url = reverse('admin:tenants_tenant_change', args=[obj.id])
         return format_html(
-            '<a class="button" href="{}" style="background-color:#00d4ff;color:#000">📊 لوحة التحكم</a>',
+            '<a class="button" href="{}" style="background:linear-gradient(135deg,#00d4ff,#38bdf8);color:#000;border:none;padding:4px 12px;font-weight:700;font-size:11px;border-radius:6px">⚙️ إدارة</a>',
             url
         )
-    dashboard_link.short_description = 'لوحة التحكم'
+    dashboard_link.short_description = 'الإجراءات'
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['title'] = 'إدارة المستأجرين (شركات النظام)'
+        extra_context['stats'] = {
+            'total': Tenant.objects.count(),
+            'active': Tenant.objects.filter(is_active=True).count(),
+            'revenue': TenantSubscription.objects.filter(payment_status='succeeded').aggregate(Sum('amount'))['amount__sum'] or 0,
+            'recent': Tenant.objects.order_by('-created_on')[:5],
+        }
+        return super().changelist_view(request, extra_context=extra_context)
 
     def upgrade_to_pro(self, request, queryset):
         pro = Plan.objects.filter(tier='pro').first()

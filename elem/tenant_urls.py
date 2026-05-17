@@ -1,12 +1,17 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from django.http import HttpResponse
+from tenants.views import tenant_dashboard
 
 urlpatterns = [
     path('tenant-test/', lambda r: HttpResponse("Tenant URLConf Active")),
+    path('', RedirectView.as_view(url='/admin/', permanent=False), name='tenant_root'),
+    path('settings/', tenant_dashboard, name='tenant_dashboard_settings'),
+    path('admin/', tenant_dashboard, name='tenant_dashboard'),
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
     path('', include('billing.urls')),  # Merged directly - no /billing/ prefix
