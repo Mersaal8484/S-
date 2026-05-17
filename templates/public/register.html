@@ -41,20 +41,13 @@
                         </div>
                         <div class="form-group mb-4">
                             <label class="text-dim">رقم الجوال</label>
-                            <input type="text" name="phone" class="form-control bg-transparent text-white border-secondary py-4" dir="ltr" placeholder="+966 5x xxx xxxx" style="border-radius: 12px;">
+                            <input type="text" name="phone" class="form-control bg-transparent text-white border-secondary py-4" dir="ltr" placeholder="+967 7x xxx xxxx" style="border-radius: 12px;">
                         </div>
                         <div class="form-group mb-4">
                             <label class="text-dim">كلمة المرور</label>
                             <input type="password" name="password" class="form-control bg-transparent text-white border-secondary py-4" required style="border-radius: 12px;">
                         </div>
-                        <div class="form-group mb-5">
-                            <label class="text-dim">الخطة المطلوبة</label>
-                            <select name="plan" class="form-control bg-transparent text-white border-secondary" required style="border-radius: 12px; height: 50px;">
-                                {% for plan in plans %}
-                                <option value="{{ plan.id }}" class="bg-dark">{{ plan.name }} - ${{ plan.price_monthly }}/شهر</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
                         <button type="submit" id="registerBtn" class="btn-main btn-block btn-lg py-3">
                             <span id="btnText">تأكيد التسجيل وبدء التجربة</span>
                             <span id="btnSpinner" style="display:none;">

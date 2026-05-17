@@ -517,7 +517,7 @@ body::-webkit-scrollbar{width:0}
           <div class="qa-c" onclick="sendPrompt('أضف نطاقاً جديداً للنظام')"><div class="qa-i">🌐</div><div class="qa-l">نطاق جديد</div></div>
           <div class="qa-c" onclick="sendPrompt('أنشئ خطة اشتراك جديدة')"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></div>
           <div class="qa-c" onclick="sendPrompt('اعرض تقرير الإيرادات التفصيلي')"><div class="qa-i">📊</div><div class="qa-l">تقرير مالي</div></div>
-          <div class="qa-c" onclick="sendPrompt('إعدادات مفاتيح API وStripe')"><div class="qa-i">🔑</div><div class="qa-l">إعدادات API</div></div>
+          <div class="qa-c" onclick="sendPrompt('إعدادات النظام')"><div class="qa-i">🔑</div><div class="qa-l">إعدادات النظام</div></div>
         </div>
 
         <!-- System health -->
@@ -697,7 +697,7 @@ plans.forEach(p=>{
 
 // ══ HEALTH ══
 const services=[
-  {name:'Stripe API',ok:true,ms:42},
+
   {name:'قاعدة البيانات',ok:true,ms:8},
   {name:'Django Server',ok:true,ms:120},
   {name:'خدمة DNS',ok:false,ms:999},

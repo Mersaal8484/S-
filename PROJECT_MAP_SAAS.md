@@ -121,7 +121,7 @@ S-/ (Django Project: elem)
 │   └── wsgi.py
 │
 ├── tenants/                 ← ✨ APP جديد (Public Schema)
-│   ├── models.py            ← Tenant, Domain, Plan, TenantSubscription
+│   ├── models.py            ← Tenant, Domain, Plan, TenantSubscription, TenantUser (لربط المستخدمين بالشركات)
 │   ├── views.py             ← Registration, Onboarding, Admin Portal
 │   ├── signals.py           ← post_save → إنشاء schema تلقائياً
 │   └── stripe_webhooks.py   ← معالجة أحداث Stripe
@@ -180,6 +180,7 @@ Schema: company_beta
 |--------|--------|--------|---------|
 | 2026-05-12 | بدء Milestone 0 | ✅ اكتمل | إعداد البيئة (Settings, Decouple, Tenants App) |
 | 2026-05-12 | بدء Milestone 1 | 🟢 جاري التنفيذ | تعريف النماذج وفصل الروابط |
+| 2026-05-17 | تنظيف الروابط اليتيمة | ✅ اكتمل | إزالة روابط `upgrade_checkout` الخاصة بـ Stripe من `tenants/urls.py` |
 
 ## [ORPHANS & PENDING]
 

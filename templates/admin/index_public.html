@@ -241,7 +241,7 @@ body::-webkit-scrollbar{width:0}
     <div class="nav-grp">لوحة التحكم</div>
     <div class="ni on" data-url="{% url 'admin:index' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>نظرة عامة<span class="ni-badge nb-cyan">مباشر</span></div>
     <div class="ni" data-url="{% url 'admin:tenants_tenant_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>المستأجرون<span class="ni-badge nb-cyan">{{ stats.active_tenants }}</span></div>
-    <div class="ni" data-url="{% url 'admin:tenants_plan_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>الخطط<span class="ni-badge nb-cyan">{{ stats.total_plans }}</span></div>
+    <div class="ni" data-url="#" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>الخطط<span class="ni-badge nb-cyan">{{ stats.total_plans }}</span></div>
     <div class="ni" data-url="{% url 'admin:tenants_domain_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>النطاقات</div>
     <div class="nav-grp">الإدارة</div>
     <div class="ni" data-url="{% url 'admin:auth_user_changelist' %}" onclick="setNav(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>المستخدمون</div>
@@ -427,9 +427,9 @@ body::-webkit-scrollbar{width:0}
         <div class="qa">
           <a href="{% url 'admin:tenants_tenant_add' %}" class="qa-c"><div class="qa-i">🏢</div><div class="qa-l">مستأجر جديد</div></a>
           <a href="{% url 'admin:tenants_domain_add' %}" class="qa-c"><div class="qa-i">🌐</div><div class="qa-l">نطاق جديد</div></a>
-          <a href="{% url 'admin:tenants_plan_add' %}" class="qa-c"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></a>
+          <a href="#" class="qa-c"><div class="qa-i">📋</div><div class="qa-l">خطة جديدة</div></a>
           <a href="{% url 'admin:tenants_tenant_changelist' %}" class="qa-c"><div class="qa-i">📊</div><div class="qa-l">المستأجرون</div></a>
-          <a href="{% url 'admin:tenants_tenantsubscription_changelist' %}" class="qa-c"><div class="qa-i">💳</div><div class="qa-l">المدفوعات</div></a>
+          <a href="#" class="qa-c"><div class="qa-i">💳</div><div class="qa-l">المدفوعات</div></a>
           <a href="{% url 'admin:integrations_integration_changelist' %}" class="qa-c"><div class="qa-i">🔌</div><div class="qa-l">تكاملات الدفع</div></a>
           <a href="{% url 'admin:index' %}" class="qa-c"><div class="qa-i">🔑</div><div class="qa-l">إعدادات Django</div></a>
         </div>
@@ -450,10 +450,10 @@ function sendPrompt(msg){
   if (msg.includes('مستأجر جديد')) url = "{% url 'admin:tenants_tenant_add' %}";
   else if (msg.includes('مستأجر')) url = "{% url 'admin:tenants_tenant_changelist' %}";
   else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
-  else if (msg.includes('خطة جديدة')) url = "{% url 'admin:tenants_plan_add' %}";
-  else if (msg.includes('خطة') || msg.includes('خطط')) url = "{% url 'admin:tenants_plan_changelist' %}";
-  else if (msg.includes('مدفوعات') || msg.includes('Stripe') || msg.includes('دفعة')) url = "{% url 'admin:tenants_tenantsubscription_changelist' %}";
-  else if (msg.includes('تحليل') || msg.includes('إيراد') || msg.includes('تحليلات') || msg.includes('أرباح')) url = "{% url 'admin:tenants_tenantsubscription_changelist' %}";
+  else if (msg.includes('خطة جديدة')) url = "#";
+  else if (msg.includes('خطة') || msg.includes('خطط')) url = "#";
+  else if (msg.includes('مدفوعات') || msg.includes('Stripe') || msg.includes('دفعة')) url = "#";
+  else if (msg.includes('تحليل') || msg.includes('إيراد') || msg.includes('تحليلات') || msg.includes('أرباح')) url = "#";
   else if (msg.includes('فاتورة') || msg.includes('كهرباء') || msg.includes('مياه') || msg.includes('استهلاك') || msg.includes('معلق')) url = "{% url 'admin:tenants_tenant_changelist' %}";
   window.location.href = url;
 }

@@ -124,20 +124,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .mini-chart{padding:12px 16px}
 .mc-svg{width:100%;overflow:visible}
 
-/* STRIPE INFO */
-.stripe-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
-.stripe-cell{background:var(--s1);padding:14px 16px}
-.sc-lbl{font-size:10px;color:var(--t3);font-weight:700;letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase}
-.sc-val{font-size:12px;color:var(--t1);font-weight:600;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stripe-event{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(0,212,255,0.04);cursor:pointer;transition:background .2s}
-.stripe-event:hover{background:rgba(0,212,255,0.04)}
-.stripe-event:last-child{border:none}
-.se-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.se-type{font-size:11px;font-weight:700;color:var(--t1);font-family:monospace}
-.se-id{font-size:10px;color:var(--t3);margin-top:2px}
-.se-amt{font-size:12px;font-weight:800;margin-right:auto}
-.se-time{font-size:10px;color:var(--t3)}
-
 /* DOMAINS */
 .dom-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(0,212,255,0.04);cursor:pointer;transition:background .2s}
 .dom-item:hover{background:rgba(0,212,255,0.03)}
@@ -289,7 +275,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="tab on" onclick="switchTab('overview',this)">📊 النظرة العامة</button>
     <button class="tab" onclick="switchTab('invoices',this)">📄 الفواتير</button>
     <button class="tab" onclick="switchTab('consumption',this)">⚡ الاستهلاك</button>
-    <button class="tab" onclick="switchTab('stripe',this)">💳 Stripe</button>
+
     <button class="tab" onclick="switchTab('domains',this)">🌐 النطاقات</button>
     <button class="tab" onclick="switchTab('activity',this)">📅 السجل</button>
   </div>
@@ -429,28 +415,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
   </div>
 
-  <!-- ══════ TAB: STRIPE ══════ -->
-  <div class="tp" id="t-stripe">
-    <div class="g2">
-      <div class="panel">
-        <div class="ph"><div><div class="pt">بيانات Stripe</div><div class="ps">معلومات الحساب والاشتراك</div></div></div>
-        <div class="stripe-grid">
-          <div class="stripe-cell"><div class="sc-lbl">Customer ID</div><div class="sc-val">cus_SaNaA1234xYz</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Subscription ID</div><div class="sc-val">sub_eNt3rPrIsE_01</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Plan ID</div><div class="sc-val">price_enterprise_monthly</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Status</div><div class="sc-val"><span class="b bg">● active</span></div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Current Period Start</div><div class="sc-val">2026-05-15</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Current Period End</div><div class="sc-val">2026-06-15</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Payment Method</div><div class="sc-val">pm_visa_4892</div></div>
-          <div class="stripe-cell"><div class="sc-lbl">Default Currency</div><div class="sc-val">USD</div></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="ph"><div><div class="pt">أحداث Stripe الأخيرة</div></div></div>
-        <div id="stripeEvents"></div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- ══════ TAB: DOMAINS ══════ -->
   <div class="tp" id="t-domains">
@@ -559,23 +524,6 @@ invoices.forEach(iv=>{
   tr.innerHTML=`<td><span class="inv-num">${iv.num}</span></td><td style="color:var(--t2)">${iv.month}</td><td style="color:var(--elec);font-weight:700">${iv.kwh} kWh</td><td style="font-weight:800;color:${iv.status==='paid'?'#34d399':'var(--warn)'}">$${iv.amt}</td><td>${badge}</td><td style="color:var(--t3);font-size:11px">${iv.date}</td><td>${action}</td>`;
   tr.style.cursor='pointer';
   tb.appendChild(tr);
-});
-
-// ══ STRIPE EVENTS ══
-const events=[
-  {icon:'💳',type:'payment_intent.succeeded',id:'evt_1AbC...xyz9',amt:'+$1,490',amtColor:'#34d399',time:'12 مايو، 09:41'},
-  {icon:'🔄',type:'customer.subscription.updated',id:'evt_2DeF...uvw8',amt:'ترقية',amtColor:'var(--energy)',time:'15 أبريل، 14:22'},
-  {icon:'💳',type:'payment_intent.succeeded',id:'evt_3GhI...rst7',amt:'+$1,490',amtColor:'#34d399',time:'12 أبريل، 09:38'},
-  {icon:'📧',type:'invoice.sent',id:'evt_4JkL...mno6',amt:'—',amtColor:'var(--t3)',time:'01 أبريل، 08:00'},
-  {icon:'💳',type:'payment_intent.succeeded',id:'evt_5MnO...pqr5',amt:'+$1,490',amtColor:'#34d399',time:'12 مارس، 09:42'},
-];
-const ec=document.getElementById('stripeEvents');
-events.forEach(e=>{
-  const d=document.createElement('div');
-  d.className='stripe-event';
-  d.innerHTML=`<div class="se-ico" style="background:rgba(0,212,255,0.08)">${e.icon}</div><div style="flex:1"><div class="se-type">${e.type}</div><div class="se-id">${e.id}</div></div><div class="se-amt" style="color:${e.amtColor}">${e.amt}</div><div class="se-time">${e.time}</div>`;
-  d.onclick=()=>sendPrompt('تفاصيل حدث Stripe: '+e.type);
-  ec.appendChild(d);
 });
 
 // ══ TIMELINE ══

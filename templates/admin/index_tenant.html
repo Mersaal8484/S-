@@ -1251,7 +1251,7 @@
                   {% endfor %}
                 </div>
               </div>
-              <a href="{% url 'admin:tenants_plan_add' %}" class="chg-btn" style="text-decoration:none">تغيير الخطة</a>
+              <a href="#" class="chg-btn" style="text-decoration:none">تغيير الخطة</a>
             </div>
 
             <div class="panel">
@@ -1585,7 +1585,7 @@ function sendPrompt(msg){
   else if (msg.includes('قراءة') || msg.includes('عداد')) url = "{% url 'reading_create' %}?standalone=1";
   else if (msg.includes('مشترك جديد') || msg.includes('إضافة مشترك')) url = "{% url 'customer_create' %}?standalone=1";
   else if (msg.includes('مشترك') || msg.includes('المشتركين')) url = "{% url 'customer_list' %}";
-  else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_changelist' %}";
+  else if (msg.includes('خطة')) url = "#";
   else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
   else if (msg.includes('إعداد') || msg.includes('الإعدادات')) url = "{% url 'system_settings' %}";
   else if (msg.includes('تنزيل') || msg.includes('تقرير')) url = "{% url 'billing_reports' %}";

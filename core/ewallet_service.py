@@ -44,7 +44,7 @@ class TapGateway(EWalletGateway):
         import requests
         resp = requests.post(f"{self.provider.api_url}/charges", json={
             'amount': float(amount),
-            'currency': 'SAR',
+            'currency': 'YER',
             'source': {'id': 'src_sa.mada'},
             'reference': {'merchant': ref},
         }, headers={'Authorization': f'Bearer {self.provider.api_key}'}, timeout=15)

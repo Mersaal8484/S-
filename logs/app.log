@@ -1,1 +1,3 @@
 INFO 2026-05-17 03:45:54,643 [shammakh] models Superuser a@a.com created in schema shammakh
+INFO 2026-05-18 00:14:59,985 [public] models Superuser albarq@s.com created/linked in public schema for albarq
+INFO 2026-05-18 00:15:00,007 [albarq] models Default subscription types seeded in schema albarq

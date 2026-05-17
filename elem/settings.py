@@ -31,7 +31,6 @@ SHARED_APPS = [
 ]
 
 TENANT_APPS = [
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'main.apps.MainConfig',
     'billing.apps.BillingConfig',
@@ -57,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'core.middleware.TenantSecurityMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.FeatureFlagMiddleware',
