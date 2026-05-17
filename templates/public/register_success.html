@@ -29,8 +29,28 @@
                     </p>
 
                     {% if domain %}
-                    <div class="glass-card p-4 mb-5" style="border-color: var(--primary);">
+                    <div class="glass-card p-4 mb-4" style="border-color: var(--primary);">
                         <code class="h4 text-primary" style="word-break: break-all;">http://{{ domain.domain }}:8000</code>
+                    </div>
+
+                    <!-- Provisioning Summary -->
+                    <div class="text-right mb-4" style="max-width: 480px; margin: 0 auto;">
+                        <div class="d-flex align-items-center mb-2 text-success">
+                            <i class="bi bi-check-circle-fill ml-2"></i>
+                            <small>إنشاء قاعدة بيانات مستقلة ومعزولة</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-2 text-success">
+                            <i class="bi bi-check-circle-fill ml-2"></i>
+                            <small>تهيئة جداول النظام والفواتير</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-2 text-success">
+                            <i class="bi bi-check-circle-fill ml-2"></i>
+                            <small>إنشاء حساب المسؤول: <strong>{{ tenant.email }}</strong></small>
+                        </div>
+                        <div class="d-flex align-items-center text-success">
+                            <i class="bi bi-check-circle-fill ml-2"></i>
+                            <small>ربط النطاق الفرعي: <strong>{{ domain.domain }}</strong></small>
+                        </div>
                     </div>
                     
                     <a href="http://{{ domain.domain }}:8000/accounts/login/" class="btn-main btn-lg px-5 py-3">

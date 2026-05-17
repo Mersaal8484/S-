@@ -458,7 +458,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 function sendPrompt(msg){
   var url = "{% url 'billing_index' %}";
   if (msg.includes('العودة') || msg.includes('الرئيسية') || msg.includes('ارجع')) {
-    {% if request.user.is_superuser %}
+    {% if is_public_schema %}
       url = "{% url 'admin:tenants_tenant_changelist' %}";
     {% else %}
       url = "{% url 'billing_index' %}";

@@ -19,9 +19,10 @@
     .form-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .field { display:flex; flex-direction:column; gap:8px; }
     .field label { font-size:0.85rem; font-weight:700; color:#c7d2fe; }
-    .field input, .field select, .field textarea { width:100%; border:1px solid rgba(148,163,184,0.18); border-radius:12px; background:rgba(15,23,42,0.8); color:#f8fafc; padding:12px 14px; font-size:0.94rem; }
+    .field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea { width:100%; border:1px solid rgba(148,163,184,0.18); border-radius:12px; background:rgba(15,23,42,0.8); color:#f8fafc; padding:12px 14px; font-size:0.94rem; }
     .field textarea { min-height:120px; resize:vertical; }
-    .field input:focus, .field select:focus, .field textarea:focus { outline:none; border-color:#818cf8; box-shadow:0 0 0 4px rgba(129,140,248,0.12); }
+    .field input:not([type=checkbox]):not([type=radio]):focus, .field select:focus, .field textarea:focus { outline:none; border-color:#818cf8; box-shadow:0 0 0 4px rgba(129,140,248,0.12); }
+    .field input[type=checkbox], .field input[type=radio] { width:auto; margin-left:8px; accent-color:#818cf8; transform:scale(1.2); }
     .form-footer { padding:24px 30px 30px; border-top:1px solid rgba(148,163,184,0.12); display:flex; justify-content:flex-end; gap:12px; background:rgba(15,23,42,0.88); }
     .btn-save { padding:12px 24px; border-radius:14px; border:none; background:linear-gradient(135deg,#6366f1,#60a5fa); color:#fff; font-weight:800; cursor:pointer; }
     .btn-save:hover { opacity:0.95; }

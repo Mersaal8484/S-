@@ -71,7 +71,7 @@ input:checked + .toggle-slider:before { transform:translateX(-20px); }
         <div class="page-sub">إدارة أنواع الاشتراك والخدمات المتاحة</div>
       </div>
     </div>
-    <a href="{% url 'system_settings' %}" class="btn-back">
+    <a href="{% url 'subscription_type_list' %}" class="btn-back">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
       العودة
     </a>
@@ -142,7 +142,7 @@ input:checked + .toggle-slider:before { transform:translateX(-20px); }
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           حفظ التغييرات
         </button>
-        <a href="{% url 'system_settings' %}" class="btn-cancel">إلغاء</a>
+        <a href="{% url 'subscription_type_list' %}" class="btn-cancel">إلغاء</a>
         <span class="save-hint">يرجى التأكد من صحة البيانات قبل الحفظ</span>
       </div>
     </div>

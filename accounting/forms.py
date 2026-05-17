@@ -85,6 +85,7 @@ class CustomerForm(forms.ModelForm):
         self.fields['customer_code'].required = False
         if not self.instance.pk:
             self.fields['customer_code'].initial = generate_number('CUS')
+            self.fields.pop('is_active', None)
 
     def clean_customer_code(self):
         code = self.cleaned_data.get('customer_code')

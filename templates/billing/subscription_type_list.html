@@ -1,0 +1,137 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }} — أنواع الاشتراك{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-primary-c { display:flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:13px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; text-decoration:none; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-primary-c:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); color:var(--ink); text-decoration:none; }
+.list-card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
+.list-card-header { padding:18px 24px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.list-card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.list-card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.list-table { width:100%; border-collapse:collapse; }
+.list-table th { text-align:right; padding:14px 20px; font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15); }
+.list-table td { padding:14px 20px; font-size:13px; color:var(--t2); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+.list-table tr:last-child td { border-bottom:none; }
+.list-table tr:hover td { background:rgba(0,212,255,0.03); }
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+.status-active { background:rgba(52,211,153,0.15); color:var(--ok); border:1px solid rgba(52,211,153,0.25); }
+.status-inactive { background:rgba(244,63,94,0.15); color:var(--danger); border:1px solid rgba(244,63,94,0.25); }
+.tpl-count { display:inline-flex; align-items:center; gap:5px; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700; }
+.tpl-ok { background:rgba(52,211,153,0.12); color:var(--ok); }
+.tpl-missing { background:rgba(251,146,60,0.15); color:var(--warn); border:1px solid rgba(251,146,60,0.25); }
+.tpl-missing i { font-size:10px; }
+.action-group { display:flex; gap:6px; flex-wrap:wrap; }
+.btn-action { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; border:none; cursor:pointer; white-space:nowrap; }
+.btn-edit { background:rgba(0,212,255,0.1); color:var(--elec); border:1px solid rgba(0,212,255,0.2); }
+.btn-edit:hover { background:rgba(0,212,255,0.2); color:var(--elec); text-decoration:none; }
+.btn-delete { background:rgba(244,63,94,0.1); color:var(--danger); border:1px solid rgba(244,63,94,0.2); }
+.btn-delete:hover { background:rgba(244,63,94,0.2); color:var(--danger); text-decoration:none; }
+.btn-tpl { background:rgba(99,102,241,0.1); color:var(--elec2); border:1px solid rgba(99,102,241,0.2); }
+.btn-tpl:hover { background:rgba(99,102,241,0.2); color:var(--elec2); text-decoration:none; }
+.empty-state { padding:60px 20px; text-align:center; }
+.empty-state .empty-icon { font-size:48px; color:var(--t3); margin-bottom:12px; }
+.empty-state .empty-text { font-size:14px; color:var(--t3); }
+@media(max-width:640px){ .list-table th,.list-table td{padding:10px 12px;} .action-group{flex-direction:column;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div class="page-title">{{ title }}</div>
+        <div class="page-sub">إدارة أنواع الاشتراك والخدمات المتاحة</div>
+      </div>
+    </div>
+    <div>
+      <a href="{% url 'subscription_type_create' %}" class="btn-primary-c">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        إضافة نوع جديد
+      </a>
+    </div>
+  </div>
+
+  <div class="list-card">
+    <div class="list-card-header">
+      <span class="h-dot"></span>
+      <h6>جميع أنواع الاشتراك</h6>
+    </div>
+    {% if types %}
+    <table class="list-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الاسم (عربي)</th>
+          <th>الاسم (إنجليزي)</th>
+          <th>الحالة</th>
+          <th>القوال</th>
+          <th>الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for st in types %}
+        <tr>
+          <td style="color:var(--t3);font-weight:600;">{{ st.pk }}</td>
+          <td style="font-weight:700;color:var(--t1);">{{ st.name_ar }}</td>
+          <td>{{ st.name_en|default:'—' }}</td>
+          <td>
+            {% if st.is_active %}
+            <span class="status-badge status-active"><i class="bi bi-check-circle-fill" style="font-size:10px;"></i> نشط</span>
+            {% else %}
+            <span class="status-badge status-inactive"><i class="bi bi-x-circle-fill" style="font-size:10px;"></i> غير نشط</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if st.templates_count > 0 %}
+            <span class="tpl-count tpl-ok"><i class="bi bi-file-text"></i> {{ st.templates_count }}</span>
+            {% else %}
+            <span class="tpl-count tpl-missing"><i class="bi bi-exclamation-circle"></i> لا يوجد</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-group">
+              <a href="{% url 'subscription_type_templates' st.pk %}" class="btn-action btn-tpl">
+                <i class="bi bi-file-text"></i> بنود الفاتورة
+              </a>
+              <a href="{% url 'subscription_type_edit' st.pk %}" class="btn-action btn-edit">
+                <i class="bi bi-pencil"></i> تعديل
+              </a>
+              <form method="post" action="{% url 'subscription_type_delete' st.pk %}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف نوع الاشتراك «{{ st.name_ar }}»؟');">
+                {% csrf_token %}
+                <button type="submit" class="btn-action btn-delete">
+                  <i class="bi bi-trash"></i> حذف
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+      <div class="empty-text">لا توجد أنواع اشتراك مضافة بعد. أضف أول نوع اشتراك الآن!</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

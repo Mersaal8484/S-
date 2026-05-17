@@ -208,7 +208,7 @@ function showTypeDetails(typeId) {
                 '<td><strong>' + t.line_name_ar + '</strong></td>' +
                 '<td>' + t.line_name_en + '</td>' +
                 '<td><span class="status-badge badge-active" style="background:rgba(99,102,241,0.15); color:var(--elec2); border-color:rgba(99,102,241,0.3)">' + t.calculation_type + '</span></td>' +
-                '<td><div class="action-buttons"><a href="/billing/settings/templates/' + t.id + '/" class="btn-action">تعديل</a> <a href="/billing/settings/templates/' + t.id + '/delete/" class="btn-action danger">حذف</a></div></td>' +
+                '<td><div class="action-buttons"><a href="/settings/templates/' + t.id + '/" class="btn-action">تعديل</a> <a href="/settings/templates/' + t.id + '/delete/" class="btn-action danger">حذف</a></div></td>' +
             '</tr>';
         }
     } else {
@@ -217,7 +217,7 @@ function showTypeDetails(typeId) {
     
     html += '</tbody></table>' +
             '</div>' +
-            '<a href="/billing/settings/templates/create-for-type/' + typeId + '/" class="btn-add" style="display:inline-flex; margin-top:12px">' +
+            '<a href="/settings/templates/create-for-type/' + typeId + '/" class="btn-add" style="display:inline-flex; margin-top:12px">' +
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
                 'إضافة نموذج' +
             '</a>' +
