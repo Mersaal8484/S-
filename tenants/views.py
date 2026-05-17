@@ -5,8 +5,11 @@ from django.conf import settings
 from django.db import IntegrityError, connection
 from django_tenants.utils import schema_context
 from django.contrib.auth.models import User
+from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
-from .models import Plan, Tenant, Domain, TenantSubscription
+from .models import Plan, Tenant, Domain, TenantSubscription, PlatformSettings
 from django.db.models import Count, Sum, Avg, Q, F
 from datetime import timedelta
 from decimal import Decimal
@@ -184,6 +187,178 @@ def tenant_dashboard(request):
     }
 
     return render(request, 'admin/index_tenant.html', context)
+
+
+@staff_member_required
+def platform_settings(request):
+    """Super Admin: Platform-wide settings management"""
+    ps = PlatformSettings.get_settings()
+
+    if request.method == 'POST':
+        section = request.POST.get('section', 'platform')
+
+        if section == 'platform':
+            ps.platform_name = request.POST.get('platform_name', ps.platform_name)
+            ps.platform_name_ar = request.POST.get('platform_name_ar', ps.platform_name_ar)
+            ps.support_email = request.POST.get('support_email', ps.support_email)
+            ps.support_phone = request.POST.get('support_phone', ps.support_phone)
+            ps.platform_url = request.POST.get('platform_url', ps.platform_url)
+
+        elif section == 'stripe':
+            ps.stripe_mode = request.POST.get('stripe_mode', ps.stripe_mode)
+            # Only update keys if provided (not blank)
+            if request.POST.get('stripe_publishable_key'):
+                ps.stripe_publishable_key = request.POST.get('stripe_publishable_key')
+            if request.POST.get('stripe_secret_key'):
+                ps.stripe_secret_key = request.POST.get('stripe_secret_key')
+            if request.POST.get('stripe_webhook_secret'):
+                ps.stripe_webhook_secret = request.POST.get('stripe_webhook_secret')
+
+        elif section == 'webhook':
+            if request.POST.get('webhook_secret_global'):
+                ps.webhook_secret_global = request.POST.get('webhook_secret_global')
+            ps.webhook_url_payment = request.POST.get('webhook_url_payment', ps.webhook_url_payment)
+            ps.webhook_url_subscription = request.POST.get('webhook_url_subscription', ps.webhook_url_subscription)
+            ps.webhook_retry_attempts = int(request.POST.get('webhook_retry_attempts', ps.webhook_retry_attempts))
+            ps.webhook_timeout_seconds = int(request.POST.get('webhook_timeout_seconds', ps.webhook_timeout_seconds))
+
+        elif section == 'api':
+            ps.api_rate_limit_per_minute = int(request.POST.get('api_rate_limit_per_minute', ps.api_rate_limit_per_minute))
+            ps.api_max_page_size = int(request.POST.get('api_max_page_size', ps.api_max_page_size))
+            ps.api_jwt_expiry_minutes = int(request.POST.get('api_jwt_expiry_minutes', ps.api_jwt_expiry_minutes))
+            ps.api_allow_cors = request.POST.get('api_allow_cors') == 'on'
+            ps.api_cors_origins = request.POST.get('api_cors_origins', ps.api_cors_origins)
+            ps.api_documentation_enabled = request.POST.get('api_documentation_enabled') == 'on'
+
+        elif section == 'accounting':
+            ps.default_currency = request.POST.get('default_currency', ps.default_currency)
+            ps.default_vat_rate = Decimal(request.POST.get('default_vat_rate', str(ps.default_vat_rate)))
+            ps.fiscal_year_start_month = int(request.POST.get('fiscal_year_start_month', ps.fiscal_year_start_month))
+            ps.enable_double_entry = request.POST.get('enable_double_entry') == 'on'
+            ps.auto_create_journal_entries = request.POST.get('auto_create_journal_entries') == 'on'
+            ps.invoice_prefix = request.POST.get('invoice_prefix', ps.invoice_prefix)
+            ps.invoice_auto_number = request.POST.get('invoice_auto_number') == 'on'
+            ps.invoice_due_days = int(request.POST.get('invoice_due_days', ps.invoice_due_days))
+
+        elif section == 'payments':
+            ps.payment_grace_days = int(request.POST.get('payment_grace_days', ps.payment_grace_days))
+            ps.late_payment_penalty_pct = Decimal(request.POST.get('late_payment_penalty_pct', str(ps.late_payment_penalty_pct)))
+            ps.allow_installments = request.POST.get('allow_installments') == 'on'
+            ps.max_installment_months = int(request.POST.get('max_installment_months', ps.max_installment_months))
+            ps.installment_min_amount = Decimal(request.POST.get('installment_min_amount', str(ps.installment_min_amount)))
+            ps.allow_partial_payment = request.POST.get('allow_partial_payment') == 'on'
+            ps.allow_advance_payment = request.POST.get('allow_advance_payment') == 'on'
+
+        elif section == 'ewallet':
+            ps.ewallet_enabled = request.POST.get('ewallet_enabled') == 'on'
+            ps.stcpay_enabled = request.POST.get('stcpay_enabled') == 'on'
+            if request.POST.get('stcpay_merchant_id'):
+                ps.stcpay_merchant_id = request.POST.get('stcpay_merchant_id')
+            if request.POST.get('stcpay_api_key'):
+                ps.stcpay_api_key = request.POST.get('stcpay_api_key')
+            if request.POST.get('stcpay_webhook_secret'):
+                ps.stcpay_webhook_secret = request.POST.get('stcpay_webhook_secret')
+            ps.mada_enabled = request.POST.get('mada_enabled') == 'on'
+            if request.POST.get('mada_merchant_id'):
+                ps.mada_merchant_id = request.POST.get('mada_merchant_id')
+            if request.POST.get('mada_api_key'):
+                ps.mada_api_key = request.POST.get('mada_api_key')
+            ps.tabby_enabled = request.POST.get('tabby_enabled') == 'on'
+            if request.POST.get('tabby_api_key'):
+                ps.tabby_api_key = request.POST.get('tabby_api_key')
+            if request.POST.get('tabby_secret_key'):
+                ps.tabby_secret_key = request.POST.get('tabby_secret_key')
+            ps.tamara_enabled = request.POST.get('tamara_enabled') == 'on'
+            if request.POST.get('tamara_api_key'):
+                ps.tamara_api_key = request.POST.get('tamara_api_key')
+            if request.POST.get('tamara_webhook_secret'):
+                ps.tamara_webhook_secret = request.POST.get('tamara_webhook_secret')
+
+        elif section == 'tenants_cfg':
+            ps.default_trial_days = int(request.POST.get('default_trial_days', ps.default_trial_days))
+            ps.auto_activate_on_payment = request.POST.get('auto_activate_on_payment') == 'on'
+            ps.require_domain_verification = request.POST.get('require_domain_verification') == 'on'
+            ps.allowed_custom_domains = request.POST.get('allowed_custom_domains') == 'on'
+            ps.max_domains_per_tenant = int(request.POST.get('max_domains_per_tenant', ps.max_domains_per_tenant))
+            ps.auto_send_welcome_email = request.POST.get('auto_send_welcome_email') == 'on'
+
+        elif section == 'notifications':
+            ps.sms_provider = request.POST.get('sms_provider', ps.sms_provider)
+            if request.POST.get('sms_api_key'):
+                ps.sms_api_key = request.POST.get('sms_api_key')
+            ps.sms_sender_id = request.POST.get('sms_sender_id', ps.sms_sender_id)
+            ps.email_host = request.POST.get('email_host', ps.email_host)
+            ps.email_port = int(request.POST.get('email_port', ps.email_port))
+            ps.email_use_tls = request.POST.get('email_use_tls') == 'on'
+            ps.email_host_user = request.POST.get('email_host_user', ps.email_host_user)
+            if request.POST.get('email_host_password'):
+                ps.email_host_password = request.POST.get('email_host_password')
+            ps.default_from_email = request.POST.get('default_from_email', ps.default_from_email)
+
+        ps.updated_by = request.user.username
+        ps.save()
+        messages.success(request, f'✅ تم حفظ إعدادات "{section}" بنجاح')
+        return redirect(f"{request.path}?section={section}")
+
+    # Stats for sidebar
+    active_section = request.GET.get('section', 'platform')
+    plans = Plan.objects.all().order_by('tier')
+    tenants_count = Tenant.objects.count()
+    active_tenants = Tenant.objects.filter(is_active=True).count()
+
+    return render(request, 'admin/super_admin_dashboard.html', {
+        'ps': ps,
+        'active_section': active_section,
+        'active_tab': 'settings',
+        'plans': plans,
+        'tenants_count': tenants_count,
+        'active_tenants': active_tenants,
+    })
+
+
+@staff_member_required
+def plan_management(request):
+    """Super Admin: Manage SaaS plans"""
+    plans = Plan.objects.all().order_by('tier')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'create':
+            Plan.objects.create(
+                name=request.POST.get('name'),
+                tier=request.POST.get('tier', 'basic'),
+                price_monthly=Decimal(request.POST.get('price_monthly', '0')),
+                price_yearly=Decimal(request.POST.get('price_yearly', '0')),
+                max_customers=int(request.POST.get('max_customers', 1000)),
+                max_meters=int(request.POST.get('max_meters', 5000)),
+                max_users=int(request.POST.get('max_users', 10)),
+                is_active=request.POST.get('is_active') == 'on',
+            )
+            messages.success(request, 'تم إنشاء الخطة بنجاح ✅')
+        elif action == 'toggle':
+            plan = get_object_or_404(Plan, pk=request.POST.get('plan_id'))
+            plan.is_active = not plan.is_active
+            plan.save()
+            messages.success(request, f'تم تحديث حالة الخطة {plan.name}')
+        elif action == 'upgrade_tenant':
+            tenant = get_object_or_404(Tenant, pk=request.POST.get('tenant_id'))
+            plan = get_object_or_404(Plan, pk=request.POST.get('plan_id'))
+            old_plan = tenant.plan
+            tenant.plan = plan
+            tenant.subscription_status = 'active'
+            tenant.save()
+            TenantSubscription.objects.create(
+                tenant=tenant, action='upgraded',
+                plan_from=old_plan, plan_to=plan,
+                notes='ترقية يدوية من لوحة الإعدادات'
+            )
+            messages.success(request, f'تمت ترقية {tenant.company_name} إلى {plan.name}')
+        return redirect('tenants:plan_management')
+
+    tenants = Tenant.objects.select_related('plan').all().order_by('-created_on')
+    return render(request, 'admin/plan_management.html', {
+        'plans': plans, 'tenants': tenants,
+    })
 
 
 def super_admin_dashboard(request):

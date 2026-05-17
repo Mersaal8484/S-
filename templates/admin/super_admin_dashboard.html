@@ -480,14 +480,194 @@ tbody tr:hover{
       </table>
     </div>
   </div>
+{% if active_tab == 'settings' %}
+<style>
+.s-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.s-nav a{padding:9px 18px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid var(--border);color:var(--t2);transition:all .2s;font-family:Cairo,sans-serif}
+.s-nav a.on,.s-nav a:hover{background:rgba(0,212,255,0.15);border-color:var(--elec);color:var(--elec)}
+.s-card{background:rgba(13,18,48,0.95);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.s-card h3{font-size:15px;font-weight:700;color:var(--t1);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.s-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.s-row.s-row3{grid-template-columns:1fr 1fr 1fr}
+.s-field{display:flex;flex-direction:column;gap:6px}
+.s-field label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.s-field input,.s-field select,.s-field textarea{background:rgba(7,9,26,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:9px;color:var(--t1);font-family:Cairo,sans-serif;padding:9px 13px;font-size:13px;outline:none;transition:all .2s}
+.s-field input:focus,.s-field select:focus,.s-field textarea:focus{border-color:var(--elec);box-shadow:0 0 0 3px rgba(0,212,255,0.1)}
+.s-field input[type=checkbox]{width:18px;height:18px;accent-color:var(--elec)}
+.s-check{display:flex;align-items:center;gap:10px;padding:10px 0}
+.s-check label{font-size:13px;color:var(--t2);cursor:pointer}
+.s-save{display:inline-flex;align-items:center;gap:8px;padding:10px 28px;border-radius:10px;background:linear-gradient(135deg,var(--elec),var(--energy));border:none;color:#07091a;font-size:13px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;margin-top:10px;transition:all .2s}
+.s-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.3)}
+.s-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.s-on{background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
+.s-off{background:rgba(107,114,128,0.15);color:var(--t3);border:1px solid rgba(107,114,128,0.25)}
+@media(max-width:768px){.s-row{grid-template-columns:1fr}.s-row3{grid-template-columns:1fr}}
+</style>
+
+{% if messages %}
+<div style="margin-bottom:16px">
+{% for m in messages %}
+<div style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);border-radius:10px;padding:12px 18px;color:#34d399;font-size:13px;font-weight:600">✅ {{ m }}</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+<div>
+<h2 style="font-size:22px;font-weight:800;color:var(--t1)">⚙️ إعدادات المنصة</h2>
+<p style="font-size:12px;color:var(--t3);margin-top:4px">إدارة كافة إعدادات النظام — آخر تعديل: {% if ps.updated_by %}{{ ps.updated_by }}{% else %}—{% endif %}</p>
+</div>
+<a href="{% url 'admin:index' %}" class="btn btn-outline">← الإدارة</a>
+</div>
+
+<div class="s-nav">
+<a href="?section=platform" class="{% if active_section == 'platform' %}on{% endif %}">🏢 المنصة</a>
+<a href="?section=stripe" class="{% if active_section == 'stripe' %}on{% endif %}">💳 Stripe</a>
+<a href="?section=webhook" class="{% if active_section == 'webhook' %}on{% endif %}">🔗 Webhook</a>
+<a href="?section=api" class="{% if active_section == 'api' %}on{% endif %}">🔌 API</a>
+<a href="?section=accounting" class="{% if active_section == 'accounting' %}on{% endif %}">📊 المحاسبة</a>
+<a href="?section=payments" class="{% if active_section == 'payments' %}on{% endif %}">💰 السداد</a>
+<a href="?section=ewallet" class="{% if active_section == 'ewallet' %}on{% endif %}">📱 المحافظ</a>
+<a href="?section=tenants_cfg" class="{% if active_section == 'tenants_cfg' %}on{% endif %}">👥 المستأجرون</a>
+<a href="?section=notifications" class="{% if active_section == 'notifications' %}on{% endif %}">📣 الإشعارات</a>
+</div>
+
+<form method="post" action="{% url 'tenants:platform_settings' %}">
+{% csrf_token %}
+<input type="hidden" name="section" value="{{ active_section }}">
+
+{% if active_section == 'platform' %}
+<div class="s-card">
+<h3>🏢 معلومات المنصة</h3>
+<div class="s-row"><div class="s-field"><label>اسم المنصة (EN)</label><input type="text" name="platform_name" value="{{ ps.platform_name }}"></div><div class="s-field"><label>اسم المنصة (AR)</label><input type="text" name="platform_name_ar" value="{{ ps.platform_name_ar }}"></div></div>
+<div class="s-row"><div class="s-field"><label>بريد الدعم</label><input type="email" name="support_email" value="{{ ps.support_email }}" dir="ltr"></div><div class="s-field"><label>هاتف الدعم</label><input type="text" name="support_phone" value="{{ ps.support_phone }}" dir="ltr"></div></div>
+<div class="s-field" style="margin-bottom:16px"><label>رابط المنصة</label><input type="url" name="platform_url" value="{{ ps.platform_url }}" dir="ltr"></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'stripe' %}
+<div class="s-card">
+<h3>💳 إعدادات Stripe</h3>
+<div class="s-row"><div class="s-field"><label>وضع التشغيل</label><select name="stripe_mode"><option value="test" {% if ps.stripe_mode == 'test' %}selected{% endif %}>🧪 اختبار (Test)</option><option value="live" {% if ps.stripe_mode == 'live' %}selected{% endif %}>🚀 إنتاج (Live)</option></select></div><div class="s-field"><label>الحالة</label><div style="padding-top:8px"><span class="s-badge {% if ps.stripe_mode == 'live' %}s-on{% else %}s-off{% endif %}">{{ ps.stripe_mode }}</span></div></div></div>
+<div class="s-field" style="margin-bottom:16px"><label>Publishable Key (pk_...)</label><input type="text" name="stripe_publishable_key" placeholder="اتركه فارغاً للإبقاء على القيمة الحالية" dir="ltr"></div>
+<div class="s-field" style="margin-bottom:16px"><label>Secret Key (sk_...) — لن يُعرض</label><input type="password" name="stripe_secret_key" placeholder="اتركه فارغاً للإبقاء على القيمة الحالية" dir="ltr"></div>
+<div class="s-field" style="margin-bottom:16px"><label>Webhook Signing Secret (whsec_...)</label><input type="password" name="stripe_webhook_secret" placeholder="اتركه فارغاً للإبقاء على القيمة الحالية" dir="ltr"></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'webhook' %}
+<div class="s-card">
+<h3>🔗 إعدادات Webhook</h3>
+<div class="s-field" style="margin-bottom:16px"><label>سر Webhook العام</label><input type="password" name="webhook_secret_global" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div>
+<div class="s-row"><div class="s-field"><label>Webhook URL — الدفعات</label><input type="url" name="webhook_url_payment" value="{{ ps.webhook_url_payment }}" dir="ltr"></div><div class="s-field"><label>Webhook URL — الاشتراكات</label><input type="url" name="webhook_url_subscription" value="{{ ps.webhook_url_subscription }}" dir="ltr"></div></div>
+<div class="s-row"><div class="s-field"><label>عدد محاولات الإعادة</label><input type="number" name="webhook_retry_attempts" value="{{ ps.webhook_retry_attempts }}" min="1" max="10"></div><div class="s-field"><label>مهلة الانتظار (ثانية)</label><input type="number" name="webhook_timeout_seconds" value="{{ ps.webhook_timeout_seconds }}" min="5" max="120"></div></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'api' %}
+<div class="s-card">
+<h3>🔌 إعدادات REST API</h3>
+<div class="s-row s-row3"><div class="s-field"><label>حد الطلبات / دقيقة</label><input type="number" name="api_rate_limit_per_minute" value="{{ ps.api_rate_limit_per_minute }}"></div><div class="s-field"><label>أقصى حجم صفحة</label><input type="number" name="api_max_page_size" value="{{ ps.api_max_page_size }}"></div><div class="s-field"><label>انتهاء JWT (دقيقة)</label><input type="number" name="api_jwt_expiry_minutes" value="{{ ps.api_jwt_expiry_minutes }}"></div></div>
+<div class="s-check"><input type="checkbox" id="cors" name="api_allow_cors" {% if ps.api_allow_cors %}checked{% endif %}><label for="cors">السماح بـ CORS</label></div>
+<div class="s-check"><input type="checkbox" id="docs" name="api_documentation_enabled" {% if ps.api_documentation_enabled %}checked{% endif %}><label for="docs">تفعيل وثائق API (Swagger/DRF)</label></div>
+<div class="s-field" style="margin-top:12px"><label>نطاقات CORS المسموحة (سطر لكل نطاق)</label><textarea name="api_cors_origins" rows="4" dir="ltr">{{ ps.api_cors_origins }}</textarea></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'accounting' %}
+<div class="s-card">
+<h3>📊 إعدادات المحاسبة الافتراضية</h3>
+<div class="s-row s-row3"><div class="s-field"><label>العملة الافتراضية</label><select name="default_currency"><option {% if ps.default_currency == 'SAR' %}selected{% endif %}>SAR</option><option {% if ps.default_currency == 'USD' %}selected{% endif %}>USD</option><option {% if ps.default_currency == 'YER' %}selected{% endif %}>YER</option><option {% if ps.default_currency == 'AED' %}selected{% endif %}>AED</option></select></div><div class="s-field"><label>نسبة الضريبة % (VAT)</label><input type="number" name="default_vat_rate" value="{{ ps.default_vat_rate }}" step="0.01"></div><div class="s-field"><label>شهر بداية السنة المالية</label><input type="number" name="fiscal_year_start_month" value="{{ ps.fiscal_year_start_month }}" min="1" max="12"></div></div>
+<div class="s-row"><div class="s-field"><label>بادئة رقم الفاتورة</label><input type="text" name="invoice_prefix" value="{{ ps.invoice_prefix }}" dir="ltr" maxlength="10"></div><div class="s-field"><label>أيام الاستحقاق الافتراضية</label><input type="number" name="invoice_due_days" value="{{ ps.invoice_due_days }}"></div></div>
+<div class="s-check"><input type="checkbox" id="de" name="enable_double_entry" {% if ps.enable_double_entry %}checked{% endif %}><label for="de">تفعيل القيد المزدوج (Double Entry)</label></div>
+<div class="s-check"><input type="checkbox" id="aj" name="auto_create_journal_entries" {% if ps.auto_create_journal_entries %}checked{% endif %}><label for="aj">إنشاء قيود محاسبية تلقائياً عند كل معاملة</label></div>
+<div class="s-check"><input type="checkbox" id="ian" name="invoice_auto_number" {% if ps.invoice_auto_number %}checked{% endif %}><label for="ian">ترقيم الفواتير تلقائياً</label></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'payments' %}
+<div class="s-card">
+<h3>💰 إعدادات السداد والأقساط</h3>
+<div class="s-row"><div class="s-field"><label>أيام السماح قبل التأخير</label><input type="number" name="payment_grace_days" value="{{ ps.payment_grace_days }}"></div><div class="s-field"><label>نسبة غرامة التأخير %</label><input type="number" name="late_payment_penalty_pct" value="{{ ps.late_payment_penalty_pct }}" step="0.01"></div></div>
+<div class="s-check"><input type="checkbox" id="inst" name="allow_installments" {% if ps.allow_installments %}checked{% endif %}><label for="inst">السماح بالتقسيط</label></div>
+<div class="s-row"><div class="s-field"><label>أقصى عدد أشهر للتقسيط</label><input type="number" name="max_installment_months" value="{{ ps.max_installment_months }}"></div><div class="s-field"><label>أقل مبلغ للتقسيط</label><input type="number" name="installment_min_amount" value="{{ ps.installment_min_amount }}" step="0.01"></div></div>
+<div class="s-check"><input type="checkbox" id="pp" name="allow_partial_payment" {% if ps.allow_partial_payment %}checked{% endif %}><label for="pp">السماح بالدفع الجزئي</label></div>
+<div class="s-check"><input type="checkbox" id="ap" name="allow_advance_payment" {% if ps.allow_advance_payment %}checked{% endif %}><label for="ap">السماح بالدفع المسبق</label></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'ewallet' %}
+<div class="s-card">
+<h3>📱 المحافظ الإلكترونية وبوابات الدفع</h3>
+<div class="s-check"><input type="checkbox" id="ewe" name="ewallet_enabled" {% if ps.ewallet_enabled %}checked{% endif %}><label for="ewe">تفعيل المحافظ الإلكترونية</label></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<p style="font-size:12px;font-weight:700;color:var(--elec);margin-bottom:12px">STC Pay</p>
+<div class="s-check"><input type="checkbox" id="stc" name="stcpay_enabled" {% if ps.stcpay_enabled %}checked{% endif %}><label for="stc">تفعيل STC Pay</label></div>
+<div class="s-row"><div class="s-field"><label>Merchant ID</label><input type="text" name="stcpay_merchant_id" value="{{ ps.stcpay_merchant_id }}" dir="ltr"></div><div class="s-field"><label>API Key</label><input type="password" name="stcpay_api_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div></div>
+<div class="s-field" style="margin-bottom:16px"><label>Webhook Secret</label><input type="password" name="stcpay_webhook_secret" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<p style="font-size:12px;font-weight:700;color:var(--elec);margin-bottom:12px">مدى (Mada)</p>
+<div class="s-check"><input type="checkbox" id="md" name="mada_enabled" {% if ps.mada_enabled %}checked{% endif %}><label for="md">تفعيل مدى</label></div>
+<div class="s-row"><div class="s-field"><label>Merchant ID</label><input type="text" name="mada_merchant_id" value="{{ ps.mada_merchant_id }}" dir="ltr"></div><div class="s-field"><label>API Key</label><input type="password" name="mada_api_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<p style="font-size:12px;font-weight:700;color:var(--energy);margin-bottom:12px">Tabby (تابي — شراء الآن، ادفع لاحقاً)</p>
+<div class="s-check"><input type="checkbox" id="tb" name="tabby_enabled" {% if ps.tabby_enabled %}checked{% endif %}><label for="tb">تفعيل Tabby</label></div>
+<div class="s-row"><div class="s-field"><label>Public Key</label><input type="password" name="tabby_api_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div><div class="s-field"><label>Secret Key</label><input type="password" name="tabby_secret_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<p style="font-size:12px;font-weight:700;color:var(--energy);margin-bottom:12px">Tamara (تمارا — تقسيط)</p>
+<div class="s-check"><input type="checkbox" id="tm" name="tamara_enabled" {% if ps.tamara_enabled %}checked{% endif %}><label for="tm">تفعيل Tamara</label></div>
+<div class="s-row"><div class="s-field"><label>API Token</label><input type="password" name="tamara_api_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div><div class="s-field"><label>Webhook Secret</label><input type="password" name="tamara_webhook_secret" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+
+{% elif active_section == 'tenants_cfg' %}
+<div class="s-card">
+<h3>👥 إعدادات المستأجرين والنطاقات</h3>
+<div class="s-row"><div class="s-field"><label>أيام التجربة الافتراضية</label><input type="number" name="default_trial_days" value="{{ ps.default_trial_days }}"></div><div class="s-field"><label>أقصى نطاقات للمستأجر</label><input type="number" name="max_domains_per_tenant" value="{{ ps.max_domains_per_tenant }}"></div></div>
+<div class="s-check"><input type="checkbox" id="aap" name="auto_activate_on_payment" {% if ps.auto_activate_on_payment %}checked{% endif %}><label for="aap">تفعيل تلقائي عند الدفع</label></div>
+<div class="s-check"><input type="checkbox" id="rdv" name="require_domain_verification" {% if ps.require_domain_verification %}checked{% endif %}><label for="rdv">التحقق من النطاق قبل التفعيل</label></div>
+<div class="s-check"><input type="checkbox" id="acd" name="allowed_custom_domains" {% if ps.allowed_custom_domains %}checked{% endif %}><label for="acd">السماح بنطاقات مخصصة</label></div>
+<div class="s-check"><input type="checkbox" id="awe" name="auto_send_welcome_email" {% if ps.auto_send_welcome_email %}checked{% endif %}><label for="awe">إرسال بريد ترحيب تلقائياً</label></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<h4 style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px">خطط الاشتراك ({{ plans|length }} خطة)</h4>
+{% for plan in plans %}
+<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:14px">
+<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t1)">{{ plan.name }}</div><div style="font-size:11px;color:var(--t3);margin-top:2px">{{ plan.tier }} · {{ plan.price_monthly }}/شهر · {{ plan.price_yearly }}/سنة</div></div>
+<span class="s-badge {% if plan.is_active %}s-on{% else %}s-off{% endif %}">{% if plan.is_active %}نشط{% else %}متوقف{% endif %}</span>
+<a href="{% url 'admin:tenants_plan_change' plan.id %}" style="padding:6px 14px;border-radius:8px;background:rgba(0,212,255,0.1);border:1px solid var(--border);color:var(--elec);font-size:11px;font-weight:700;text-decoration:none">تعديل</a>
+</div>
+{% empty %}
+<div style="color:var(--t3);font-size:13px;text-align:center;padding:20px">لا توجد خطط — <a href="{% url 'admin:tenants_plan_add' %}" style="color:var(--elec)">أضف خطة</a></div>
+{% endfor %}
+<button type="submit" class="s-save">💾 حفظ الإعدادات</button>
+</div>
+
+{% elif active_section == 'notifications' %}
+<div class="s-card">
+<h3>📣 إعدادات الإشعارات</h3>
+<p style="font-size:12px;font-weight:700;color:var(--elec);margin-bottom:12px">SMS</p>
+<div class="s-row"><div class="s-field"><label>مزود SMS</label><select name="sms_provider"><option value="">غير محدد</option><option value="twilio" {% if ps.sms_provider == 'twilio' %}selected{% endif %}>Twilio</option><option value="unifonic" {% if ps.sms_provider == 'unifonic' %}selected{% endif %}>Unifonic</option><option value="msegat" {% if ps.sms_provider == 'msegat' %}selected{% endif %}>Msegat</option><option value="zain" {% if ps.sms_provider == 'zain' %}selected{% endif %}>Zain SMS</option></select></div><div class="s-field"><label>معرف المرسل</label><input type="text" name="sms_sender_id" value="{{ ps.sms_sender_id }}" dir="ltr"></div></div>
+<div class="s-field" style="margin-bottom:16px"><label>SMS API Key</label><input type="password" name="sms_api_key" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div>
+<hr style="border-color:var(--border);margin:16px 0">
+<p style="font-size:12px;font-weight:700;color:var(--elec);margin-bottom:12px">البريد الإلكتروني (SMTP)</p>
+<div class="s-row"><div class="s-field"><label>SMTP Host</label><input type="text" name="email_host" value="{{ ps.email_host }}" dir="ltr"></div><div class="s-field"><label>SMTP Port</label><input type="number" name="email_port" value="{{ ps.email_port }}"></div></div>
+<div class="s-row"><div class="s-field"><label>Username</label><input type="text" name="email_host_user" value="{{ ps.email_host_user }}" dir="ltr"></div><div class="s-field"><label>Password</label><input type="password" name="email_host_password" placeholder="اتركه فارغاً للإبقاء" dir="ltr"></div></div>
+<div class="s-row"><div class="s-field"><label>بريد المرسل الافتراضي</label><input type="email" name="default_from_email" value="{{ ps.default_from_email }}" dir="ltr"></div><div class="s-check" style="padding-top:28px"><input type="checkbox" id="tls" name="email_use_tls" {% if ps.email_use_tls %}checked{% endif %}><label for="tls">استخدام TLS</label></div></div>
+<button type="submit" class="s-save">💾 حفظ</button>
+</div>
+{% endif %}
+
+</form>
+{% endif %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+{% if active_tab != 'settings' %}
 // ═══════════════════════════════
 // GROWTH CHART
 // ══════════════════════════════════════════
-const monthlyData = {{ monthly_growth|safe }};
+const monthlyData = {{ monthly_growth|default:'[]'|safe }};
 const months = monthlyData.map(d => d.month);
 const counts = monthlyData.map(d => d.count);
 
@@ -617,6 +797,7 @@ if(pieContainer && planStats.length > 0) {
 
 // Auto refresh every 30 seconds
 setTimeout(() => location.reload(), 30000);
+{% endif %}{# active_tab != settings #}
 </script>
 </body>
 </html>
