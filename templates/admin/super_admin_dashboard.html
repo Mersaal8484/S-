@@ -422,6 +422,7 @@ tbody tr:hover{
             <th>البريد الإلكتروني</th>
             <th>الخطة</th>
             <th>الحالة</th>
+            <th>قاعدة البيانات</th>
             <th>تاريخ التسجيل</th>
           </tr>
         </thead>
@@ -438,11 +439,18 @@ tbody tr:hover{
               <span class="badge badge-danger">معطل</span>
               {% endif %}
             </td>
-            <td style="color:var(--t3)">{{ tenant.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              {% if tenant.schema_status == 'موجود' %}
+              <span class="badge badge-success" title="{{ tenant.schema_name }}"><i class="bi bi-database"></i> موجودة</span>
+              {% else %}
+              <span class="badge badge-danger" title="{{ tenant.schema_name }}"><i class="bi bi-database-x"></i> مفقودة</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--t3)">{{ tenant.created_on|date:"Y-m-d" }}</td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5" style="text-align:center;color:var(--t3)">لا توجد بيانات</td>
+            <td colspan="6" style="text-align:center;color:var(--t3)">لا توجد بيانات</td>
           </tr>
           {% endfor %}
         </tbody>

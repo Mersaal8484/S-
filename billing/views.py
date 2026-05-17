@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Prefetch
 from django.db import transaction
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -1020,16 +1020,110 @@ def system_settings(request):
     })
 
 
+def subscription_type_list(request):
+    types = SubscriptionType.objects.annotate(
+        templates_count=Count('line_templates')
+    )
+    return render(request, 'billing/subscription_type_list.html', {
+        'types': types,
+        'title': 'أنواع الاشتراك',
+    })
+
+
+def subscription_type_templates(request, pk):
+    st = get_object_or_404(SubscriptionType, pk=pk)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add':
+            try:
+                calc_type = request.POST.get('calculation_type')
+                template = InvoiceLineTemplate.objects.create(
+                    type=st,
+                    line_order=request.POST.get('line_order', 0),
+                    line_name_ar=request.POST.get('line_name_ar'),
+                    line_name_en=request.POST.get('line_name_en', ''),
+                    calculation_type=calc_type,
+                    fixed_amount=to_decimal(request.POST.get('fixed_amount')),
+                    percentage_rate=to_decimal(request.POST.get('percentage_rate')),
+                )
+                if calc_type == 'tiered_kwh':
+                    tier_count = int(request.POST.get('tier_count', 0))
+                    for i in range(tier_count):
+                        min_v = request.POST.get(f'tier_min_{i}')
+                        max_v = request.POST.get(f'tier_max_{i}')
+                        rate = request.POST.get(f'tier_rate_{i}')
+                        if min_v and rate:
+                            InvoiceLineFormulaDetail.objects.create(
+                                template=template,
+                                min_value=to_decimal(min_v),
+                                max_value=to_decimal(max_v) if max_v else None,
+                                rate_or_amount=to_decimal(rate),
+                                is_rate_per_kwh=True,
+                            )
+                messages.success(request, 'تمت إضافة البند بنجاح')
+            except Exception as e:
+                messages.error(request, str(e))
+            return redirect('subscription_type_templates', pk=pk)
+
+        elif action == 'edit':
+            tpl_id = request.POST.get('template_id')
+            tpl = get_object_or_404(InvoiceLineTemplate, pk=tpl_id, type=st)
+            try:
+                calc_type = request.POST.get('calculation_type', tpl.calculation_type)
+                tpl.line_order = request.POST.get('line_order', tpl.line_order)
+                tpl.line_name_ar = request.POST.get('line_name_ar')
+                tpl.line_name_en = request.POST.get('line_name_en', '')
+                tpl.calculation_type = calc_type
+                tpl.fixed_amount = to_decimal(request.POST.get('fixed_amount'))
+                tpl.percentage_rate = to_decimal(request.POST.get('percentage_rate'))
+                tpl.save()
+                if calc_type == 'tiered_kwh':
+                    tpl.formula_details.all().delete()
+                    tier_count = int(request.POST.get('tier_count', 0))
+                    for i in range(tier_count):
+                        min_v = request.POST.get(f'tier_min_{i}')
+                        max_v = request.POST.get(f'tier_max_{i}')
+                        rate = request.POST.get(f'tier_rate_{i}')
+                        if min_v and rate:
+                            InvoiceLineFormulaDetail.objects.create(
+                                template=tpl,
+                                min_value=to_decimal(min_v),
+                                max_value=to_decimal(max_v) if max_v else None,
+                                rate_or_amount=to_decimal(rate),
+                                is_rate_per_kwh=True,
+                            )
+                messages.success(request, 'تم تحديث البند بنجاح')
+            except Exception as e:
+                messages.error(request, str(e))
+            return redirect('subscription_type_templates', pk=pk)
+
+        elif action == 'delete':
+            tpl_id = request.POST.get('template_id')
+            tpl = get_object_or_404(InvoiceLineTemplate, pk=tpl_id, type=st)
+            tpl.delete()
+            messages.success(request, 'تم حذف النموذج بنجاح')
+            return redirect('subscription_type_templates', pk=pk)
+
+    templates = st.line_templates.all().order_by('line_order')
+    return render(request, 'billing/subscription_type_templates.html', {
+        'st': st,
+        'templates': templates,
+        'title': f'بنود الفاتورة — {st.name_ar}',
+    })
+
+
 def subscription_type_create(request):
     if request.method == 'POST':
-        SubscriptionType.objects.create(
+        st = SubscriptionType.objects.create(
             name_ar=request.POST.get('name_ar'),
             name_en=request.POST.get('name_en', ''),
             description=request.POST.get('description', ''),
             is_active=to_bool(request.POST.get('is_active'))
         )
-        messages.success(request, 'Subscription type created')
-        return redirect('system_settings')
+        messages.success(request, 'تمت إضافة نوع الاشتراك بنجاح. أضف الآن نماذج الفواتير لهذا النوع.')
+        return redirect('subscription_type_templates', pk=st.pk)
     return render(request, 'billing/subscription_type_form.html', {'title': 'إضافة نوع اشتراك'})
 
 
@@ -1041,9 +1135,18 @@ def subscription_type_edit(request, pk):
         st.description = request.POST.get('description', '')
         st.is_active = to_bool(request.POST.get('is_active'))
         st.save()
-        messages.success(request, 'Subscription type updated')
-        return redirect('system_settings')
+        messages.success(request, 'تم تحديث نوع الاشتراك بنجاح')
+        return redirect('subscription_type_list')
     return render(request, 'billing/subscription_type_form.html', {'title': 'تعديل نوع الاشتراك', 'type': st})
+
+
+def subscription_type_delete(request, pk):
+    st = get_object_or_404(SubscriptionType, pk=pk)
+    if request.method == 'POST':
+        st.delete()
+        messages.success(request, 'تم حذف نوع الاشتراك بنجاح')
+        return redirect('subscription_type_list')
+    return render(request, 'billing/subscription_type_confirm_delete.html', {'type': st})
 
 
 def template_create(request, type_id=None):

@@ -1,0 +1,466 @@
+{% extends 'billing/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+:root {
+  --elec: #00d4ff; --elec2: #6366f1;
+  --ok: #34d399; --warn: #fb923c; --danger: #f43f5e;
+  --ink: #060d1f; --s0: #060d1f; --s1: #0d1b3e; --s2: #111c42; --s3: #1a2a5a;
+  --t1: #e0f4ff; --t2: #94c8e0; --t3: #4a7a95;
+  --border: rgba(0,212,255,0.15); --border2: rgba(0,212,255,0.3);
+}
+.page-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 0; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-header-left { display:flex; align-items:center; gap:14px; }
+.page-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.15)); border:1px solid var(--border2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--elec); box-shadow:0 0 20px rgba(0,212,255,0.1); }
+.page-title { font-size:22px; font-weight:800; color:var(--t1); line-height:1.2; }
+.page-sub { font-size:12px; color:var(--t3); margin-top:2px; }
+.btn-back { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:11px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--t2); font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; }
+.btn-back:hover { border-color:var(--elec); color:var(--elec); background:rgba(0,212,255,0.07); }
+.btn-primary-c { display:flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; background:linear-gradient(135deg,rgba(0,212,255,0.9),rgba(99,102,241,0.8)); border:none; color:var(--ink); font-size:13px; font-weight:800; cursor:pointer; font-family:Cairo,sans-serif; text-decoration:none; transition:all .25s; box-shadow:0 4px 20px rgba(0,212,255,0.25); }
+.btn-primary-c:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(0,212,255,0.4); color:var(--ink); text-decoration:none; }
+.card { background:var(--s1); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.4); margin-bottom:24px; }
+.card-header { padding:18px 24px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.04)); display:flex; align-items:center; gap:10px; }
+.card-header .h-dot { width:8px; height:8px; border-radius:50%; background:var(--elec); box-shadow:0 0 10px var(--elec); }
+.card-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.card-body { padding:24px; }
+.list-table { width:100%; border-collapse:collapse; }
+.list-table th { text-align:right; padding:12px 16px; font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15); }
+.list-table td { padding:12px 16px; font-size:13px; color:var(--t2); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+.list-table tr:last-child td { border-bottom:none; }
+.list-table tr:hover td { background:rgba(0,212,255,0.03); }
+.badge-calc { display:inline-flex; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+.badge-fixed { background:rgba(52,211,153,0.12); color:var(--ok); }
+.badge-pct { background:rgba(99,102,241,0.12); color:var(--elec2); }
+.badge-tier { background:rgba(251,146,60,0.12); color:var(--warn); }
+.badge-rate { background:rgba(0,212,255,0.12); color:var(--elec); }
+.badge-demand { background:rgba(244,63,94,0.12); color:var(--danger); }
+.badge-min { background:rgba(168,85,247,0.12); color:#a855f7; }
+.action-group { display:flex; gap:6px; }
+.btn-action { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; transition:all .2s; font-family:Cairo,sans-serif; border:none; cursor:pointer; }
+.btn-edit-a { background:rgba(0,212,255,0.1); color:var(--elec); border:1px solid rgba(0,212,255,0.2); }
+.btn-edit-a:hover { background:rgba(0,212,255,0.2); color:var(--elec); }
+.btn-del { background:rgba(244,63,94,0.1); color:var(--danger); border:1px solid rgba(244,63,94,0.2); }
+.btn-del:hover { background:rgba(244,63,94,0.2); color:var(--danger); }
+.empty-state { padding:40px 20px; text-align:center; }
+.empty-state .empty-icon { font-size:40px; color:var(--t3); margin-bottom:8px; }
+.empty-state .empty-text { font-size:13px; color:var(--t3); }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.field-label .req { color:var(--danger); font-size:14px; }
+.field-label .opt { color:var(--t3); font-size:11px; font-weight:500; background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
+.finput,.fselect { width:100%; background:rgba(6,13,31,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:13px; font-weight:500; padding:9px 12px; transition:all .2s; outline:none; text-align:right; }
+.finput:hover,.fselect:hover { border-color:rgba(0,212,255,0.25); background:rgba(6,13,31,0.9); }
+.finput:focus,.fselect:focus { border-color:var(--elec); background:rgba(0,212,255,0.08); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
+.fselect { cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a7a95' stroke-width='2' width='14' height='14'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:left 12px center; background-size:14px; padding-left:32px; -webkit-appearance:none; appearance:none; }
+.add-row { display:grid; grid-template-columns:80px 1fr 1fr 180px; gap:10px; align-items:end; }
+.calc-fields { margin-top:12px; }
+.tier-row { display:grid; grid-template-columns:1fr 1fr 1fr 40px; gap:8px; align-items:end; margin-bottom:8px; }
+.tier-row .field { margin-bottom:0; }
+.btn-remove-tier { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.2); color:var(--danger); cursor:pointer; font-size:16px; transition:all .2s; }
+.btn-remove-tier:hover { background:rgba(244,63,94,0.2); }
+.btn-add-tier { padding:7px 14px; border-radius:8px; background:rgba(0,212,255,0.08); border:1px dashed var(--border); color:var(--elec); font-size:12px; font-weight:600; cursor:pointer; font-family:Cairo,sans-serif; transition:all .2s; margin-top:6px; }
+.btn-add-tier:hover { background:rgba(0,212,255,0.15); border-color:var(--elec); }
+.calc-block { display:none; padding:16px; border:1px solid var(--border); border-radius:12px; background:rgba(0,0,0,0.1); margin-top:10px; }
+.calc-block.show { display:block; }
+.calc-block-title { font-size:11px; font-weight:700; color:var(--t3); margin-bottom:10px; text-transform:uppercase; letter-spacing:1px; }
+.single-field-row { max-width:200px; }
+@media(max-width:768px){ .add-row{grid-template-columns:1fr 1fr;} .tier-row{grid-template-columns:1fr;} }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal-box { background:var(--s1); border:1px solid var(--border); border-radius:20px; width:600px; max-width:94vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+.modal-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-header h6 { margin:0; font-size:14px; font-weight:700; color:var(--t1); }
+.modal-close { background:none; border:none; color:var(--t3); font-size:22px; cursor:pointer; padding:0; line-height:1; }
+.modal-close:hover { color:var(--t1); }
+.modal-body { padding:24px; }
+.modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-start; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div>
+        <div class="page-title">بنود الفاتورة</div>
+        <div class="page-sub">{{ st.name_ar }}{% if st.name_en %} — {{ st.name_en }}{% endif %}</div>
+      </div>
+    </div>
+    <a href="{% url 'subscription_type_list' %}" class="btn-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+      العودة
+    </a>
+  </div>
+
+  <!-- existing templates table -->
+  <div class="card">
+    <div class="card-header">
+      <span class="h-dot"></span>
+      <h6>بنود الفاتورة الحالية ({{ templates|length }})</h6>
+    </div>
+    <div class="card-body" style="padding:0;">
+      {% if templates %}
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>الترتيب</th>
+            <th>اسم البند</th>
+            <th>نوع الحساب</th>
+            <th>القيمة</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tpl in templates %}
+          <tr>
+            <td style="font-weight:700;color:var(--t1);">{{ tpl.line_order }}</td>
+            <td><div style="font-weight:600;color:var(--t1);">{{ tpl.line_name_ar }}</div><div style="font-size:11px;color:var(--t3);">{{ tpl.line_name_en|default:'' }}</div></td>
+            <td>
+              {% with calc=tpl.calculation_type %}
+              {% if calc == 'fixed' %}<span class="badge-calc badge-fixed">مبلغ ثابت</span>
+              {% elif calc == 'percentage' %}<span class="badge-calc badge-pct">نسبة مئوية</span>
+              {% elif calc == 'tiered_kwh' %}<span class="badge-calc badge-tier">متدرجة</span>
+              {% elif calc == 'single_rate_kwh' %}<span class="badge-calc badge-rate">سعر موحد</span>
+              {% elif calc == 'demand_charge' %}<span class="badge-calc badge-demand">رسوم طلب</span>
+              {% elif calc == 'minimum_charge' %}<span class="badge-calc badge-min">حد أدنى</span>
+              {% endif %}
+              {% endwith %}
+            </td>
+            <td dir="ltr" style="font-weight:600;">
+              {% if tpl.calculation_type == 'fixed' %}{{ tpl.fixed_amount|floatformat:2 }} ر.س
+              {% elif tpl.calculation_type == 'percentage' %}{{ tpl.percentage_rate|floatformat:2 }}%
+              {% elif tpl.calculation_type == 'single_rate_kwh' %}{{ tpl.fixed_amount|floatformat:2 }} ر.س/ك.و
+              {% elif tpl.calculation_type == 'tiered_kwh' %}{{ tpl.fixed_amount|floatformat:2 }} ر.س
+              {% elif tpl.calculation_type == 'demand_charge' %}{{ tpl.fixed_amount|floatformat:2 }} ر.س
+              {% elif tpl.calculation_type == 'minimum_charge' %}{{ tpl.fixed_amount|floatformat:2 }} ر.س
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-edit-a" onclick='openEdit({{ tpl.pk }}, {{ tpl.line_order }}, "{{ tpl.line_name_ar|escapejs }}", "{{ tpl.line_name_en|escapejs }}", "{{ tpl.calculation_type }}", {{ tpl.fixed_amount|stringformat:"f" }}, {{ tpl.percentage_rate|stringformat:"f" }})'>
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <form method="post" action="{% url 'subscription_type_templates' st.pk %}" style="display:inline;" onsubmit="return confirm('حذف البند «{{ tpl.line_name_ar }}»؟')">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="template_id" value="{{ tpl.pk }}">
+                  <button type="submit" class="btn-action btn-del"><i class="bi bi-trash"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <div class="empty-text">لا توجد بنود بعد. أضف البند الأول أدناه.</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- add new template form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="h-dot" style="background:var(--ok);box-shadow:0 0 10px var(--ok);"></span>
+      <h6>إضافة بند جديد</h6>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'subscription_type_templates' st.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
+        <div class="add-row">
+          <div class="field">
+            <label class="field-label">الترتيب</label>
+            <input type="number" name="line_order" class="finput" value="{{ templates|length|add:1 }}" min="0">
+          </div>
+          <div class="field">
+            <label class="field-label">اسم البند (عربي) <span class="req">*</span></label>
+            <input type="text" name="line_name_ar" class="finput" placeholder="مثال: رسم العداد" required>
+          </div>
+          <div class="field">
+            <label class="field-label">اسم البند (إنجليزي)</label>
+            <input type="text" name="line_name_en" class="finput" placeholder="Meter Fee" dir="ltr">
+          </div>
+          <div class="field">
+            <label class="field-label">نوع الحساب <span class="req">*</span></label>
+            <select name="calculation_type" class="fselect" required onchange="showAddFields(this.value)">
+              <option value="fixed">مبلغ ثابت</option>
+              <option value="percentage">نسبة مئوية</option>
+              <option value="tiered_kwh">تسعيرة متدرجة</option>
+              <option value="single_rate_kwh">سعر موحد</option>
+              <option value="demand_charge">رسوم الطلب</option>
+              <option value="minimum_charge">الحد الأدنى</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- fixed -->
+        <div class="calc-fields">
+          <div id="add_field_fixed" class="calc-block show single-field-row">
+            <div class="calc-block-title">المبلغ الثابت</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" class="finput" value="0" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+
+          <!-- percentage -->
+          <div id="add_field_percentage" class="calc-block single-field-row">
+            <div class="calc-block-title">النسبة المئوية</div>
+            <div class="field">
+              <input type="number" name="percentage_rate" class="finput" value="0" step="0.01" min="0" max="100" dir="ltr">
+            </div>
+          </div>
+
+          <!-- single_rate_kwh -->
+          <div id="add_field_single_rate_kwh" class="calc-block single-field-row">
+            <div class="calc-block-title">سعر الكيلو وات (ر.س/ك.و)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" class="finput" value="0" step="0.001" min="0" dir="ltr">
+            </div>
+          </div>
+
+          <!-- demand_charge -->
+          <div id="add_field_demand_charge" class="calc-block single-field-row">
+            <div class="calc-block-title">قيمة رسوم الطلب (ر.س)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" class="finput" value="0" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+
+          <!-- minimum_charge -->
+          <div id="add_field_minimum_charge" class="calc-block single-field-row">
+            <div class="calc-block-title">الحد الأدنى للرسوم (ر.س)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" class="finput" value="0" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+
+          <!-- tiered_kwh -->
+          <div id="add_field_tiered_kwh" class="calc-block">
+            <div class="calc-block-title">شرائح الاستهلاك (ك.و / ر.س)</div>
+            <div id="add_tier_container">
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_0" class="finput" value="0" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_0" class="finput" value="100" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_0" class="finput" value="0.08" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_1" class="finput" value="101" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_1" class="finput" value="300" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_1" class="finput" value="0.12" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_2" class="finput" value="301" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_2" class="finput" value="600" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_2" class="finput" value="0.18" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_3" class="finput" value="601" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_3" class="finput" placeholder="إلى (فارغ=غير محدود)" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_3" class="finput" value="0.25" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div><button type="button" class="btn-remove-tier" onclick="this.closest('.tier-row').remove()" style="display:none;">&times;</button></div>
+              </div>
+            </div>
+            <button type="button" class="btn-add-tier" onclick="addTier('add')"><i class="bi bi-plus-lg"></i> إضافة شريحة</button>
+            <input type="hidden" name="tier_count" id="add_tier_count" value="4">
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <button type="submit" class="btn-primary-c" style="padding:10px 22px;font-size:13px;">
+            <i class="bi bi-plus-lg"></i> إضافة البند
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- edit modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <form method="post" action="{% url 'subscription_type_templates' st.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="template_id" id="edit_id">
+        <div class="modal-header">
+          <h6>تعديل البند</h6>
+          <button type="button" class="modal-close" onclick="closeEdit()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="field">
+              <label class="field-label">الترتيب</label>
+              <input type="number" name="line_order" id="edit_order" class="finput" min="0">
+            </div>
+            <div class="field">
+              <label class="field-label">نوع الحساب <span class="req">*</span></label>
+              <select name="calculation_type" id="edit_calc" class="fselect" required onchange="showEditFields(this.value)">
+                <option value="fixed">مبلغ ثابت</option>
+                <option value="percentage">نسبة مئوية</option>
+                <option value="tiered_kwh">تسعيرة متدرجة</option>
+                <option value="single_rate_kwh">سعر موحد</option>
+                <option value="demand_charge">رسوم الطلب</option>
+                <option value="minimum_charge">الحد الأدنى</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+            <div class="field">
+              <label class="field-label">اسم البند (عربي) <span class="req">*</span></label>
+              <input type="text" name="line_name_ar" id="edit_name_ar" class="finput" required>
+            </div>
+            <div class="field">
+              <label class="field-label">اسم البند (إنجليزي)</label>
+              <input type="text" name="line_name_en" id="edit_name_en" class="finput" dir="ltr">
+            </div>
+          </div>
+
+          <!-- edit: fixed -->
+          <div id="edit_field_fixed" class="calc-block show single-field-row" style="margin-top:14px;">
+            <div class="calc-block-title">المبلغ الثابت</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" id="edit_fixed" class="finput" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+          <!-- edit: percentage -->
+          <div id="edit_field_percentage" class="calc-block single-field-row" style="margin-top:14px;">
+            <div class="calc-block-title">النسبة المئوية</div>
+            <div class="field">
+              <input type="number" name="percentage_rate" id="edit_pct" class="finput" step="0.01" min="0" max="100" dir="ltr">
+            </div>
+          </div>
+          <!-- edit: single_rate_kwh -->
+          <div id="edit_field_single_rate_kwh" class="calc-block single-field-row" style="margin-top:14px;">
+            <div class="calc-block-title">سعر الكيلو وات (ر.س/ك.و)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" id="edit_single_rate" class="finput" step="0.001" min="0" dir="ltr">
+            </div>
+          </div>
+          <!-- edit: demand_charge -->
+          <div id="edit_field_demand_charge" class="calc-block single-field-row" style="margin-top:14px;">
+            <div class="calc-block-title">قيمة رسوم الطلب (ر.س)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" id="edit_demand" class="finput" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+          <!-- edit: minimum_charge -->
+          <div id="edit_field_minimum_charge" class="calc-block single-field-row" style="margin-top:14px;">
+            <div class="calc-block-title">الحد الأدنى للرسوم (ر.س)</div>
+            <div class="field">
+              <input type="number" name="fixed_amount" id="edit_minimum" class="finput" step="0.01" min="0" dir="ltr">
+            </div>
+          </div>
+          <!-- edit: tiered_kwh -->
+          <div id="edit_field_tiered_kwh" class="calc-block" style="margin-top:14px;">
+            <div class="calc-block-title">شرائح الاستهلاك (ك.و / ر.س)</div>
+            <div id="edit_tier_container">
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_0" class="finput" value="0" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_0" class="finput" value="100" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_0" class="finput" value="0.08" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_1" class="finput" value="101" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_1" class="finput" value="300" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_1" class="finput" value="0.12" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_2" class="finput" value="301" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_2" class="finput" value="600" placeholder="إلى" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_2" class="finput" value="0.18" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div></div>
+              </div>
+              <div class="tier-row">
+                <div class="field"><input type="number" name="tier_min_3" class="finput" value="601" placeholder="من" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_max_3" class="finput" placeholder="إلى (فارغ=غير محدود)" dir="ltr"></div>
+                <div class="field"><input type="number" name="tier_rate_3" class="finput" value="0.25" step="0.001" placeholder="السعر" dir="ltr"></div>
+                <div><button type="button" class="btn-remove-tier" onclick="this.closest('.tier-row').remove()" style="display:none;">&times;</button></div>
+              </div>
+            </div>
+            <input type="hidden" name="tier_count" id="edit_tier_count" value="4">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn-primary-c" style="padding:10px 24px;font-size:13px;">
+            <i class="bi bi-check-lg"></i> حفظ التغييرات
+          </button>
+          <button type="button" class="btn-action btn-edit-a" onclick="closeEdit()" style="padding:10px 18px;">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var tierIdx = { add: 4, edit: 4 };
+
+function showAllBlocks(prefix) {
+  var blocks = document.querySelectorAll('#' + prefix + '_field_fixed, #' + prefix + '_field_percentage, #' + prefix + '_field_single_rate_kwh, #' + prefix + '_field_demand_charge, #' + prefix + '_field_minimum_charge, #' + prefix + '_field_tiered_kwh');
+  blocks.forEach(function(b) { b.classList.remove('show'); });
+}
+
+function showAddFields(val) {
+  showAllBlocks('add');
+  var el = document.getElementById('add_field_' + val);
+  if (el) el.classList.add('show');
+}
+
+function showEditFields(val) {
+  showAllBlocks('edit');
+  var el = document.getElementById('edit_field_' + val);
+  if (el) el.classList.add('show');
+}
+
+function addTier(prefix) {
+  var idx = tierIdx[prefix]++;
+  var container = document.getElementById(prefix + '_tier_container');
+  var row = document.createElement('div');
+  row.className = 'tier-row';
+  var maxPlaceholder = prefix === 'add' ? 'إلى' : 'إلى';
+  row.innerHTML =
+    '<div class="field"><input type="number" name="tier_min_' + idx + '" class="finput" placeholder="من" dir="ltr"></div>' +
+    '<div class="field"><input type="number" name="tier_max_' + idx + '" class="finput" placeholder="إلى" dir="ltr"></div>' +
+    '<div class="field"><input type="number" name="tier_rate_' + idx + '" class="finput" placeholder="السعر" step="0.001" dir="ltr"></div>' +
+    '<div><button type="button" class="btn-remove-tier" onclick="this.closest(\'.tier-row\').remove()">&times;</button></div>';
+  container.appendChild(row);
+  document.getElementById(prefix + '_tier_count').value = idx + 1;
+}
+
+function openEdit(id, order, nameAr, nameEn, calc, fixed, pct) {
+  document.getElementById('edit_id').value = id;
+  document.getElementById('edit_order').value = order;
+  document.getElementById('edit_name_ar').value = nameAr;
+  document.getElementById('edit_name_en').value = nameEn;
+  document.getElementById('edit_calc').value = calc;
+  document.getElementById('edit_fixed').value = fixed;
+  document.getElementById('edit_pct').value = pct;
+  document.getElementById('edit_single_rate').value = fixed;
+  document.getElementById('edit_demand').value = fixed;
+  document.getElementById('edit_minimum').value = fixed;
+  showEditFields(calc);
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.remove('show');
+}
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
+</script>
+{% endblock %}

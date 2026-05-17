@@ -1,7 +1,11 @@
+import re
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from django.db.models import Sum, Count
+from django.db import connection
+from django_tenants.utils import schema_context
+from django.contrib.auth.models import User
 from .models import Plan, Tenant, Domain, TenantSubscription
 
 
@@ -44,17 +48,22 @@ class PlanAdmin(admin.ModelAdmin):
 
 @admin.register(Tenant)
 class TenantAdmin(admin.ModelAdmin):
-    list_display = ['company_info', 'schema_name_badge', 'plan_badge', 'status_badge', 'active_toggle', 'total_paid', 'created_on', 'dashboard_link']
+    list_display = ['company_name', 'schema_name', 'schema_status_badge', 'plan', 'subscription_status', 'is_active', 'created_on', 'total_paid', 'dashboard_link']
     list_filter = ['subscription_status', 'is_active', 'plan', 'country']
-    search_fields = ['company_name', 'company_name_ar', 'schema_name', 'email']
-    readonly_fields = ['schema_name', 'created_on', 'subscription_history']
+    search_fields = ['company_name', 'schema_name', 'email']
+    readonly_fields = ['created_on', 'subscription_history', 'schema_info']
     list_per_page = 25
     inlines = [TenantSubscriptionInline]
     actions = ['upgrade_to_pro', 'upgrade_to_enterprise', 'activate_tenant', 'deactivate_tenant']
     
     fieldsets = (
-        ('🏢 معلومات الشركة', {
-            'fields': (('company_name', 'company_name_ar'), ('country', 'phone', 'email'), 'schema_name')
+        ('معلومات الشركة', {
+            'fields': ('company_name', 'company_name_ar', 'country', 'phone', 'email')
+        }),
+        ('قاعدة البيانات', {
+            'fields': ('schema_name', 'schema_info'),
+            'classes': ('wide',),
+            'description': 'يتم إنشاء Schema (قاعدة بيانات) منفصل ومعزول لكل مستأجر تلقائياً'
         }),
         ('💳 الخطة والاشتراك', {
             'fields': (('plan', 'subscription_status'), 'trial_end')
@@ -68,50 +77,84 @@ class TenantAdmin(admin.ModelAdmin):
         }),
     )
 
-    def company_info(self, obj):
-        name = obj.company_name_ar or obj.company_name
-        return format_html(
-            '<div style="line-height:1.2"><strong>{}</strong><br><small style="color:#64748b">{}</small></div>',
-            name, obj.email
-        )
-    company_info.short_description = 'الشركة'
+    def get_fieldsets(self, request, obj=None):
+        """Hide schema fields on add form (auto-generated)."""
+        if not obj:
+            return (
+                ('معلومات الشركة', {
+                    'fields': ('company_name', 'company_name_ar', 'country', 'phone', 'email')
+                }),
+                ('الخطة والاشتراك', {
+                    'fields': ('plan', 'subscription_status', 'trial_end')
+                }),
+                ('الحالة', {
+                    'fields': ('is_active',)
+                }),
+            )
+        return super().get_fieldsets(request, obj)
 
-    def schema_name_badge(self, obj):
-        return format_html(
-            '<code style="background:rgba(0,212,255,0.1);color:#00d4ff;padding:2px 6px;border-radius:4px;font-size:11px">{}</code>',
-            obj.schema_name
-        )
-    schema_name_badge.short_description = 'المعرف (Schema)'
+    def save_model(self, request, obj, form, change):
+        if not change:
+            clean_name = re.sub(r'[^a-z0-9_]', '', obj.company_name.lower().replace(' ', '_').replace('-', '_')).strip('_')
+            if not clean_name or len(clean_name) < 2:
+                clean_name = re.sub(r'[^a-z0-9_]', '', obj.email.split('@')[0].lower()).strip('_')
+            schema_name = clean_name[:63]
+            if not schema_name or schema_name[0].isdigit():
+                schema_name = 't' + schema_name if schema_name else 'company'
+            base = schema_name
+            counter = 1
+            while Tenant.objects.filter(schema_name=schema_name).exists():
+                schema_name = f"{base[:60]}_{counter}"
+                counter += 1
+            obj.schema_name = schema_name
+        super().save_model(request, obj, form, change)
 
-    def plan_badge(self, obj):
-        if not obj.plan: return "-"
-        colors = {'basic': '#94a3b8', 'pro': '#00d4ff', 'enterprise': '#a78bfa'}
-        color = colors.get(obj.plan.tier, '#94a3b8')
-        return format_html(
-            '<span style="border:1px solid {};color:{};padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600">{}</span>',
-            color, color, obj.plan.name
+    def response_add(self, request, obj, post_url_continue=None):
+        """Show provisioning summary after successful creation."""
+        msg = (
+            f'تم إنشاء {obj.company_name} بنجاح. '
+            f'Schema: {obj.schema_name}، '
+            f'حساب المسؤول: {obj.email}'
         )
-    plan_badge.short_description = 'الخطة'
+        self.message_user(request, msg)
+        return super().response_add(request, obj, post_url_continue)
 
-    def status_badge(self, obj):
-        colors = {
-            'active': '#10b981',
-            'trialing': '#3b82f6',
-            'past_due': '#f59e0b',
-            'canceled': '#ef4444',
-        }
-        color = colors.get(obj.subscription_status, '#64748b')
-        return format_html(
-            '<span style="background:{};color:#fff;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700">{}</span>',
-            color, obj.get_subscription_status_display()
-        )
-    status_badge.short_description = 'حالة الاشتراك'
+    def schema_info(self, obj):
+        """Show schema status with details."""
+        if not obj.pk:
+            return mark_safe('<span style="color:#4a7a95">سيتم إنشاء schema تلقائياً عند الحفظ</span>')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = %s)", [obj.schema_name])
+            exists = cursor.fetchone()[0]
+        if exists:
+            admin_email = None
+            with schema_context(obj.schema_name):
+                admin = User.objects.filter(is_superuser=True).first()
+                admin_email = admin.email if admin else 'غير موجود'
+            return format_html(
+                '<div style="line-height:2">'
+                '<span style="color:#34d399;font-weight:700">✓ Schema موجودة ونشطة</span><br>'
+                '<span style="color:#4a7a95;font-size:12px">مسؤول النظام: {}</span>'
+                '</div>',
+                admin_email
+            )
+        else:
+            return mark_safe(
+                '<div style="line-height:2">'
+                '<span style="color:#f43f5e;font-weight:700">✗ Schema مفقودة</span><br>'
+                '<span style="color:#4a7a95;font-size:12px">اضغط "حفظ" لإنشاء schema تلقائياً</span>'
+                '</div>'
+            )
+    schema_info.short_description = 'حالة قاعدة البيانات'
 
-    def active_toggle(self, obj):
-        icon = 'check-circle' if obj.is_active else 'times-circle'
-        color = '#10b981' if obj.is_active else '#f43f5e'
-        return format_html('<i class="fas fa-{}" style="color:{};font-size:16px"></i>', icon, color)
-    active_toggle.short_description = 'نشط'
+    def schema_status_badge(self, obj):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = %s)", [obj.schema_name])
+            exists = cursor.fetchone()[0]
+        if exists:
+            return mark_safe('<span style="color:#34d399;font-weight:700">✓</span>')
+        return mark_safe('<span style="color:#f43f5e;font-weight:700">✗</span>')
+    schema_status_badge.short_description = 'DB'
 
     def total_paid(self, obj):
         total = TenantSubscription.objects.filter(
@@ -123,26 +166,17 @@ class TenantAdmin(admin.ModelAdmin):
     def subscription_history(self, obj):
         logs = TenantSubscription.objects.filter(tenant=obj)[:15]
         if not logs:
-            return format_html('<span style="color:#64748b">لا يوجد سجل اشتراكات</span>')
-        
-        html = '<div class="result-list-wrap"><table style="width:100%;font-size:12px;border-collapse:collapse">'
-        html += '<tr style="background:rgba(0,212,255,0.05)">'
-        html += '<th style="padding:8px">التاريخ</th><th style="padding:8px">الإجراء</th><th style="padding:8px">الخطة</th><th style="padding:8px">المبلغ</th><th style="padding:8px">الحالة</th></tr>'
-        
+            return mark_safe('<span style="color:#4a7a95">لا يوجد سجل اشتراكات</span>')
+        html = '<table style="width:100%;font-size:12px"><tr style="background:rgba(0,212,255,0.1)"><th>التاريخ</th><th>الإجراء</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>بوابة الدفع</th></tr>'
         for log in logs:
             status_color = '#34d399' if log.payment_status == 'succeeded' else ('#f43f5e' if log.payment_status == 'failed' else '#fb923c')
             plan_name = log.plan_to.name if log.plan_to else '-'
             amount = f'{log.amount:,.2f} {log.currency}' if log.amount else '-'
-            html += f'<tr style="border-bottom:1px solid rgba(0,212,255,0.05)">'
-            html += f'<td style="padding:8px">{log.created_at.date()}</td>'
-            html += f'<td style="padding:8px">{log.get_action_display()}</td>'
-            html += f'<td style="padding:8px">{plan_name}</td>'
-            html += f'<td style="padding:8px">{amount}</td>'
-            html += f'<td style="padding:8px;color:{status_color};font-weight:600">{log.get_payment_status_display()}</td>'
-            html += '</tr>'
-        html += '</table></div>'
-        return format_html(html)
-    subscription_history.short_description = 'سجل العمليات'
+            gateway = log.payment_gateway or '-'
+            html += f'<tr><td>{log.created_at.date()}</td><td>{log.get_action_display()}</td><td>{plan_name}</td><td>{amount}</td><td style="color:{status_color}">{log.get_payment_status_display()}</td><td>{gateway}</td></tr>'
+        html += '</table>'
+        return mark_safe(html)
+    subscription_history.short_description = 'سجل الاشتراكات'
 
     def dashboard_link(self, obj):
         url = reverse('admin:tenants_tenant_change', args=[obj.id])

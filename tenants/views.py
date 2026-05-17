@@ -2,7 +2,7 @@ import re
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
-from django.db import IntegrityError, connection
+from django.db import connection
 from django_tenants.utils import schema_context
 from django.contrib.auth.models import User
 
@@ -74,18 +74,11 @@ def register(request):
             )
 
             with schema_context(tenant.schema_name):
-                try:
-                    User.objects.create_superuser(
-                        username=email,
-                        email=email,
-                        password=password,
-                    )
-                except IntegrityError:
-                    user = User.objects.get(username=email)
-                    user.set_password(password)
-                    user.is_superuser = True
-                    user.is_staff = True
-                    user.save()
+                user = User.objects.get(username=email)
+                user.set_password(password)
+                user.is_superuser = True
+                user.is_staff = True
+                user.save()
 
             request.session['tenant_id'] = tenant.id
             messages.success(request, f'تم إنشاء الحساب بنجاح! مرحباً {company_name}')
@@ -238,8 +231,16 @@ def super_admin_dashboard(request):
             'count': count
         })
 
+    # ═══ SCHEMA STATUS ═══
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nspname FROM pg_namespace WHERE nspname NOT IN ('public', 'information_schema', 'pg_catalog', 'pg_toast')")
+        existing_schemas = {row[0] for row in cursor.fetchall()}
+
     # ═══ RECENT ACTIVITY ═══
-    recent_tenants = Tenant.objects.select_related('plan').order_by('-created_at')[:10]
+    recent_tenants = Tenant.objects.select_related('plan').order_by('-created_on')[:10]
+    for t in recent_tenants:
+        t.schema_status = 'موجود' if t.schema_name in existing_schemas else 'مفقود'
+
     recent_subscriptions = TenantSubscription.objects.select_related(
         'tenant', 'plan_from', 'plan_to'
     ).order_by('-created_at')[:10]

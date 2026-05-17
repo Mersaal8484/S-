@@ -59,11 +59,22 @@
                             <span id="btnText">تأكيد التسجيل وبدء التجربة</span>
                             <span id="btnSpinner" style="display:none;">
                                 <span class="spinner-border spinner-border-sm ml-2" role="status"></span>
-                                جاري تهيئة النظام...
+                                جاري التجهيز...
                             </span>
                         </button>
-                        <div id="processingMsg" class="text-center mt-3" style="display:none;">
-                            <small class="text-dim">قد تستغرق العملية دقيقة أثناء تجهيز بيئة العمل</small>
+                        <div id="processingMsg" class="mt-4" style="display:none;">
+                            <div class="glass-card p-3" style="border-color: var(--primary);">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="spinner-border spinner-border-sm ml-2 text-primary" role="status"></span>
+                                    <small>جاري إنشاء قاعدة البيانات...</small>
+                                </div>
+                                <div class="progress" style="height: 4px; background: rgba(255,255,255,0.1);">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; background: var(--primary);"></div>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <small class="text-dim">قد تستغرق العملية دقيقة أثناء تجهيز بيئة العمل الآمنة</small>
+                                </div>
+                            </div>
                         </div>
                     </form>
                     <script>

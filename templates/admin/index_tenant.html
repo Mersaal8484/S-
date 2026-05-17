@@ -1566,212 +1566,200 @@
 
     </div>
 
-  </div><!-- /wrap -->
 
-  <script>
-    function sendPrompt(msg) {
-      var url = "{% url 'tenant_dashboard' %}";
-      if (msg.includes('العودة') || msg.includes('الرئيسية') || msg.includes('ارجع')) {
-        {% if request.user.is_superuser %}
-        url = "{% url 'admin:tenants_tenant_changelist' %}";
-        {% else %}
-        url = "{% url 'tenant_dashboard' %}";
-        {% endif %}
-      }
-      else if (msg.includes('فاتورة جديدة') || msg.includes('إنشاء فاتورة')) url = "{% url 'invoice_create' %}?standalone=1";
-      else if (msg.includes('فاتورة') || msg.includes('الفواتير')) url = "{% url 'invoice_list' %}";
-      else if (msg.includes('دفعة')) url = "{% url 'payment_create' %}?standalone=1";
-      else if (msg.includes('قراءة') || msg.includes('عداد')) url = "{% url 'reading_create' %}?standalone=1";
-      else if (msg.includes('مشترك جديد') || msg.includes('إضافة مشترك')) url = "{% url 'customer_create' %}?standalone=1";
-      else if (msg.includes('مشترك') || msg.includes('المشتركين')) url = "{% url 'customer_list' %}";
-      else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_changelist' %}";
-      else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
-      else if (msg.includes('إعداد') || msg.includes('الإعدادات')) {
-        switchTab('settings', document.getElementById('tab-settings'));
-        return;
-      }
-      else if (msg.includes('تنزيل') || msg.includes('تقرير')) url = "{% url 'billing_reports' %}";
-      window.location.href = url;
-    }
-    function switchTab(id, btn) {
-      document.querySelectorAll('.tp').forEach(t => t.classList.remove('on'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
-      document.getElementById('t-' + id).classList.add('on');
-      btn.classList.add('on');
-      if (id === 'consumption') buildGauge();
-    }
-    // Auto-activate the correct tab on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      var activePage = '{{ active_page }}';
-      if (activePage === 'settings') {
-        switchTab('settings', document.getElementById('tab-settings'));
-      } else {
-        switchTab('overview', document.getElementById('tab-overview'));
-      }
-    });
-    function cu(id, target, suffix = '') {
-      const el = document.getElementById(id);
-      if (!el) return;
-      let cur = 0, total = 1500;
-      const step = target / (total / 16);
-      const t = setInterval(() => {
-        cur = Math.min(cur + step, target);
-        el.textContent = Math.round(cur).toLocaleString('ar') + suffix;
-        if (cur >= target) clearInterval(t);
-      }, 16);
-    }
-    setTimeout(() => {
-      cu('h1', {{ tstats.total_payments|floatformat:0 }});
-      cu('h2', {{ tstats.paid_invoices }});
-      cu('h3', {{ tstats.user_count }});
-      cu('h4', {{ tstats.pending_invoices }} + {{ tstats.overdue_invoices }});
-      const invTotal = Math.max({{ tstats.invoice_count|default:1 }}, 1);
-      const pct1 = Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100), 100);
-      const pct2 = Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100), 100);
-      const pct3 = Math.min(Math.round(({{ tstats.pending_invoices }}+{{ tstats.overdue_invoices }})/invTotal*100), 100);
-      setTimeout(() => {
-        const cf1 = document.getElementById('cf1');
-        const cf2 = document.getElementById('cf2');
-        const cf3 = document.getElementById('cf3');
-        if (cf1) cf1.style.width = pct1 + '%';
-        if (cf2) cf2.style.width = pct2 + '%';
-        if (cf3) cf3.style.width = pct3 + '%';
-      }, 400);
-    }, 200);
+</div><!-- /wrap -->
 
-    const months = {{ tstats.months_labels_json|safe }};
-    const vals = {{ tstats.consumption_vals_json|safe }};
+<script>
+function sendPrompt(msg){
+  var url = "{% url 'billing_index' %}";
+  if (msg.includes('العودة') || msg.includes('الرئيسية') || msg.includes('ارجع')) {
+    {% if is_public_schema %}
+      url = "{% url 'admin:tenants_tenant_changelist' %}";
+    {% else %}
+      url = "{% url 'billing_index' %}";
+    {% endif %}
+  }
+  else if (msg.includes('فاتورة جديدة') || msg.includes('إنشاء فاتورة')) url = "{% url 'invoice_create' %}?standalone=1";
+  else if (msg.includes('فاتورة') || msg.includes('الفواتير')) url = "{% url 'invoice_list' %}";
+  else if (msg.includes('دفعة')) url = "{% url 'payment_create' %}?standalone=1";
+  else if (msg.includes('قراءة') || msg.includes('عداد')) url = "{% url 'reading_create' %}?standalone=1";
+  else if (msg.includes('مشترك جديد') || msg.includes('إضافة مشترك')) url = "{% url 'customer_create' %}?standalone=1";
+  else if (msg.includes('مشترك') || msg.includes('المشتركين')) url = "{% url 'customer_list' %}";
+  else if (msg.includes('خطة')) url = "{% url 'admin:tenants_plan_changelist' %}";
+  else if (msg.includes('نطاق')) url = "{% url 'admin:tenants_domain_add' %}";
+  else if (msg.includes('إعداد') || msg.includes('الإعدادات')) url = "{% url 'system_settings' %}";
+  else if (msg.includes('تنزيل') || msg.includes('تقرير')) url = "{% url 'billing_reports' %}";
+  window.location.href = url;
+}
+function switchTab(id,btn){
+  document.querySelectorAll('.tp').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('t-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='consumption')buildGauge();
+}
+function cu(id,target,suffix=''){
+  const el=document.getElementById(id);
+  if(!el)return;
+  let cur=0,total=1500;
+  const step=target/(total/16);
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=Math.round(cur).toLocaleString('ar')+suffix;
+    if(cur>=target)clearInterval(t);
+  },16);
+}
+setTimeout(()=>{
+  cu('h1',{{ tstats.total_payments|floatformat:0 }});
+  cu('h2',{{ tstats.paid_invoices }});
+  cu('h3',{{ tstats.user_count }});
+  cu('h4',{{ tstats.pending_invoices|add:tstats.overdue_invoices }});
+  const invTotal=Math.max({{ tstats.invoice_count|default:1 }},1);
+  const pct1=Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100),100);
+  const pct2=Math.min(Math.round({{ tstats.paid_invoices }}/invTotal*100),100);
+  const pct3=Math.min(Math.round(({{ tstats.pending_invoices }}+{{ tstats.overdue_invoices }})/invTotal*100),100);
+  setTimeout(()=>{
+    const cf1=document.getElementById('cf1');
+    const cf2=document.getElementById('cf2');
+    const cf3=document.getElementById('cf3');
+    if(cf1)cf1.style.width=pct1+'%';
+    if(cf2)cf2.style.width=pct2+'%';
+    if(cf3)cf3.style.width=pct3+'%';
+  },400);
+},200);
 
-    const svg2 = document.getElementById('tenChart');
-    if (svg2) {
-      const W = 460, H = 130, p = { t: 10, b: 25, l: 10, r: 10 };
-      const dw = W - p.l - p.r, dh = H - p.t - p.b;
-      const mx = Math.max(...vals, 1) + 30;
-      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-      const lg = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-      lg.setAttribute('id', 'cg1'); lg.setAttribute('x1', '0'); lg.setAttribute('y1', '0'); lg.setAttribute('x2', '0'); lg.setAttribute('y2', '1');
-      ['rgba(0,212,255,0.35)', 'rgba(0,212,255,0)'].forEach((c, i) => {
-        const s = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-        s.setAttribute('offset', i === 0 ? '0%' : '100%'); s.setAttribute('stop-color', c); lg.appendChild(s);
-      });
-      defs.appendChild(lg); svg2.appendChild(defs);
-      const bw = (dw / months.length) - 6;
-      months.forEach((m, i) => {
-        const x = p.l + i * (dw / months.length) + 3;
-        const bh = Math.round((vals[i] / mx) * dh);
-        const y = p.t + dh - bh;
-        const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        r.setAttribute('x', x); r.setAttribute('y', p.t + dh); r.setAttribute('width', bw); r.setAttribute('height', 0);
-        r.setAttribute('fill', 'url(#cg1)'); r.setAttribute('rx', '4'); r.setAttribute('stroke', 'rgba(0,212,255,0.4)'); r.setAttribute('stroke-width', '1');
-        r.style.transition = 'y .8s cubic-bezier(.4,0,.2,1),height .8s cubic-bezier(.4,0,.2,1)';
-        svg2.appendChild(r);
-        setTimeout(() => { r.setAttribute('y', y); r.setAttribute('height', bh); }, 200 + i * 80);
-        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        t.setAttribute('x', x + bw / 2); t.setAttribute('y', H - 4); t.setAttribute('text-anchor', 'middle');
-        t.setAttribute('font-size', '10'); t.setAttribute('fill', '#4a7a95'); t.textContent = m;
-        svg2.appendChild(t);
-      });
-    }
+const months = {{ tstats.months_labels_json|safe }};
+const vals = {{ tstats.consumption_vals_json|safe }};
 
-    const stripeEvents = [
-      { icon: '💳', type: 'payment_intent.succeeded', id: 'evt_001', amt: '+$1,490', amtColor: '#34d399', time: 'اليوم' },
-      { icon: '🔄', type: 'customer.subscription.updated', id: 'evt_002', amt: 'تحديث', amtColor: 'var(--energy)', time: 'أمس' },
-      { icon: '💳', type: 'payment_intent.succeeded', id: 'evt_003', amt: '+$1,490', amtColor: '#34d399', time: 'هذا الأسبوع' },
-    ];
-    const ec = document.getElementById('stripeEvents');
-    if (ec) {
-      stripeEvents.forEach(e => {
-        const d = document.createElement('div');
-        d.className = 'stripe-event';
-        d.innerHTML = `<div class="se-ico" style="background:rgba(0,212,255,0.08)">${e.icon}</div><div style="flex:1"><div class="se-type">${e.type}</div><div class="se-id">${e.id}</div></div><div class="se-amt" style="color:${e.amtColor}">${e.amt}</div><div class="se-time">${e.time}</div>`;
-        ec.appendChild(d);
-      });
-    }
-    const acts = {{ tstats.recent_activities_json|safe }};
-    const tl = document.getElementById('timeline');
-    if (tl) {
-      acts.forEach(a => {
-        const d = document.createElement('div');
-        d.className = 'tl-item';
-        d.innerHTML = `<div class="tl-line"></div><div class="tl-dot" style="background:${a.ico_bg}">${a.icon}</div><div class="tl-body"><div class="tl-title">${a.title}</div><div class="tl-sub">${a.sub}</div><div class="tl-time">${a.time}</div></div>`;
-        tl.appendChild(d);
-      });
-    }
-    function buildGauge() {
-      const gs = document.getElementById('gaugeS');
-      if (!gs || gs.children.length > 0) return;
-      const cx = 100, cy = 100, R = 85, sw = 14;
-      const toRad = d => d * Math.PI / 180;
-      function arc(cx, cy, r, start, end, color, width, dash = '') {
-        const s = toRad(start), e2 = toRad(end);
-        const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
-        const x2 = cx + r * Math.cos(e2), y2 = cy + r * Math.sin(e2);
-        const lf = end - start > 180 ? 1 : 0;
-        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        p.setAttribute('d', `M${x1},${y1} A${r},${r} 0 ${lf},1 ${x2},${y2}`);
-        p.setAttribute('fill', 'none'); p.setAttribute('stroke', color);
-        p.setAttribute('stroke-width', width); p.setAttribute('stroke-linecap', 'round');
-        if (dash) p.setAttribute('stroke-dasharray', dash);
-        gs.appendChild(p);
-      }
-      arc(cx, cy, R, 180, 360, 'rgba(255,255,255,0.05)', sw);
-      arc(cx, cy, R, 180, 180 + 180 * 0.78, '#00d4ff', sw);
-    }
-    (function () {
-      const sv = document.getElementById('consChart');
-      if (!sv) return;
-      const W = 400, H = 150, p2 = { t: 15, b: 25, l: 10, r: 10 };
-      const dw = W - p2.l - p2.r, dh = H - p2.t - p2.b;
-      const mx = Math.max(...vals, 1) + 30;
-      const pts = vals.map((v, i) => {
-        const x = p2.l + i * (dw / (months.length - 1));
-        const y = p2.t + dh * (1 - v / mx);
-        return x + ',' + y;
-      }).join(' ');
-      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-      poly.setAttribute('points', pts); poly.setAttribute('fill', 'none');
-      poly.setAttribute('stroke', '#00d4ff'); poly.setAttribute('stroke-width', '2.5');
-      poly.setAttribute('stroke-linejoin', 'round'); poly.setAttribute('stroke-linecap', 'round');
-      sv.appendChild(poly);
-      vals.forEach((v, i) => {
-        const x = p2.l + i * (dw / (months.length - 1));
-        const y = p2.t + dh * (1 - v / mx);
-        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', '5');
-        c.setAttribute('fill', '#07091a'); c.setAttribute('stroke', '#00d4ff'); c.setAttribute('stroke-width', '2');
-        sv.appendChild(c);
-        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        t.setAttribute('x', x); t.setAttribute('y', H - 4); t.setAttribute('text-anchor', 'middle');
-        t.setAttribute('font-size', '10'); t.setAttribute('fill', '#4a7a95'); t.textContent = months[i];
-        sv.appendChild(t);
-      });
-    })();
-    (function () {
-      const sv = document.getElementById('dailyChart');
-      if (!sv) return;
-      const days = 12, W = 700, H = 80, p = { t: 8, b: 20, l: 5, r: 5 };
-      const dw = W - p.l - p.r, dh = H - p.t - p.b;
-      const data = Array.from({ length: days }, (_, i) => Math.round(8000 + Math.random() * 6000));
-      const mx = Math.max(...data);
-      const bw = Math.round(dw / days) - 4;
-      data.forEach((v, i) => {
-        const x = p.l + i * (dw / days) + 2;
-        const bh = Math.round((v / mx) * dh);
-        const hue = v > 12000 ? '#fb923c' : v > 10000 ? '#00d4ff' : '#38bdf8';
-        const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        r.setAttribute('x', x); r.setAttribute('y', p.t + dh - bh); r.setAttribute('width', bw); r.setAttribute('height', bh);
-        r.setAttribute('fill', hue); r.setAttribute('rx', '3'); r.setAttribute('opacity', '0.75');
-        r.style.cursor = 'pointer';
-        r.addEventListener('mouseenter', () => r.setAttribute('opacity', '1'));
-        r.addEventListener('mouseleave', () => r.setAttribute('opacity', '0.75'));
-        sv.appendChild(r);
-        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        t.setAttribute('x', x + bw / 2); t.setAttribute('y', H - 2); t.setAttribute('text-anchor', 'middle');
-        t.setAttribute('font-size', '9'); t.setAttribute('fill', '#4a7a95'); t.textContent = i + 1;
-        sv.appendChild(t);
-      });
-    })();
-  </script>
+const svg2=document.getElementById('tenChart');
+const W=460,H=130,p={t:10,b:25,l:10,r:10};
+const dw=W-p.l-p.r,dh=H-p.t-p.b;
+const mx=Math.max(...vals, 1)+30;
+const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+const lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+lg.setAttribute('id','cg1');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','0');lg.setAttribute('y2','1');
+['rgba(0,212,255,0.35)','rgba(0,212,255,0)'].forEach((c,i)=>{
+  const s=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s.setAttribute('offset',i===0?'0%':'100%');s.setAttribute('stop-color',c);lg.appendChild(s);
+});
+defs.appendChild(lg);svg2.appendChild(defs);
+const bw=(dw/months.length)-6;
+months.forEach((m,i)=>{
+  const x=p.l+i*(dw/months.length)+3;
+  const bh=Math.round((vals[i]/mx)*dh);
+  const y=p.t+dh-bh;
+  const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x',x);r.setAttribute('y',p.t+dh);r.setAttribute('width',bw);r.setAttribute('height',0);
+  r.setAttribute('fill','url(#cg1)');r.setAttribute('rx','4');r.setAttribute('stroke','rgba(0,212,255,0.4)');r.setAttribute('stroke-width','1');
+  r.style.transition='y .8s cubic-bezier(.4,0,.2,1),height .8s cubic-bezier(.4,0,.2,1)';
+  svg2.appendChild(r);
+  setTimeout(()=>{r.setAttribute('y',y);r.setAttribute('height',bh);},200+i*80);
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x+bw/2);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=m;
+  svg2.appendChild(t);
+});
+
+const stripeEvents = [
+  {icon:'💳',type:'payment_intent.succeeded',id:'evt_001',amt:'+$1,490',amtColor:'#34d399',time:'اليوم'},
+  {icon:'🔄',type:'customer.subscription.updated',id:'evt_002',amt:'تحديث',amtColor:'var(--energy)',time:'أمس'},
+  {icon:'💳',type:'payment_intent.succeeded',id:'evt_003',amt:'+$1,490',amtColor:'#34d399',time:'هذا الأسبوع'},
+];
+const ec=document.getElementById('stripeEvents');
+if(ec){
+  stripeEvents.forEach(e=>{
+    const d=document.createElement('div');
+    d.className='stripe-event';
+    d.innerHTML=`<div class="se-ico" style="background:rgba(0,212,255,0.08)">${e.icon}</div><div style="flex:1"><div class="se-type">${e.type}</div><div class="se-id">${e.id}</div></div><div class="se-amt" style="color:${e.amtColor}">${e.amt}</div><div class="se-time">${e.time}</div>`;
+    ec.appendChild(d);
+  });
+}
+const acts = {{ tstats.recent_activities_json|safe }};
+const tl=document.getElementById('timeline');
+if(tl){
+  acts.forEach(a=>{
+    const d=document.createElement('div');
+    d.className='tl-item';
+    d.innerHTML=`<div class="tl-line"></div><div class="tl-dot" style="background:${a.ico_bg}">${a.icon}</div><div class="tl-body"><div class="tl-title">${a.title}</div><div class="tl-sub">${a.sub}</div><div class="tl-time">${a.time}</div></div>`;
+    tl.appendChild(d);
+  });
+}
+function buildGauge(){
+  const gs=document.getElementById('gaugeS');
+  if(!gs||gs.children.length>0)return;
+  const cx=100,cy=100,R=85,sw=14;
+  const toRad=d=>d*Math.PI/180;
+  function arc(cx,cy,r,start,end,color,width,dash=''){
+    const s=toRad(start),e2=toRad(end);
+    const x1=cx+r*Math.cos(s),y1=cy+r*Math.sin(s);
+    const x2=cx+r*Math.cos(e2),y2=cy+r*Math.sin(e2);
+    const lf=end-start>180?1:0;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M${x1},${y1} A${r},${r} 0 ${lf},1 ${x2},${y2}`);
+    p.setAttribute('fill','none');p.setAttribute('stroke',color);
+    p.setAttribute('stroke-width',width);p.setAttribute('stroke-linecap','round');
+    if(dash)p.setAttribute('stroke-dasharray',dash);
+    gs.appendChild(p);
+  }
+  arc(cx,cy,R,180,360,'rgba(255,255,255,0.05)',sw);
+  arc(cx,cy,R,180,180+180*0.78,'#00d4ff',sw);
+}
+(function(){
+  const sv=document.getElementById('consChart');
+  if(!sv)return;
+  const W=400,H=150,p2={t:15,b:25,l:10,r:10};
+  const dw=W-p2.l-p2.r,dh=H-p2.t-p2.b;
+  const mx=Math.max(...vals, 1)+30;
+  const pts=vals.map((v,i)=>{
+    const x=p2.l+i*(dw/(months.length-1));
+    const y=p2.t+dh*(1-v/mx);
+    return x+','+y;
+  }).join(' ');
+  const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  poly.setAttribute('points',pts);poly.setAttribute('fill','none');
+  poly.setAttribute('stroke','#00d4ff');poly.setAttribute('stroke-width','2.5');
+  poly.setAttribute('stroke-linejoin','round');poly.setAttribute('stroke-linecap','round');
+  sv.appendChild(poly);
+  vals.forEach((v,i)=>{
+    const x=p2.l+i*(dw/(months.length-1));
+    const y=p2.t+dh*(1-v/mx);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','5');
+    c.setAttribute('fill','#07091a');c.setAttribute('stroke','#00d4ff');c.setAttribute('stroke-width','2');
+    sv.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','10');t.setAttribute('fill','#4a7a95');t.textContent=months[i];
+    sv.appendChild(t);
+  });
+})();
+(function(){
+  const sv=document.getElementById('dailyChart');
+  if(!sv)return;
+  const days=12,W=700,H=80,p={t:8,b:20,l:5,r:5};
+  const dw=W-p.l-p.r,dh=H-p.t-p.b;
+  const data=Array.from({length:days},(_,i)=>Math.round(8000+Math.random()*6000));
+  const mx=Math.max(...data);
+  const bw=Math.round(dw/days)-4;
+  data.forEach((v,i)=>{
+    const x=p.l+i*(dw/days)+2;
+    const bh=Math.round((v/mx)*dh);
+    const hue=v>12000?'#fb923c':v>10000?'#00d4ff':'#38bdf8';
+    const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x);r.setAttribute('y',p.t+dh-bh);r.setAttribute('width',bw);r.setAttribute('height',bh);
+    r.setAttribute('fill',hue);r.setAttribute('rx','3');r.setAttribute('opacity','0.75');
+    r.style.cursor='pointer';
+    r.addEventListener('mouseenter',()=>r.setAttribute('opacity','1'));
+    r.addEventListener('mouseleave',()=>r.setAttribute('opacity','0.75'));
+    sv.appendChild(r);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x+bw/2);t.setAttribute('y',H-2);t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','9');t.setAttribute('fill','#4a7a95');t.textContent=i+1;
+    sv.appendChild(t);
+  });
+})();
+</script>
+
 </body>
 
 </html>
