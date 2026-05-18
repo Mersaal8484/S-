@@ -958,3 +958,41 @@ class RouteTrackingLog(models.Model):
 
     def __str__(self):
         return f"{self.action_type} - {self.created_at}"
+
+# Signal to sync Billing Customer to Accounting Customer
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Customer)
+def sync_billing_to_accounting(sender, instance, created, **kwargs):
+    if getattr(instance, '_syncing', False):
+        return
+        
+    try:
+        from accounting.models import Customer as AccountingCustomer
+    except ImportError:
+        return
+        
+    a_cust = None
+    if instance.mobile_phone:
+        a_cust = AccountingCustomer.objects.filter(phone=instance.mobile_phone).first()
+    if not a_cust:
+        a_cust = AccountingCustomer.objects.filter(name=instance.full_name_ar).first()
+        
+    if not a_cust:
+        a_cust = AccountingCustomer(
+            name=instance.full_name_ar,
+            phone=instance.mobile_phone,
+            email=instance.email,
+            address=instance.address,
+            is_active=instance.is_active
+        )
+    else:
+        a_cust.name = instance.full_name_ar
+        a_cust.phone = instance.mobile_phone
+        a_cust.email = instance.email
+        a_cust.address = instance.address
+        a_cust.is_active = instance.is_active
+
+    a_cust._syncing = True
+    a_cust.save()

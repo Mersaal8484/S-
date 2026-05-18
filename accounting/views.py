@@ -70,7 +70,7 @@ def account_create(request):
         form = AccountForm()
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Create Account',
+        'title': 'إضافة حساب',
     })
 
 
@@ -97,7 +97,7 @@ def account_edit(request, pk):
         form = AccountForm(instance=account)
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Edit Account',
+        'title': 'تعديل حساب',
     })
 
 
@@ -165,7 +165,7 @@ def journal_entry_create(request):
 
     accounts = Account.objects.filter(is_active=True)
     return render(request, 'accounting/journal_entry_form.html', {
-        'title': 'Create Journal Entry',
+        'title': 'إضافة قيد يومية',
         'accounts': accounts,
     })
 
@@ -269,7 +269,7 @@ def bill_create(request):
     vendors = Vendor.objects.filter(is_active=True)
     products = Product.objects.filter(is_active=True)
     return render(request, 'accounting/bill_form.html', {
-        'title': 'Create Bill',
+        'title': 'إضافة فاتورة مورد',
         'vendors': vendors,
         'products': products,
     })
@@ -327,7 +327,7 @@ def bill_edit(request, pk):
     vendors = Vendor.objects.filter(is_active=True)
     products = Product.objects.filter(is_active=True)
     return render(request, 'accounting/bill_form.html', {
-        'title': 'Edit Bill',
+        'title': 'تعديل فاتورة مورد',
         'vendors': vendors,
         'products': products,
         'bill': bill,
@@ -510,7 +510,7 @@ def invoice_edit(request, pk):
     customers = Customer.objects.filter(is_active=True)
     products = Product.objects.filter(is_active=True)
     return render(request, 'accounting/invoice_form.html', {
-        'title': 'Edit Invoice',
+        'title': 'تعديل فاتورة',
         'customers': customers,
         'products': products,
         'invoice': invoice,
@@ -595,7 +595,7 @@ def vendor_create(request):
         form = VendorForm()
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Create Vendor',
+        'title': 'إضافة مورد',
     })
 
 
@@ -612,7 +612,7 @@ def vendor_edit(request, pk):
         form = VendorForm(instance=vendor)
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Edit Vendor',
+        'title': 'تعديل مورد',
     })
 
 
@@ -694,7 +694,7 @@ def customer_create(request):
         form = CustomerForm()
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'إنشاء مشترك',
+        'title': 'إضافة عميل',
     })
 
 
@@ -711,7 +711,7 @@ def customer_edit(request, pk):
         form = CustomerForm(instance=customer)
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Edit Customer',
+        'title': 'تعديل عميل',
     })
 
 
@@ -785,7 +785,7 @@ def product_create(request):
         form = ProductForm()
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Create Product',
+        'title': 'إضافة منتج',
     })
 
 
@@ -802,7 +802,7 @@ def product_edit(request, pk):
         form = ProductForm(instance=product)
     return render(request, 'accounting/form.html', {
         'form': form,
-        'title': 'Edit Product',
+        'title': 'تعديل منتج',
     })
 
 
@@ -867,6 +867,7 @@ def trial_balance(request):
             data.append({
                 'account': account,
                 'balance': balance,
+                'abs_balance': abs(balance),
             })
             if balance > 0:
                 total_debit += balance
@@ -946,6 +947,7 @@ def income_statement(request):
         'total_revenue': total_revenue,
         'total_expense': total_expense,
         'net_income': net_income,
+        'abs_net_income': abs(net_income),
     })
 
 

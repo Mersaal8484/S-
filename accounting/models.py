@@ -268,3 +268,41 @@ class CustomerAccount(models.Model):
 
     def __str__(self):
         return f"{self.customer.name} - {self.account.code}"
+
+# Signal to sync Accounting Customer to Billing Customer
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Customer)
+def sync_accounting_to_billing(sender, instance, created, **kwargs):
+    if getattr(instance, '_syncing', False):
+        return
+        
+    try:
+        from billing.models import Customer as BillingCustomer
+    except ImportError:
+        return
+        
+    b_cust = None
+    if instance.phone:
+        b_cust = BillingCustomer.objects.filter(mobile_phone=instance.phone).first()
+    if not b_cust:
+        b_cust = BillingCustomer.objects.filter(full_name_ar=instance.name).first()
+        
+    if not b_cust:
+        b_cust = BillingCustomer(
+            full_name_ar=instance.name,
+            mobile_phone=instance.phone,
+            email=instance.email,
+            address=instance.address,
+            is_active=instance.is_active
+        )
+    else:
+        b_cust.full_name_ar = instance.name
+        b_cust.mobile_phone = instance.phone
+        b_cust.email = instance.email
+        b_cust.address = instance.address
+        b_cust.is_active = instance.is_active
+
+    b_cust._syncing = True
+    b_cust.save()

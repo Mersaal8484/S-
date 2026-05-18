@@ -33,11 +33,12 @@
 .field-label { font-size:12px; font-weight:700; color:var(--t2); display:flex; align-items:center; gap:5px; }
 .field-label .req { color:var(--danger); font-size:14px; }
 .field-label .opt { font-size:10px; font-weight:500; color:var(--t3); background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; }
-.finput,.fselect,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; -webkit-appearance:none; text-align:right; }
+.finput,.ftextarea { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; -webkit-appearance:none; text-align:right; }
+.fselect { width:100%; background:rgba(6,13,31,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:11px; color:var(--t1); font-family:Cairo,sans-serif; font-size:14px; font-weight:500; padding:11px 14px; transition:all .2s; outline:none; text-align:right; cursor:pointer; }
 .finput::placeholder,.ftextarea::placeholder { color:var(--t3); font-size:13px; }
 .finput:focus,.fselect:focus,.ftextarea:focus { border-color:var(--elec); background:rgba(0,212,255,0.05); box-shadow:0 0 0 3px rgba(0,212,255,0.1); }
 .finput:hover:not(:focus),.fselect:hover:not(:focus),.ftextarea:hover:not(:focus) { border-color:rgba(255,255,255,0.15); }
-.fselect { cursor:pointer; }
+
 .ftextarea { resize:vertical; min-height:80px; line-height:1.6; }
 .input-wrap { position:relative; }
 .input-wrap .input-icon { position:absolute; top:50%; transform:translateY(-50%); right:13px; color:var(--t3); pointer-events:none; width:16px; height:16px; }

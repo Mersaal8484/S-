@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Journal Entries - elem{% endblock %}
+{% block title %}قيود اليومية - النظام{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
-        <h1>Journal Entries</h1>
-        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <h1>قيود اليومية</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">لوحة التحكم</a>
     </div>
 </div>
 
@@ -14,11 +14,11 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Reference</th>
-                <th>Description</th>
-                <th>Posted</th>
+                <th>المعرف</th>
+                <th>التاريخ</th>
+                <th>المرجع</th>
+                <th>الوصف</th>
+                <th>مرحل</th>
             </tr>
         </thead>
         <tbody>
@@ -28,11 +28,11 @@
                 <td>{{ entry.date }}</td>
                 <td>{{ entry.reference }}</td>
                 <td>{{ entry.description }}</td>
-                <td>{{ entry.is_posted|yesno:"Yes,No" }}</td>
+                <td>{{ entry.is_posted|yesno:"نعم,لا" }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" class="text-center">No journal entries</td>
+                <td colspan="5" class="text-center">لا يوجد قيود يومية</td>
             </tr>
             {% endfor %}
         </tbody>

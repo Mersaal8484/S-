@@ -132,8 +132,14 @@ def create_contract(customer, data):
 
 def create_meter(contract, data):
     """Create new meter for contract"""
-    last_reading = contract.meters.first()
-    initial = last_reading.current_reading if last_reading else 0
+    initial = data.get('initial_reading')
+    if not initial:
+        last_reading = contract.meters.first()
+        initial = last_reading.last_approved_reading if last_reading else 0
+        
+    last_approved = data.get('last_approved_reading')
+    if not last_approved:
+        last_approved = initial
     
     meter = Meter.objects.create(
         meter_number=data.get('meter_number') or generate_number('MTR'),
@@ -141,6 +147,7 @@ def create_meter(contract, data):
         meter_model=data.get('meter_model', ''),
         meter_type=data.get('meter_type', 'analog'),
         initial_reading=initial,
+        last_approved_reading=last_approved,
         installation_date=data.get('installation_date', datetime.now().date()),
         meter_status=data.get('meter_status', 'active'),
         location_description=data.get('location_description', '')

@@ -96,7 +96,7 @@
     <div class="net-income-box {% if net_income < 0 %}net-loss-box{% endif %}">
         <div class="stat-lbl mb-2">صافي الربح / الخسارة</div>
         <div class="net-val {% if net_income < 0 %}net-loss{% endif %}">
-            {% if net_income < 0 %}-{% endif %}{{ net_income|abs|floatformat:2 }} ر.ي
+            {% if net_income < 0 %}-{% endif %}{{ abs_net_income|floatformat:2 }} ر.ي
         </div>
         <div class="mt-3">
             {% if net_income > 0 %}

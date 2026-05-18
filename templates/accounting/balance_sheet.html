@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Balance Sheet - elem{% endblock %}
+{% block title %}الميزانية العمومية - النظام{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
-        <h1>Balance Sheet</h1>
-        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <h1>الميزانية العمومية</h1>
+        <a href="{% url 'accounting_dashboard' %}" class="btn btn-secondary">لوحة التحكم</a>
     </div>
 </div>
 
@@ -14,7 +14,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5>Assets</h5>
+                <h5>الأصول</h5>
             </div>
             <table class="table">
                 {% for item in assets %}
@@ -24,7 +24,7 @@
                 </tr>
                 {% endfor %}
                 <tr class="font-weight-bold">
-                    <td>Total Assets</td>
+                    <td>إجمالي الأصول</td>
                     <td class="text-right">{{ total_assets }}</td>
                 </tr>
             </table>
@@ -34,7 +34,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header bg-warning">
-                <h5>Liabilities</h5>
+                <h5>الالتزامات</h5>
             </div>
             <table class="table">
                 {% for item in liabilities %}
@@ -44,7 +44,7 @@
                 </tr>
                 {% endfor %}
                 <tr class="font-weight-bold">
-                    <td>Total Liabilities</td>
+                    <td>إجمالي الالتزامات</td>
                     <td class="text-right">{{ total_liabilities }}</td>
                 </tr>
             </table>
@@ -54,7 +54,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header bg-success text-white">
-                <h5>Equity</h5>
+                <h5>حقوق الملكية</h5>
             </div>
             <table class="table">
                 {% for item in equity %}
@@ -64,11 +64,11 @@
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td>Retained Earnings</td>
+                    <td>الأرباح المحتجزة</td>
                     <td class="text-right">{{ retained_earnings }}</td>
                 </tr>
                 <tr class="font-weight-bold">
-                    <td>Total Equity</td>
+                    <td>إجمالي حقوق الملكية</td>
                     <td class="text-right">{{ total_equity }}</td>
                 </tr>
             </table>

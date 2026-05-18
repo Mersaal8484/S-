@@ -23,6 +23,14 @@ class AccountForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
+        labels = {
+            'code': 'الرمز',
+            'name': 'الاسم',
+            'account_type': 'نوع الحساب',
+            'parent': 'الحساب الرئيسي',
+            'is_active': 'نشط',
+            'description': 'الوصف',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,6 +61,16 @@ class VendorForm(forms.ModelForm):
             'tax_id': forms.TextInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+        labels = {
+            'vendor_code': 'رمز المورد',
+            'name': 'الاسم',
+            'contact_person': 'جهة الاتصال',
+            'phone': 'رقم الهاتف',
+            'email': 'البريد الإلكتروني',
+            'address': 'العنوان',
+            'tax_id': 'الرقم الضريبي',
+            'is_active': 'نشط',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,6 +96,14 @@ class CustomerForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'customer_code': 'رمز العميل',
+            'name': 'الاسم',
+            'phone': 'رقم الهاتف',
+            'email': 'البريد الإلكتروني',
+            'address': 'العنوان',
+            'is_active': 'نشط',
         }
 
     def __init__(self, *args, **kwargs):
@@ -109,6 +135,18 @@ class ProductForm(forms.ModelForm):
             'sale_price': forms.NumberInput(attrs={'class': 'form-control'}),
             'cost_price': forms.NumberInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'code': 'الرمز',
+            'sku': 'وحدة حفظ المخزون (SKU)',
+            'barcode': 'الباركود',
+            'internal_code': 'الرمز الداخلي',
+            'name': 'الاسم',
+            'description': 'الوصف',
+            'product_type': 'النوع',
+            'sale_price': 'سعر البيع',
+            'cost_price': 'سعر التكلفة',
+            'is_active': 'نشط',
         }
 
     def __init__(self, *args, **kwargs):

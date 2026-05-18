@@ -134,6 +134,29 @@ def contract_list(request):
 
 
 def contract_create(request):
+    # Auto-sync accounting customers for the user seamlessly
+    try:
+        from accounting.models import Customer as AccountingCustomer
+        from billing.models import Customer as BillingCustomer
+        for a_cust in AccountingCustomer.objects.all():
+            b_cust = None
+            if a_cust.phone:
+                b_cust = BillingCustomer.objects.filter(mobile_phone=a_cust.phone).first()
+            if not b_cust:
+                b_cust = BillingCustomer.objects.filter(full_name_ar=a_cust.name).first()
+            if not b_cust:
+                new_b = BillingCustomer(
+                    full_name_ar=a_cust.name,
+                    mobile_phone=a_cust.phone,
+                    email=a_cust.email,
+                    address=a_cust.address,
+                    is_active=a_cust.is_active
+                )
+                new_b._syncing = True
+                new_b.save()
+    except Exception:
+        pass
+
     if request.method == 'POST':
         customer_id = request.POST.get('customer')
         customer = get_object_or_404(Customer, pk=customer_id)
@@ -203,6 +226,29 @@ def meter_list(request):
 
 
 def meter_create(request):
+    # Auto-sync accounting customers for the user seamlessly
+    try:
+        from accounting.models import Customer as AccountingCustomer
+        from billing.models import Customer as BillingCustomer
+        for a_cust in AccountingCustomer.objects.all():
+            b_cust = None
+            if a_cust.phone:
+                b_cust = BillingCustomer.objects.filter(mobile_phone=a_cust.phone).first()
+            if not b_cust:
+                b_cust = BillingCustomer.objects.filter(full_name_ar=a_cust.name).first()
+            if not b_cust:
+                new_b = BillingCustomer(
+                    full_name_ar=a_cust.name,
+                    mobile_phone=a_cust.phone,
+                    email=a_cust.email,
+                    address=a_cust.address,
+                    is_active=a_cust.is_active
+                )
+                new_b._syncing = True
+                new_b.save()
+    except Exception:
+        pass
+
     if request.method == 'POST':
         contract_id = request.POST.get('contract')
         contract = get_object_or_404(Contract, pk=contract_id)

@@ -94,7 +94,7 @@
                     {% if item.balance > 0 %}{{ item.balance|floatformat:2 }}{% else %}-{% endif %}
                 </td>
                 <td class="text-center val-credit">
-                    {% if item.balance < 0 %}{{ item.balance|abs|floatformat:2 }}{% else %}-{% endif %}
+                    {% if item.balance < 0 %}{{ item.abs_balance|floatformat:2 }}{% else %}-{% endif %}
                 </td>
             </tr>
             {% empty %}

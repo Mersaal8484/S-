@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ title }} - elem{% endblock %}
+{% block title %}{{ title }} - النظام{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
         <h1>{{ title }}</h1>
-        <a href="{% url 'journal_entry_list' %}" class="btn btn-secondary">Back</a>
+        <a href="{% url 'journal_entry_list' %}" class="btn btn-secondary">العودة</a>
     </div>
 </div>
 
@@ -15,30 +15,30 @@
     <div class="row">
         <div class="col-md-4">
             <div class="form-group mb-3">
-                <label class="form-label">Date</label>
+                <label class="form-label">التاريخ</label>
                 <input type="date" name="date" class="form-control" required>
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group mb-3">
-                <label class="form-label">Reference</label>
+                <label class="form-label">المرجع</label>
                 <input type="text" name="reference" class="form-control">
             </div>
         </div>
     </div>
     
     <div class="form-group mb-3">
-        <label class="form-label">Description</label>
+        <label class="form-label">الوصف</label>
         <textarea name="description" class="form-control" rows="2"></textarea>
     </div>
     
-    <h4>Journal Lines</h4>
+    <h4>بنود القيد</h4>
     <table class="table" id="lines-table">
         <thead>
             <tr>
-                <th>Account</th>
-                <th>Debit</th>
-                <th>Credit</th>
+                <th>الحساب</th>
+                <th>مدين</th>
+                <th>دائن</th>
             </tr>
         </thead>
         <tbody>
@@ -46,7 +46,7 @@
             <tr>
                 <td>
                     <select name="account_{{ i }}" class="form-control">
-                        <option value="">Select Account</option>
+                        <option value="">اختر الحساب</option>
                         {% for account in accounts %}
                         <option value="{{ account.pk }}">{{ account.code }} - {{ account.name }}</option>
                         {% endfor %}
@@ -59,6 +59,6 @@
         </tbody>
     </table>
     
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary">حفظ</button>
 </form>
 {% endblock %}
